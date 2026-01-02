@@ -1,7 +1,7 @@
 # Plan: Utility Bill Tracker MVP
 
 ## Phase 1: Foundation & Project Scaffolding
-- [ ] Task: Initialize Next.js 15 project with TypeScript, Tailwind, and shadcn/ui.
+- [~] Task: Initialize Next.js 15 project with TypeScript, Tailwind, and shadcn/ui.
 - [ ] Task: Set up MongoDB connection singleton in `lib/mongodb.ts`.
 - [ ] Task: Define Zod schemas for Properties and Bills.
 - [ ] Task: Implement basic Layout with navigation and Global Notification Center (empty).
