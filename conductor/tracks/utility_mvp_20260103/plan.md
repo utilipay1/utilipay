@@ -1,11 +1,11 @@
 # Plan: Utility Bill Tracker MVP
 
-## Phase 1: Foundation & Project Scaffolding
+## Phase 1: Foundation & Project Scaffolding [checkpoint: 0a61e9a]
 - [x] Task: Initialize Next.js 15 project with TypeScript, Tailwind, and shadcn/ui. f00d4c5
 - [x] Task: Set up MongoDB connection singleton in `lib/mongodb.ts`. 32c28f9
 - [x] Task: Define Zod schemas for Properties and Bills. d758492
 - [x] Task: Implement basic Layout with navigation and Global Notification Center (empty). 8ab4bac
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Project Scaffolding' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Project Scaffolding' (Protocol in workflow.md) 0a61e9a
 
 ## Phase 2: Property Management
 - [ ] Task: Create `AddPropertyForm` component and API route.
