@@ -3,7 +3,7 @@
 ## Phase 1: Foundation & Project Scaffolding
 - [x] Task: Initialize Next.js 15 project with TypeScript, Tailwind, and shadcn/ui. f00d4c5
 - [x] Task: Set up MongoDB connection singleton in `lib/mongodb.ts`. 32c28f9
-- [ ] Task: Define Zod schemas for Properties and Bills.
+- [x] Task: Define Zod schemas for Properties and Bills. d758492
 - [ ] Task: Implement basic Layout with navigation and Global Notification Center (empty).
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Project Scaffolding' (Protocol in workflow.md)
 
