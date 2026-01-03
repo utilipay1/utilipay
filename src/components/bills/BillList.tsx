@@ -104,7 +104,6 @@ export function BillList() {
             </Table>
           </div>
         </div>
-      </Tabs>
     </div>
   );
 }
