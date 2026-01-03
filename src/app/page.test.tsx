@@ -23,19 +23,17 @@ jest.mock('@/components/dashboard/PortfolioTable', () => ({
 }));
 
 describe('Home Page', () => {
-  it('should render the management title', () => {
+  it('should render the dashboard title', () => {
     render(<Home />);
-    expect(screen.getByText(/Utilipay Management/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
   });
 
-  it('should render the tabs', () => {
+  it('should render navigation tabs', () => {
     render(<Home />);
-    // Use role or more specific text to avoid multiple matches
-    expect(screen.getByRole('tab', { name: /Dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Properties/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Bills/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Add Property/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Add Bill/i })).toBeInTheDocument();
+    expect(screen.getByText('Overview')).toBeInTheDocument();
+    expect(screen.getByText('Properties')).toBeInTheDocument();
+    expect(screen.getByText('All Bills')).toBeInTheDocument();
+    expect(screen.getByText('Manage')).toBeInTheDocument();
   });
 });
 
