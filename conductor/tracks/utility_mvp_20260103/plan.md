@@ -17,7 +17,7 @@
 - [x] Task: Implement `lib/billing.ts` for next-cycle calculation and alert logic. 13b18c2
 - [x] Task: Create `AddBillForm` component and API route. de16986
 - [x] Task: Implement the "Predictive Billing" logic: Automatically create draft bills on current bill submission. 9f7b7d9
-- [ ] Task: Write tests for billing logic and predictive engine.
+- [x] Task: Write tests for billing logic and predictive engine. 9f7b7d9
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Billing & Prediction Engine' (Protocol in workflow.md)
 
 ## Phase 4: Dashboard & Alerts
