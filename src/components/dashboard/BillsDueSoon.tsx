@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getAlertStatus } from '@/lib/billing';
 import { format } from 'date-fns';
+import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
 
 interface Bill {
   _id: string;
@@ -17,20 +18,21 @@ export function BillsDueSoon() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchBills() {
-      try {
-        const response = await fetch('/api/bills');
-        if (response.ok) {
-          const data = await response.json();
-          setBills(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch bills:', error);
-      } finally {
-        setLoading(false);
+  const fetchBills = async () => {
+    try {
+      const response = await fetch('/api/bills');
+      if (response.ok) {
+        const data = await response.json();
+        setBills(data);
       }
+    } catch (error) {
+      console.error('Failed to fetch bills:', error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchBills();
   }, []);
 
@@ -39,9 +41,10 @@ export function BillsDueSoon() {
       ...bill,
       alertStatus: getAlertStatus(new Date(bill.due_date)),
     }))
-    .filter((bill) => bill.alertStatus !== null && bill.status !== 'Paid');
+    .filter((bill) => bill.alertStatus !== null && bill.status === 'Unpaid');
 
   if (loading) return <div>Loading alerts...</div>;
+
 
   if (alerts.length === 0) {
     return (
@@ -72,11 +75,14 @@ export function BillsDueSoon() {
                 Due: {format(new Date(bill.due_date), 'PPP')}
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-lg font-bold">${bill.amount.toFixed(2)}</div>
-              <div className="text-xs uppercase font-extrabold tracking-wider">
-                {bill.alertStatus}
+            <div className="text-right flex items-center gap-4">
+              <div>
+                <div className="text-lg font-bold">${bill.amount.toFixed(2)}</div>
+                <div className="text-xs uppercase font-extrabold tracking-wider">
+                  {bill.alertStatus}
+                </div>
               </div>
+              <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
             </div>
           </div>
         ))}
