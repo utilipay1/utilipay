@@ -8,7 +8,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Project Scaffolding' (Protocol in workflow.md) 0a61e9a
 
 ## Phase 2: Property Management
-- [ ] Task: Create `AddPropertyForm` component and API route.
+- [x] Task: Create `AddPropertyForm` component and API route. c32eb78
 - [ ] Task: Implement Property List view with search and "Soft Delete" (Archive) functionality.
 - [ ] Task: Write tests for Property CRUD operations.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Property Management' (Protocol in workflow.md)
