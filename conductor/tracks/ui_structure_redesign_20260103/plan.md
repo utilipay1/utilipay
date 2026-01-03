@@ -22,7 +22,7 @@ This plan implements a header-based navigation system and completely redesigns t
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Properties View & "Add Property" Redesign' (Protocol in workflow.md)
 
 ## Phase 4: Bills View & "Add Bill" Redesign
-- [ ] Task: Implement Bills View with "Charged in Books" toggle and "Add Bill" Button (TDD)
+- [x] Task: Implement Bills View with "Charged in Books" toggle and "Add Bill" Button (TDD) 51f6159
 - [ ] Task: Create Redesigned "Add Bill" Modal (Property dropdown, Date pickers) (TDD)
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Bills View & "Add Bill" Redesign' (Protocol in workflow.md)
 
