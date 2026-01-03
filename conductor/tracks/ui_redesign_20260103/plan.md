@@ -2,7 +2,7 @@
 
 ## Phase 1: Foundation & Theme Setup
 - [x] Task: Define Monochrome Design System variables in Tailwind CSS (Colors, Elevation). 3c3c308
-- [ ] Task: Implement `next-themes` for Light/Dark/System switching.
+- [x] Task: Implement `next-themes` for Light/Dark/System switching. c69f871
 - [ ] Task: Update `globals.css` with monochrome base styles and font hierarchy.
 - [ ] Task: Conductor - User Manual Verification 'Foundation & Theme Setup' (Protocol in workflow.md)
 
