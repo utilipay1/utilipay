@@ -16,7 +16,7 @@ This plan implements a header-based navigation system and completely redesigns t
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Dashboard View Implementation' (Protocol in workflow.md)
 
 ## Phase 3: Properties View & "Add Property" Redesign
-- [ ] Task: Implement Properties View with List and "Add Property" Button (TDD)
+- [x] Task: Implement Properties View with List and "Add Property" Button (TDD) a750e82
 - [ ] Task: Create Redesigned "Add Property" Modal (Dynamic Tenant fields, Utilities checkboxes) (TDD)
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Properties View & "Add Property" Redesign' (Protocol in workflow.md)
 
