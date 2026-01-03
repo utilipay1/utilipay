@@ -6,7 +6,7 @@
 - [x] Task: Update `globals.css` with monochrome base styles and font hierarchy. 42d102f
 - [ ] Task: Conductor - User Manual Verification 'Foundation & Theme Setup' (Protocol in workflow.md)
 
-## Phase 2: Navigation & Layout Refactoring
+## Phase 2: Navigation & Layout Refactoring [checkpoint: 4553e6f]
 - [x] Task: Redesign `Navbar.tsx` to remove redundant links and keep only branding/user settings. 8e0e2d9
 - [x] Task: Consolidate navigation into the existing `Tabs` component on the main page. a15bb3b
 - [x] Task: Update the main Layout component to ensure consistent spacing for the new design. 540b36d
