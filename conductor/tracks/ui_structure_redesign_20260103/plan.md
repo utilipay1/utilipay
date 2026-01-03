@@ -11,7 +11,8 @@ This plan implements a header-based navigation system and completely redesigns t
 ## Phase 2: Dashboard View Implementation
 - [x] Task: Create Summary Tiles Component (Total Due, Total Paid, Properties Managed) (TDD) 35dcfa8
 - [x] Task: Create Alerts/Action Items Component (Bills Due Soon/Overdue) (TDD) eaf5e41
-- [ ] Task: Integrate Portfolio Table into Dashboard View (TDD)
+- [x] Task: Integrate Portfolio Table into Dashboard View (TDD) ae4ec25
+- [ ] Task: Conductor - User Manual Verification 'Phase 2: Dashboard View Implementation' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Dashboard View Implementation' (Protocol in workflow.md)
 
 ## Phase 3: Properties View & "Add Property" Redesign
