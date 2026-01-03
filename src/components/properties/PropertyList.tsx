@@ -20,10 +20,9 @@ interface Property {
   is_archived: boolean;
 }
 
-export function PropertyList() {
+export function PropertyList({ search = "" }: { search?: string }) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchProperties();
@@ -69,14 +68,6 @@ export function PropertyList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Input
-          placeholder="Search by address..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-md bg-muted/20"
-        />
-      </div>
       <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
         <Table>
           <TableHeader className="bg-muted/30">

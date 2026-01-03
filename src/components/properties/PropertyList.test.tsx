@@ -31,21 +31,18 @@ describe('PropertyList', () => {
     });
   });
 
-  it('filters properties based on search input', async () => {
+  it('filters properties based on search prop', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockProperties,
     });
 
-    render(<PropertyList />);
+    render(<PropertyList search="Main" />);
 
-    await waitFor(() => screen.getByText('123 Main St'));
-
-    const searchInput = screen.getByPlaceholderText(/Search by address/i);
-    fireEvent.change(searchInput, { target: { value: 'Main' } });
-
-    expect(screen.getByText('123 Main St')).toBeInTheDocument();
-    expect(screen.queryByText('456 Oak Ave')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('123 Main St')).toBeInTheDocument();
+      expect(screen.queryByText('456 Oak Ave')).not.toBeInTheDocument();
+    });
   });
 
   it('calls archive API when archive button is clicked', async () => {

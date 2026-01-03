@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { PropertyList } from "@/components/properties/PropertyList";
+import { PropertiesView } from "@/components/properties/PropertiesView";
 import { BillList } from "@/components/bills/BillList";
 import { DashboardAlerts } from "@/components/dashboard/DashboardAlerts";
 import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
@@ -64,12 +64,7 @@ export default function Home() {
       )}
 
       {currentView === 'properties' && (
-        <div className="space-y-4">
-           <div className="flex justify-between items-center">
-             <h1 className="text-3xl font-bold tracking-tight">Properties</h1>
-           </div>
-          <PropertyList />
-        </div>
+        <PropertiesView />
       )}
 
       {currentView === 'bills' && (

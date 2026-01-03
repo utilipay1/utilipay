@@ -11,8 +11,8 @@ jest.mock('@/components/dashboard/PortfolioTable', () => ({
 jest.mock('@/components/dashboard/SummaryTiles', () => ({
   SummaryTiles: () => <div data-testid="summary-tiles" />
 }));
-jest.mock('@/components/properties/PropertyList', () => ({
-  PropertyList: () => <div data-testid="property-list" />
+jest.mock('@/components/properties/PropertiesView', () => ({
+  PropertiesView: () => <div data-testid="properties-view" />
 }));
 jest.mock('@/components/bills/BillList', () => ({
   BillList: () => <div data-testid="bill-list" />
@@ -37,14 +37,14 @@ describe('Home Page', () => {
     expect(screen.getByTestId('portfolio-table')).toBeInTheDocument();
     
     // Check absence of other views
-    expect(screen.queryByTestId('property-list')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('properties-view')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bill-list')).not.toBeInTheDocument();
   });
 
   it('should render Properties view logic', () => {
     mockUseView.mockReturnValue({ currentView: 'properties' });
     render(<Home />);
-    expect(screen.getByTestId('property-list')).toBeInTheDocument();
+    expect(screen.getByTestId('properties-view')).toBeInTheDocument();
     expect(screen.queryByTestId('summary-tiles')).not.toBeInTheDocument();
   });
 
