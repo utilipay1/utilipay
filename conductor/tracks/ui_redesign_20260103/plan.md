@@ -18,7 +18,7 @@
 - [x] Task: Update data fetching logic (or prop drilling) to provide aggregated "Total Due" data to the SummaryTile. e701cbd
 - [ ] Task: Conductor - User Manual Verification 'Dashboard & Summary Tile' (Protocol in workflow.md)
 
-## Phase 4: Urgency Indicators & Component Refresh
+## Phase 4: Urgency Indicators & Component Refresh [checkpoint: 417cdbe]
 - [x] Task: Implement "Days Remaining" logic for subtle urgency coloring in `BillsDueSoon` and `BillList`. 66a9c32
 - [x] Task: Replace standard Shadcn/UI badges with subtle accent lines and text coloring for urgency. 66a9c32
 - [x] Task: Refactor `PortfolioTable` and `PropertyList` to match the monochrome aesthetic (borders, typography, contrast). 7070abb
