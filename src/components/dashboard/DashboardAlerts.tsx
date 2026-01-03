@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { format, differenceInCalendarDays, isBefore, startOfDay } from 'date-fns';
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
+import { EditBillModal } from '@/components/bills/EditBillModal';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
 
@@ -95,7 +98,18 @@ export function DashboardAlerts() {
           <div className="text-xl font-bold">
             ₹{bill.amount.toLocaleString()}
           </div>
-          <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
+          <div className="flex gap-2">
+            <EditBillModal 
+              bill={bill} 
+              trigger={
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              }
+              onSuccess={fetchBills}
+            />
+            <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
+          </div>
         </div>
       </div>
     );

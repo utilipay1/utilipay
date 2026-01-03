@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { getAlertStatus } from '@/lib/billing';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
+import { EditBillModal } from '@/components/bills/EditBillModal';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
 
@@ -92,7 +95,18 @@ export function BillsDueSoon() {
               <div className="text-2xl font-black tracking-tighter">
                 ₹{bill.amount.toLocaleString()}
               </div>
-              <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
+              <div className="flex gap-2">
+                <EditBillModal 
+                  bill={bill} 
+                  trigger={
+                    <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  }
+                  onSuccess={fetchBills}
+                />
+                <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
+              </div>
             </div>
           </div>
         ))}

@@ -11,10 +11,13 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecordPaymentModal } from './RecordPaymentModal';
+import { EditBillModal } from './EditBillModal';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Switch } from '@/components/ui/switch';
+import { Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type Bill = z.infer<typeof BillSchema>;
 
@@ -148,9 +151,20 @@ export function BillList() {
                           />
                         </TableCell>
                         <TableCell className="text-right">
-                          {isUnpaid ? (
-                            <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
-                          ) : null}
+                          <div className="flex justify-end items-center gap-2">
+                            <EditBillModal 
+                              bill={bill} 
+                              trigger={
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              }
+                              onSuccess={fetchBills}
+                            />
+                            {isUnpaid ? (
+                              <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
+                            ) : null}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
