@@ -8,11 +8,11 @@ This plan implements a header-based navigation system and completely redesigns t
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Navigation' (Protocol in workflow.md) 7241da9
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Navigation' (Protocol in workflow.md)
 
-## Phase 2: Dashboard View Implementation
+## Phase 2: Dashboard View Implementation [checkpoint: 2a6b241]
 - [x] Task: Create Summary Tiles Component (Total Due, Total Paid, Properties Managed) (TDD) 35dcfa8
 - [x] Task: Create Alerts/Action Items Component (Bills Due Soon/Overdue) (TDD) eaf5e41
 - [x] Task: Integrate Portfolio Table into Dashboard View (TDD) ae4ec25
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Dashboard View Implementation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Dashboard View Implementation' (Protocol in workflow.md) 2a6b241
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Dashboard View Implementation' (Protocol in workflow.md)
 
 ## Phase 3: Properties View & "Add Property" Redesign
