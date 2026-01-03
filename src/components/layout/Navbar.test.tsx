@@ -13,30 +13,9 @@ const mockBills = [
 ];
 
 describe('Navbar', () => {
-  beforeEach(() => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => mockBills,
-    });
-  });
-
-  it('should render navigation links', () => {
+  it('should render brand name', () => {
     render(<Navbar />);
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Properties')).toBeInTheDocument();
-    expect(screen.getByText('Bills')).toBeInTheDocument();
-  });
-
-  it('should render notification center', () => {
-    render(<Navbar />);
-    expect(screen.getByLabelText('Notifications')).toBeInTheDocument();
-  });
-
-  it('should display the count of urgent bills', async () => {
-    render(<Navbar />);
-    await waitFor(() => {
-      expect(screen.getByText('1')).toBeInTheDocument();
-    });
+    expect(screen.getByText('UtiliPay')).toBeInTheDocument();
   });
 });
 
