@@ -14,7 +14,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Property Management' (Protocol in workflow.md) 1219fa2
 
 ## Phase 3: Billing & Prediction Engine
-- [ ] Task: Implement `lib/billing.ts` for next-cycle calculation and alert logic.
+- [x] Task: Implement `lib/billing.ts` for next-cycle calculation and alert logic. 13b18c2
 - [ ] Task: Create `AddBillForm` component and API route.
 - [ ] Task: Implement the "Predictive Billing" logic: Automatically create draft bills on current bill submission.
 - [ ] Task: Write tests for billing logic and predictive engine.
