@@ -21,7 +21,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Billing & Prediction Engine' (Protocol in workflow.md) 1f12ea6
 
 ## Phase 4: Dashboard & Alerts
-- [ ] Task: Build the Dashboard "Bills Due Soon" section with 5/3/1 day high-contrast alerts.
+- [x] Task: Build the Dashboard "Bills Due Soon" section with 5/3/1 day high-contrast alerts. c38cb39
 - [ ] Task: Implement the Portfolio Table showing utility status per property.
 - [ ] Task: Integrate the Global Notification Center with real-time alert counts.
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Dashboard & Alerts' (Protocol in workflow.md)
