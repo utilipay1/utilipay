@@ -26,8 +26,8 @@ export default function Navbar() {
     }
     fetchAlerts();
     
-    // In a real app, you might use WebSockets or polling here
-    const interval = setInterval(fetchAlerts, 30000); // Poll every 30s
+    // Poll every 2 seconds for near-realtime updates
+    const interval = setInterval(fetchAlerts, 2000);
     return () => clearInterval(interval);
   }, []);
 

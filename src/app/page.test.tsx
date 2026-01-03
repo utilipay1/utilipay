@@ -12,6 +12,12 @@ jest.mock('@/components/properties/PropertyList', () => ({
 jest.mock('@/components/bills/AddBillForm', () => ({
   AddBillForm: () => <div data-testid="add-bill-form" />
 }));
+jest.mock('@/components/dashboard/BillsDueSoon', () => ({
+  BillsDueSoon: () => <div data-testid="bills-due-soon" />
+}));
+jest.mock('@/components/dashboard/PortfolioTable', () => ({
+  PortfolioTable: () => <div data-testid="portfolio-table" />
+}));
 
 describe('Home Page', () => {
   it('should render the management title', () => {
@@ -22,8 +28,10 @@ describe('Home Page', () => {
   it('should render the tabs', () => {
     render(<Home />);
     // Use role or more specific text to avoid multiple matches
+    expect(screen.getByRole('tab', { name: /Dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Properties/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Add Property/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Add Bill/i })).toBeInTheDocument();
   });
 });
+
