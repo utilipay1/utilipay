@@ -29,5 +29,5 @@
 ## Phase 5: Payments & Reporting
 - [x] Task: Create `RecordPaymentModal` and implementation for financial status transitions. b6d4467
 - [x] Task: Implement sub-tabs for Bill Status (All, Unpaid, Overdue, Paid views). 3c1c390
-- [ ] Task: Implement Excel export functionality using the `xlsx` library.
+- [x] Task: Implement Excel export functionality using the `xlsx` library. cb61dfd
 - [ ] Task: Conductor - User Manual Verification 'Phase 5: Payments & Reporting' (Protocol in workflow.md)
