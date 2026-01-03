@@ -7,11 +7,11 @@
 - [x] Task: Implement basic Layout with navigation and Global Notification Center (empty). 8ab4bac
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Project Scaffolding' (Protocol in workflow.md) 0a61e9a
 
-## Phase 2: Property Management
+## Phase 2: Property Management [checkpoint: 1219fa2]
 - [x] Task: Create `AddPropertyForm` component and API route. c32eb78
 - [x] Task: Implement Property List view with search and "Soft Delete" (Archive) functionality. 9888274
 - [x] Task: Write tests for Property CRUD operations. e1dff11
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Property Management' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Property Management' (Protocol in workflow.md) 1219fa2
 
 ## Phase 3: Billing & Prediction Engine
 - [ ] Task: Implement `lib/billing.ts` for next-cycle calculation and alert logic.
