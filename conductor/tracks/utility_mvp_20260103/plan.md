@@ -9,7 +9,7 @@
 
 ## Phase 2: Property Management
 - [x] Task: Create `AddPropertyForm` component and API route. c32eb78
-- [ ] Task: Implement Property List view with search and "Soft Delete" (Archive) functionality.
+- [x] Task: Implement Property List view with search and "Soft Delete" (Archive) functionality. 9888274
 - [ ] Task: Write tests for Property CRUD operations.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Property Management' (Protocol in workflow.md)
 
