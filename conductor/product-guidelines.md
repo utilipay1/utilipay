@@ -13,8 +13,8 @@
 
 ## User Experience & Interaction
 - **Alert Visibility:**
-    - **Dashboard Financial Summary:** Prominent "Total Due" and "Next 3 Bills" tiles on the main overview.
-    - **Contextual Indicators:** Subtle urgency lines and text integrated directly into property and bill lists.
+    - **Dashboard Financial Summary:** Prominent "Total Due", "Total Paid", and "Properties Managed" tiles on the main overview.
+    - **Contextual Indicators:** Subtle color-coded urgency lines and text integrated directly into property and bill lists.
     - **Persistent Critical Banner:** A top-level sticky banner for any bills due within 24 hours.
 - **Safe Destructive Actions:**
     - **Archival over Deletion:** Implement "Soft Deletes" by default. Properties and bills are moved to an "Archive" state to preserve financial history and audit trails.
