@@ -1,0 +1,8 @@
+{
+  "track_id": "ui_structure_redesign_20260103",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-01-03T12:00:00Z",
+  "updated_at": "2026-01-03T12:00:00Z",
+  "description": "Change UI structure to header-based navigation (Dashboard, Properties, Bills) and redesign all core forms for properties, bills, and payments."
+}
