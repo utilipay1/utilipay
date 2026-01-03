@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PropertiesView } from "@/components/properties/PropertiesView";
-import { BillList } from "@/components/bills/BillList";
+import { BillsView } from "@/components/bills/BillsView";
 import { DashboardAlerts } from "@/components/dashboard/DashboardAlerts";
 import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
 import { SummaryTiles } from "@/components/dashboard/SummaryTiles";
@@ -68,12 +68,7 @@ export default function Home() {
       )}
 
       {currentView === 'bills' && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-             <h1 className="text-3xl font-bold tracking-tight">Bills</h1>
-           </div>
-          <BillList />
-        </div>
+        <BillsView />
       )}
     </div>
   );

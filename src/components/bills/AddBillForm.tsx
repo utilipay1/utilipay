@@ -17,7 +17,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
-const formSchema = BillSchema.omit({ _id: true });
+// Extend the schema to allow empty string for amount during editing
+const formSchema = BillSchema.omit({ _id: true }).extend({
+  amount: z.union([z.number(), z.string().length(0)]).pipe(z.coerce.number().min(0)),
+});
+
 type FormValues = z.infer<typeof formSchema>;
 
 interface Property {
@@ -139,7 +143,16 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
               <FormItem>
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" placeholder="Enter bill amount" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                  <Input 
+                    type="number" 
+                    step="0.01" 
+                    placeholder="Enter bill amount" 
+                    {...field} 
+                    onChange={e => {
+                      const value = e.target.value;
+                      field.onChange(value === "" ? "" : parseFloat(value));
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
