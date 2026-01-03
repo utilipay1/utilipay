@@ -1,8 +1,36 @@
+'use client';
+
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
+import { getAlertStatus } from '@/lib/billing';
 
 export default function Navbar() {
+  const [urgentCount, setUrgentCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchAlerts() {
+      try {
+        const response = await fetch('/api/bills');
+        if (response.ok) {
+          const bills = await response.json();
+          const count = bills.filter((bill: any) => 
+            bill.status !== 'Paid' && getAlertStatus(new Date(bill.due_date)) !== null
+          ).length;
+          setUrgentCount(count);
+        }
+      } catch (error) {
+        console.error('Failed to fetch alerts:', error);
+      }
+    }
+    fetchAlerts();
+    
+    // In a real app, you might use WebSockets or polling here
+    const interval = setInterval(fetchAlerts, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <nav className="border-b bg-background">
       <div className="flex h-16 items-center px-4">
@@ -28,11 +56,19 @@ export default function Navbar() {
           <div className="w-full flex-1 md:w-auto md:flex-none">
             {/* Search could go here */}
           </div>
-          <Button variant="ghost" size="icon" aria-label="Notifications">
-            <Bell className="h-5 w-5" />
-          </Button>
+          <div className="relative">
+            <Button variant="ghost" size="icon" aria-label="Notifications">
+              <Bell className="h-5 w-5" />
+            </Button>
+            {urgentCount > 0 && (
+              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+                {urgentCount}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </nav>
   );
 }
+
