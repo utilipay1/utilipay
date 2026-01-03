@@ -21,7 +21,7 @@
 ## Phase 4: Urgency Indicators & Component Refresh
 - [x] Task: Implement "Days Remaining" logic for subtle urgency coloring in `BillsDueSoon` and `BillList`. 66a9c32
 - [x] Task: Replace standard Shadcn/UI badges with subtle accent lines and text coloring for urgency. 66a9c32
-- [ ] Task: Refactor `PortfolioTable` and `PropertyList` to match the monochrome aesthetic (borders, typography, contrast).
+- [x] Task: Refactor `PortfolioTable` and `PropertyList` to match the monochrome aesthetic (borders, typography, contrast). 7070abb
 - [ ] Task: Conductor - User Manual Verification 'Urgency Indicators & Component Refresh' (Protocol in workflow.md)
 
 ## Phase 5: Final Polish & Verification
