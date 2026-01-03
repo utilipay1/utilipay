@@ -22,3 +22,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function GET() {
+  try {
+    const client = await clientPromise;
+    const db = client.db('utilipay');
+    const properties = await db
+      .collection('properties')
+      .find({ is_archived: { $ne: true } })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    return NextResponse.json(properties);
+  } catch (error) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
