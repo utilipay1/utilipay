@@ -41,7 +41,7 @@ describe('PropertyList', () => {
 
     await waitFor(() => screen.getByText('123 Main St'));
 
-    const searchInput = screen.getByPlaceholderText(/Search properties/i);
+    const searchInput = screen.getByPlaceholderText(/Search by address/i);
     fireEvent.change(searchInput, { target: { value: 'Main' } });
 
     expect(screen.getByText('123 Main St')).toBeInTheDocument();

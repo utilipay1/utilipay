@@ -68,41 +68,56 @@ export function PropertyList() {
   }
 
   return (
-    <div className="space-y-4">
-      <Input
-        placeholder="Search properties..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-sm"
-      />
-      <div className="rounded-md border">
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="Search by address..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-md bg-muted/20"
+        />
+      </div>
+      <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted/30">
             <TableRow>
-              <TableHead>Address</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Utilities</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="py-4">Property Address</TableHead>
+              <TableHead className="py-4">Tenant Status</TableHead>
+              <TableHead className="py-4">Managed Utilities</TableHead>
+              <TableHead className="text-right py-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredProperties.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
+                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground italic">
                   No properties found.
                 </TableCell>
               </TableRow>
             ) : (
               filteredProperties.map((property) => (
-                <TableRow key={property._id}>
-                  <TableCell className="font-medium">{property.address}</TableCell>
-                  <TableCell>{property.tenant_status}</TableCell>
-                  <TableCell>{property.utilities_managed.join(", ")}</TableCell>
-                  <TableCell className="text-right">
+                <TableRow key={property._id} className="group hover:bg-muted/50 transition-colors">
+                  <TableCell className="font-semibold text-base py-4">{property.address}</TableCell>
+                  <TableCell className="py-4">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-muted text-muted-foreground border-muted-foreground/20">
+                      {property.tenant_status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {property.utilities_managed.map((u) => (
+                        <span key={u} className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/70">
+                          {u}
+                        </span>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right py-4">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => handleArchive(property._id)}
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/5"
                     >
                       Archive
                     </Button>

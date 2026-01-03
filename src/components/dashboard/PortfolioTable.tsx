@@ -56,20 +56,19 @@ export function PortfolioTable() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Portfolio Utility Status</h2>
-      <div className="rounded-md border">
+      <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted/30">
             <TableRow>
-              <TableHead>Address</TableHead>
-              <TableHead>Utility Status</TableHead>
+              <TableHead className="py-4">Property Address</TableHead>
+              <TableHead className="py-4">Utility Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {properties.map((property) => (
-              <TableRow key={property._id}>
-                <TableCell className="font-medium">{property.address}</TableCell>
-                <TableCell>
+              <TableRow key={property._id} className="group hover:bg-muted/50 transition-colors">
+                <TableCell className="font-semibold text-base py-4">{property.address}</TableCell>
+                <TableCell className="py-4">
                   <div className="flex flex-wrap gap-2">
                     {property.utilities_managed.map((utility) => {
                       // Find the latest bill for this property and utility
@@ -88,14 +87,14 @@ export function PortfolioTable() {
                       return (
                         <div
                           key={utility}
-                          className={`px-2 py-1 rounded text-xs border ${
+                          className={`px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${
                             latestBill
                               ? latestBill.status === 'Unpaid'
-                                ? 'bg-red-50 text-red-700 border-red-200'
+                                ? 'bg-muted text-foreground border-muted-foreground/30'
                                 : latestBill.status === 'Paid'
                                 ? 'bg-green-50 text-green-700 border-green-200'
-                                : 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-gray-50 text-gray-500 border-gray-200'
+                                : 'bg-muted text-muted-foreground border-muted-foreground/20'
+                              : 'bg-muted/30 text-muted-foreground/50 border-transparent'
                           }`}
                         >
                           {utility}: {latestBill ? latestBill.status : 'No Bill'}
