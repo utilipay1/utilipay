@@ -27,8 +27,8 @@ This plan implements a header-based navigation system and completely redesigns t
 - [x] Task: Conductor - User Manual Verification 'Phase 4: Bills View & "Add Bill" Redesign' (Protocol in workflow.md) 47dedb7
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Bills View & "Add Bill" Redesign' (Protocol in workflow.md)
 
-## Phase 5: Record Payment Redesign
+## Phase 5: Record Payment Redesign [checkpoint: 0608304]
 - [x] Task: Redesign "Record Payment" Modal (Payment Methods, Calculation logic for Total Paid) (TDD) 51f6159
 - [x] Task: Implement "Other" Payment Method specification field (TDD) cf8ea93
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: Record Payment Redesign' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 5: Record Payment Redesign' (Protocol in workflow.md) 0608304
 - [ ] Task: Conductor - User Manual Verification 'Phase 5: Record Payment Redesign' (Protocol in workflow.md)
