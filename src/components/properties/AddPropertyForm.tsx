@@ -25,7 +25,8 @@ export function AddPropertyForm({ onSuccess }: { onSuccess?: () => void }) {
   const [errorMessage, setErrorMessage] = useState("");
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       address: "",
       owner_info: {
@@ -167,9 +168,9 @@ export function AddPropertyForm({ onSuccess }: { onSuccess?: () => void }) {
         <div className="space-y-3">
           <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Utilities Managed</FormLabel>
           <div className="grid grid-cols-2 gap-3">
-            {["Water", "Sewer", "Gas", "Electric"].map((utility) => (
+            {(["Water", "Sewer", "Gas", "Electric"] as const).map((utility) => (
               <label key={utility} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                form.watch("utilities_managed").includes(utility as any) 
+                form.watch("utilities_managed").includes(utility) 
                 ? 'bg-primary text-primary-foreground border-primary' 
                 : 'bg-muted/10 border-input hover:border-accent'
               }`}>
@@ -177,11 +178,11 @@ export function AddPropertyForm({ onSuccess }: { onSuccess?: () => void }) {
                   type="checkbox"
                   className="hidden"
                   value={utility}
-                  checked={form.watch("utilities_managed").includes(utility as any)}
+                  checked={form.watch("utilities_managed").includes(utility)}
                   onChange={(e) => {
                     const current = form.getValues("utilities_managed");
                     if (e.target.checked) {
-                      form.setValue("utilities_managed", [...current, utility as any]);
+                      form.setValue("utilities_managed", [...current, utility]);
                     } else {
                       form.setValue(
                         "utilities_managed",

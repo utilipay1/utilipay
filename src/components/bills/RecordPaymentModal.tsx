@@ -23,7 +23,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { BillSchema } from '@/lib/schemas';
-import { format } from 'date-fns';
 
 const paymentFormSchema = z.object({
   payment_date: z.string().min(1, 'Payment date is required'),
@@ -44,7 +43,8 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
   const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof paymentFormSchema>>({
-    resolver: zodResolver(paymentFormSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(paymentFormSchema) as any,
     defaultValues: {
       payment_date: new Date().toISOString().split('T')[0],
       method: 'AGR Trust Account',

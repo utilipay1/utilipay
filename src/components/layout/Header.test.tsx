@@ -1,6 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import Header from './Header';
-import { View } from '@/lib/types';
 
 describe('Header', () => {
   const mockOnViewChange = jest.fn();

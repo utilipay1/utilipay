@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAlertStatus } from '@/lib/billing';
 import { format, differenceInCalendarDays, isBefore, startOfDay } from 'date-fns';
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
 import { BillSchema } from '@/lib/schemas';

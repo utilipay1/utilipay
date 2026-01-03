@@ -19,7 +19,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 // Extend the schema to allow empty string for amount during editing
 const formSchema = BillSchema.omit({ _id: true }).extend({
-  amount: z.union([z.number(), z.string().length(0)]).pipe(z.coerce.number().min(0)),
+  amount: z.coerce.number().min(0),
+  // Override dates to be strings for form handling
+  billing_period_start: z.string(),
+  billing_period_end: z.string(),
+  bill_date: z.string(),
+  due_date: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,16 +40,17 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
   const [errorMessage, setErrorMessage] = useState("");
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       property_id: "",
       utility_type: "Water",
       amount: 0,
       account_number: "",
-      billing_period_start: new Date(),
-      billing_period_end: new Date(),
-      bill_date: new Date(),
-      due_date: new Date(),
+      billing_period_start: new Date().toISOString().split('T')[0],
+      billing_period_end: new Date().toISOString().split('T')[0],
+      bill_date: new Date().toISOString().split('T')[0],
+      due_date: new Date().toISOString().split('T')[0],
       status: "Unpaid",
       notes: "",
     },
@@ -185,7 +191,6 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
                   <Input 
                     type="date" 
                     {...field} 
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -202,7 +207,6 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
                   <Input 
                     type="date" 
                     {...field} 
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -222,7 +226,6 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
                   <Input 
                     type="date" 
                     {...field} 
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -239,7 +242,6 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
                   <Input 
                     type="date" 
                     {...field} 
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value} 
                   />
                 </FormControl>
                 <FormMessage />

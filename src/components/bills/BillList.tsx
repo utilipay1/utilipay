@@ -54,7 +54,7 @@ export function BillList() {
       });
 
       if (response.ok) {
-        setBills(prev => prev.map(b => b._id === billId ? { ...b, status: newStatus as any } : b));
+        setBills(prev => prev.map(b => b._id === billId ? { ...b, status: newStatus as Bill['status'] } : b));
       }
     } catch (error) {
       console.error('Failed to update charged status:', error);
