@@ -2,6 +2,7 @@ import { AddPropertyForm } from "@/components/properties/AddPropertyForm";
 import { PropertyList } from "@/components/properties/PropertyList";
 import { AddBillForm } from "@/components/bills/AddBillForm";
 import { BillsDueSoon } from "@/components/dashboard/BillsDueSoon";
+import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
@@ -17,8 +18,9 @@ export default function Home() {
           <TabsTrigger value="add-bill">Add Bill</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="dashboard" className="space-y-4">
+        <TabsContent value="dashboard" className="space-y-8">
           <BillsDueSoon />
+          <PortfolioTable />
         </TabsContent>
 
         <TabsContent value="list" className="space-y-4">
