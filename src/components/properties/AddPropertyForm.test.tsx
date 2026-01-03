@@ -12,26 +12,21 @@ describe('AddPropertyForm', () => {
 
   it('renders the form fields', () => {
     render(<AddPropertyForm />);
-    expect(screen.getByLabelText(/Address/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Tenant Status/i)).toBeInTheDocument();
-    expect(screen.getByText(/Add Property/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Property Address/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Occupancy Status/i)).toBeInTheDocument();
+    expect(screen.getByText(/Register New Property/i)).toBeInTheDocument();
   });
 
   it('submits the form with valid data', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ insertedId: 'mock-id' }),
-    });
-
     render(<AddPropertyForm />);
 
-    fireEvent.change(screen.getByLabelText(/Address/i), { target: { value: '123 Test St' } });
-    fireEvent.change(screen.getByLabelText(/Tenant Status/i), { target: { value: 'Vacant' } });
+    fireEvent.change(screen.getByLabelText(/Property Address/i), { target: { value: '123 Test St' } });
+    fireEvent.change(screen.getByLabelText(/Occupancy Status/i), { target: { value: 'Vacant' } });
     
     // Select a utility
-    fireEvent.click(screen.getByLabelText(/Water/i));
+    fireEvent.click(screen.getByText(/Water/i));
 
-    fireEvent.click(screen.getByText(/Add Property/i));
+    fireEvent.click(screen.getByText(/Register New Property/i));
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/properties', expect.objectContaining({
@@ -49,8 +44,8 @@ describe('AddPropertyForm', () => {
 
     render(<AddPropertyForm />);
 
-    fireEvent.change(screen.getByLabelText(/Address/i), { target: { value: '123 Test St' } });
-    fireEvent.click(screen.getByText(/Add Property/i));
+    fireEvent.change(screen.getByLabelText(/Property Address/i), { target: { value: '123 Test St' } });
+    fireEvent.click(screen.getByText(/Register New Property/i));
 
     await waitFor(() => {
       expect(screen.getByText(/Failed to add property/i)).toBeInTheDocument();

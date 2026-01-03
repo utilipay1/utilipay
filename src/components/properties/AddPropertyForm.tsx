@@ -56,15 +56,15 @@ export function AddPropertyForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="address"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Address</FormLabel>
+              <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Property Address</FormLabel>
               <FormControl>
-                <Input placeholder="Enter property address" {...field} />
+                <Input placeholder="e.g. 123 Main St, Apartment 4B" {...field} className="bg-muted/20 border-muted-foreground/20 focus:border-black dark:focus:border-white transition-colors" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -76,11 +76,11 @@ export function AddPropertyForm() {
           name="tenant_status"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tenant Status</FormLabel>
+              <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Occupancy Status</FormLabel>
               <FormControl>
                 <select
                   {...field}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                  className="flex h-10 w-full rounded-md border border-muted-foreground/20 bg-muted/20 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="Vacant">Vacant</option>
                   <option value="Occupied">Occupied</option>
@@ -91,13 +91,18 @@ export function AddPropertyForm() {
           )}
         />
 
-        <div className="space-y-2">
-          <FormLabel>Utilities Managed</FormLabel>
-          <div className="flex gap-4">
+        <div className="space-y-3">
+          <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Utilities to Track</FormLabel>
+          <div className="grid grid-cols-2 gap-3">
             {["Water", "Sewer", "Gas", "Electric"].map((utility) => (
-              <label key={utility} className="flex items-center gap-2">
+              <label key={utility} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                form.watch("utilities_managed").includes(utility as any) 
+                ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white' 
+                : 'bg-muted/10 border-muted-foreground/10 hover:border-muted-foreground/30'
+              }`}>
                 <input
                   type="checkbox"
+                  className="hidden"
                   value={utility}
                   checked={form.watch("utilities_managed").includes(utility as any)}
                   onChange={(e) => {
@@ -112,21 +117,29 @@ export function AddPropertyForm() {
                     }
                   }}
                 />
-                {utility}
+                <span className="text-sm font-bold">{utility}</span>
               </label>
             ))}
           </div>
         </div>
 
         {status === "error" && (
-          <p className="text-destructive text-sm font-medium">{errorMessage || "Failed to add property"}</p>
+          <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+            {errorMessage || "Failed to add property"}
+          </div>
         )}
         {status === "success" && (
-          <p className="text-green-600 text-sm font-medium">Property added successfully!</p>
+          <div className="p-3 rounded-lg bg-green-50 border border-green-100 text-green-600 text-sm font-medium text-center">
+            Property added successfully!
+          </div>
         )}
 
-        <Button type="submit" disabled={status === "submitting"}>
-          {status === "submitting" ? "Adding..." : "Add Property"}
+        <Button 
+          type="submit" 
+          className="w-full bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90 font-bold py-6 rounded-xl transition-transform active:scale-[0.98]" 
+          disabled={status === "submitting"}
+        >
+          {status === "submitting" ? "Registering Property..." : "Register New Property"}
         </Button>
       </form>
     </Form>

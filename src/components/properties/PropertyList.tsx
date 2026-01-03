@@ -81,10 +81,10 @@ export function PropertyList() {
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
-              <TableHead className="py-4">Property Address</TableHead>
-              <TableHead className="py-4">Tenant Status</TableHead>
-              <TableHead className="py-4">Managed Utilities</TableHead>
-              <TableHead className="text-right py-4">Actions</TableHead>
+              <TableHead className="py-4 px-6">Property Address</TableHead>
+              <TableHead className="py-4 px-6">Tenant Status</TableHead>
+              <TableHead className="py-4 px-6">Managed Utilities</TableHead>
+              <TableHead className="text-right py-4 px-6">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -97,13 +97,13 @@ export function PropertyList() {
             ) : (
               filteredProperties.map((property) => (
                 <TableRow key={property._id} className="group hover:bg-muted/50 transition-colors">
-                  <TableCell className="font-semibold text-base py-4">{property.address}</TableCell>
-                  <TableCell className="py-4">
+                  <TableCell className="font-semibold text-base py-5 px-6">{property.address}</TableCell>
+                  <TableCell className="py-5 px-6">
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-muted text-muted-foreground border-muted-foreground/20">
                       {property.tenant_status}
                     </span>
                   </TableCell>
-                  <TableCell className="py-4">
+                  <TableCell className="py-5 px-6">
                     <div className="flex flex-wrap gap-1">
                       {property.utilities_managed.map((u) => (
                         <span key={u} className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/70">
@@ -112,14 +112,14 @@ export function PropertyList() {
                       ))}
                     </div>
                   </TableCell>
-                  <TableCell className="text-right py-4">
+                  <TableCell className="text-right py-5 px-6">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => handleArchive(property._id)}
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity border-muted-foreground/20 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
                     >
-                      Archive
+                      Archive Property
                     </Button>
                   </TableCell>
                 </TableRow>
