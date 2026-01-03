@@ -3,7 +3,7 @@
 This plan implements a header-based navigation system and completely redesigns the core forms for properties, bills, and payments to match specific business requirements.
 
 ## Phase 1: Foundation & Navigation
-- [~] Task: Create View Switcher State & Header Component (TDD)
+- [x] Task: Create View Switcher State & Header Component (TDD) 6c8403e
 - [ ] Task: Implement Main Layout with View Switching Logic (TDD)
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Navigation' (Protocol in workflow.md)
 
