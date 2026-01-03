@@ -15,6 +15,9 @@ const mockBills = [
     amount: 50,
     due_date: addDays(today, 1).toISOString(),
     status: 'Unpaid',
+    billing_period_start: new Date().toISOString(),
+    billing_period_end: new Date().toISOString(),
+    bill_date: new Date().toISOString()
   },
   {
     _id: '2',
@@ -23,6 +26,9 @@ const mockBills = [
     amount: 100,
     due_date: addDays(today, 3).toISOString(),
     status: 'Unpaid',
+    billing_period_start: new Date().toISOString(),
+    billing_period_end: new Date().toISOString(),
+    bill_date: new Date().toISOString()
   },
   {
     _id: '3',
@@ -31,6 +37,9 @@ const mockBills = [
     amount: 75,
     due_date: addDays(today, 5).toISOString(),
     status: 'Unpaid',
+    billing_period_start: new Date().toISOString(),
+    billing_period_end: new Date().toISOString(),
+    bill_date: new Date().toISOString()
   },
 ];
 
