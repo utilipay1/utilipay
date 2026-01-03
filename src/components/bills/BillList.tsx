@@ -11,10 +11,10 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecordPaymentModal } from './RecordPaymentModal';
-import { ExportBillsButton } from './ExportBillsButton';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
+import { Switch } from '@/components/ui/switch';
 
 type Bill = z.infer<typeof BillSchema>;
 
@@ -42,6 +42,25 @@ export function BillList() {
     fetchBills();
   }, []);
 
+  const handleToggleCharged = async (billId: string, currentStatus: string) => {
+    const isCharged = currentStatus === 'Paid-Charged';
+    const newStatus = isCharged ? 'Paid-Uncharged' : 'Paid-Charged';
+    
+    try {
+      const response = await fetch(`/api/bills/${billId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        setBills(prev => prev.map(b => b._id === billId ? { ...b, status: newStatus as any } : b));
+      }
+    } catch (error) {
+      console.error('Failed to update charged status:', error);
+    }
+  };
+
   if (loading) return <div>Loading bills...</div>;
 
   const filteredBills = 
@@ -60,7 +79,6 @@ export function BillList() {
             <TabsTrigger value="Paid">Paid</TabsTrigger>
           </TabsList>
         </Tabs>
-        <ExportBillsButton />
       </div>
       <div className="mt-4">
           <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
@@ -72,13 +90,14 @@ export function BillList() {
                   <TableHead>Amount</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Charged in Books</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredBills.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground italic">
                       No bills found.
                     </TableCell>
                   </TableRow>
@@ -86,10 +105,11 @@ export function BillList() {
                   filteredBills.map((bill) => {
                     const daysRemaining = differenceInCalendarDays(new Date(bill.due_date), new Date());
                     const isUnpaid = bill.status === 'Unpaid' || bill.status === 'Overdue';
+                    const isPaid = bill.status.startsWith('Paid');
                     const isUrgent = isUnpaid && daysRemaining <= 7;
                     
                     return (
-                      <TableRow key={bill._id} className="relative group">
+                      <TableRow key={bill._id} className="relative group hover:bg-muted/50 transition-colors">
                         <TableCell className="p-0">
                           {isUrgent && (
                             <div 
@@ -115,10 +135,17 @@ export function BillList() {
                         </TableCell>
                         <TableCell>
                           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
-                            bill.status.startsWith('Paid') ? 'bg-green-50 text-green-700 border-green-100' : 'bg-muted text-muted-foreground border-muted-foreground/20'
+                            isPaid ? 'bg-green-50 text-green-700 border-green-100' : 'bg-muted text-muted-foreground border-muted-foreground/20'
                           }`}>
-                            {bill.status}
+                            {bill.status === 'Paid-Charged' ? 'Paid' : bill.status === 'Paid-Uncharged' ? 'Paid' : bill.status}
                           </span>
+                        </TableCell>
+                        <TableCell>
+                          <Switch 
+                            disabled={!isPaid}
+                            checked={bill.status === 'Paid-Charged'}
+                            onCheckedChange={() => handleToggleCharged(bill._id!, bill.status)}
+                          />
                         </TableCell>
                         <TableCell className="text-right">
                           {isUnpaid ? (
@@ -136,4 +163,3 @@ export function BillList() {
     </div>
   );
 }
-

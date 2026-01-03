@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BillList } from './BillList';
 
 // Mock fetch
@@ -31,13 +31,15 @@ const mockBills = [
 
 describe('BillList', () => {
   beforeEach(() => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => mockBills,
-    });
+    (global.fetch as jest.Mock).mockReset();
   });
 
   it('renders all bills by default', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockBills,
+    });
+
     render(<BillList />);
     await waitFor(() => {
       expect(screen.getByText('Water')).toBeInTheDocument();
@@ -45,13 +47,34 @@ describe('BillList', () => {
     });
   });
 
-  it('filters bills correctly', async () => {
+  it('toggles charged status for paid bills', async () => {
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockBills,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ modifiedCount: 1 }),
+      });
+
     render(<BillList />);
-    await waitFor(() => expect(screen.getByText('Water')).toBeInTheDocument());
-    
-    // We can't easily trigger Radix Tabs change in JSDOM sometimes, 
-    // but we can at least verify initial render of "All"
-    expect(screen.getByText('Water')).toBeInTheDocument();
-    expect(screen.getByText('Electric')).toBeInTheDocument();
+
+    await waitFor(() => screen.getByText('Electric'));
+
+    const switches = screen.getAllByRole('switch');
+    // Water is Unpaid, switch should be disabled
+    expect(switches[0]).toBeDisabled();
+    // Electric is Paid, switch should be enabled
+    expect(switches[1]).not.toBeDisabled();
+
+    fireEvent.click(switches[1]);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/bills/2', expect.objectContaining({
+        method: 'PATCH',
+        body: expect.stringContaining('"status":"Paid-Charged"'),
+      }));
+    });
   });
 });
