@@ -1,6 +1,7 @@
 import { AddPropertyForm } from "@/components/properties/AddPropertyForm";
 import { PropertyList } from "@/components/properties/PropertyList";
 import { AddBillForm } from "@/components/bills/AddBillForm";
+import { BillList } from "@/components/bills/BillList";
 import { BillsDueSoon } from "@/components/dashboard/BillsDueSoon";
 import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +15,7 @@ export default function Home() {
         <TabsList>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="list">Properties</TabsTrigger>
+          <TabsTrigger value="bills">Bills</TabsTrigger>
           <TabsTrigger value="add-property">Add Property</TabsTrigger>
           <TabsTrigger value="add-bill">Add Bill</TabsTrigger>
         </TabsList>
@@ -25,6 +27,10 @@ export default function Home() {
 
         <TabsContent value="list" className="space-y-4">
           <PropertyList />
+        </TabsContent>
+
+        <TabsContent value="bills" className="space-y-4">
+          <BillList />
         </TabsContent>
         
         <TabsContent value="add-property" className="space-y-4">
