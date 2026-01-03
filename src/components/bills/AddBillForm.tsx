@@ -15,14 +15,36 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = BillSchema.omit({ _id: true });
 type FormValues = z.infer<typeof formSchema>;
 
-export function AddBillForm() {
+interface Property {
+  _id: string;
+  address: string;
+}
+
+export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
+  const [properties, setProperties] = useState<Property[]>([]);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [properties, setProperties] = useState<{ _id: string; address: string }[]>([]);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      property_id: "",
+      utility_type: "Water",
+      amount: 0,
+      account_number: "",
+      billing_period_start: new Date(),
+      billing_period_end: new Date(),
+      bill_date: new Date(),
+      due_date: new Date(),
+      status: "Unpaid",
+      notes: "",
+    },
+  });
 
   useEffect(() => {
     async function fetchProperties() {
@@ -39,21 +61,6 @@ export function AddBillForm() {
     fetchProperties();
   }, []);
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      property_id: "",
-      utility_type: "Water",
-      amount: 0,
-      account_number: "",
-      billing_period_start: new Date(),
-      billing_period_end: new Date(),
-      bill_date: new Date(),
-      due_date: new Date(),
-      status: "Unpaid",
-    },
-  });
-
   async function onSubmit(values: FormValues) {
     setStatus("submitting");
     try {
@@ -69,10 +76,10 @@ export function AddBillForm() {
 
       setStatus("success");
       form.reset();
-    } catch (error: unknown) {
+      if (onSuccess) onSuccess();
+    } catch (error) {
       setStatus("error");
-      const message = error instanceof Error ? error.message : "An unexpected error occurred";
-      setErrorMessage(message);
+      setErrorMessage(error instanceof Error ? error.message : "An unexpected error occurred");
     }
   }
 
@@ -84,13 +91,13 @@ export function AddBillForm() {
           name="property_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Select Property</FormLabel>
+              <FormLabel>Property</FormLabel>
               <FormControl>
                 <select
                   {...field}
-                  className="flex h-10 w-full rounded-md border border-muted-foreground/20 bg-muted/20 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <option value="">Choose a registered property</option>
+                  <option value="">Select a property</option>
                   {properties.map((p) => (
                     <option key={p._id} value={p._id}>
                       {p.address}
@@ -103,17 +110,17 @@ export function AddBillForm() {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="utility_type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Utility Type</FormLabel>
+                <FormLabel>Utility Type</FormLabel>
                 <FormControl>
                   <select
                     {...field}
-                    className="flex h-10 w-full rounded-md border border-muted-foreground/20 bg-muted/20 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="Water">Water</option>
                     <option value="Sewer">Sewer</option>
@@ -125,26 +132,14 @@ export function AddBillForm() {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="amount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Amount (₹)</FormLabel>
+                <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    step="0.01" 
-                    placeholder="0.00" 
-                    {...field} 
-                    className="bg-muted/20 border-muted-foreground/20"
-                    value={field.value === 0 ? "" : field.value}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      field.onChange(value === "" ? 0 : parseFloat(value));
-                    }}
-                  />
+                  <Input type="number" step="0.01" placeholder="Enter bill amount" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -152,20 +147,32 @@ export function AddBillForm() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 border-t pt-6 border-muted">
+        <FormField
+          control={form.control}
+          name="account_number"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Account Number</FormLabel>
+              <FormControl>
+                <Input placeholder="Utility account number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="billing_period_start"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Period Start</FormLabel>
+                <FormLabel>Billing Period Start</FormLabel>
                 <FormControl>
                   <Input 
                     type="date" 
                     {...field} 
-                    className="bg-muted/20 border-muted-foreground/20"
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value as string) || ''}
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -177,14 +184,12 @@ export function AddBillForm() {
             name="billing_period_end"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Period End</FormLabel>
+                <FormLabel>Billing Period End</FormLabel>
                 <FormControl>
                   <Input 
                     type="date" 
                     {...field} 
-                    className="bg-muted/20 border-muted-foreground/20"
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value as string) || ''}
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -193,20 +198,18 @@ export function AddBillForm() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="bill_date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Issue Date</FormLabel>
+                <FormLabel>Bill Date</FormLabel>
                 <FormControl>
                   <Input 
                     type="date" 
                     {...field} 
-                    className="bg-muted/20 border-muted-foreground/20"
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value as string) || ''}
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -218,14 +221,12 @@ export function AddBillForm() {
             name="due_date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground font-bold text-black dark:text-white">Payment Deadline</FormLabel>
+                <FormLabel>Due Date</FormLabel>
                 <FormControl>
                   <Input 
                     type="date" 
                     {...field} 
-                    className="bg-muted/20 border-black dark:border-white focus:ring-black"
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value as string) || ''}
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -234,23 +235,32 @@ export function AddBillForm() {
           />
         </div>
 
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Additional notes about the bill" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {status === "error" && (
           <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
             {errorMessage || "Failed to add bill"}
           </div>
         )}
-        {status === "success" && (
-          <div className="p-3 rounded-lg bg-green-50 border border-green-100 text-green-600 text-sm font-medium text-center">
-            Bill recorded successfully!
-          </div>
-        )}
-
+        
         <Button 
           type="submit" 
-          className="w-full bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90 font-bold py-6 rounded-xl transition-transform active:scale-[0.98]" 
+          className="w-full font-bold py-6 rounded-xl transition-transform active:scale-[0.98]" 
           disabled={status === "submitting"}
         >
-          {status === "submitting" ? "Submitting Data..." : "Submit New Bill Entry"}
+          {status === "submitting" ? "Adding Bill..." : "Add Bill"}
         </Button>
       </form>
     </Form>

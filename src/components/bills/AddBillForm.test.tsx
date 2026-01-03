@@ -1,17 +1,17 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AddBillForm } from './AddBillForm';
-import '@testing-library/jest-dom';
 
 // Mock fetch
 global.fetch = jest.fn();
 
 const mockProperties = [
-  { _id: '1', address: '123 Main St', utilities_managed: ['Water', 'Electric'] },
+  { _id: 'prop1', address: '123 Main St' },
+  { _id: 'prop2', address: '456 Oak Ave' },
 ];
 
-describe('AddBillForm', () => {
+describe('AddBillForm Redesign', () => {
   beforeEach(() => {
-    (global.fetch as jest.Mock).mockClear();
+    (global.fetch as jest.Mock).mockReset();
     (global.fetch as jest.Mock).mockImplementation((url) => {
       if (url === '/api/properties') {
         return Promise.resolve({
@@ -19,42 +19,54 @@ describe('AddBillForm', () => {
           json: async () => mockProperties,
         });
       }
-      return Promise.resolve({
-        ok: true,
-        json: async () => ({}),
-      });
+      return Promise.resolve({ ok: true });
     });
   });
 
-  it('renders the form fields', () => {
+  it('should render all new fields from the spec', async () => {
     render(<AddBillForm />);
-    expect(screen.getByLabelText(/Select Property/i)).toBeInTheDocument();
+    
+    await waitFor(() => expect(screen.getByLabelText(/Property/i)).toBeInTheDocument());
+    
     expect(screen.getByLabelText(/Utility Type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Amount/i)).toBeInTheDocument();
-    expect(screen.getByText(/Submit New Bill Entry/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Account Number/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Billing Period Start/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Billing Period End/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Bill Date/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Due Date/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Notes/i)).toBeInTheDocument();
   });
 
-  it('submits the form with valid data', async () => {
+  it('should submit the form with correct data mapping', async () => {
     render(<AddBillForm />);
-
-    // Wait for properties to load
-    await waitFor(() => {
-      expect(screen.getByText('123 Main St')).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByLabelText(/Select Property/i), { target: { value: '1' } });
+    
+    await waitFor(() => expect(screen.getByLabelText(/Property/i)).toBeInTheDocument());
+    
+    fireEvent.change(screen.getByLabelText(/Property/i), { target: { value: 'prop1' } });
     fireEvent.change(screen.getByLabelText(/Utility Type/i), { target: { value: 'Water' } });
     fireEvent.change(screen.getByLabelText(/Amount/i), { target: { value: '50' } });
+    fireEvent.change(screen.getByLabelText(/Account Number/i), { target: { value: 'ACC123' } });
     
-    // Period and Due Date fields
-    // For now we'll assume they have defaults or we can set them
+    // Simplistic date entry for testing purposes
+    fireEvent.change(screen.getByLabelText(/Billing Period Start/i), { target: { value: '2026-01-01' } });
+    fireEvent.change(screen.getByLabelText(/Billing Period End/i), { target: { value: '2026-01-31' } });
+    fireEvent.change(screen.getByLabelText(/Bill Date/i), { target: { value: '2026-02-01' } });
+    fireEvent.change(screen.getByLabelText(/Due Date/i), { target: { value: '2026-02-15' } });
     
-    fireEvent.click(screen.getByText(/Submit New Bill Entry/i));
-
+    fireEvent.click(screen.getByRole('button', { name: /Add Bill/i }));
+    
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/bills', expect.objectContaining({
         method: 'POST',
+        body: expect.stringContaining('"property_id":"prop1"'),
       }));
+      
+      const body = JSON.parse((global.fetch as jest.Mock).mock.calls.find(c => c[0] === '/api/bills')[1].body);
+      expect(body.utility_type).toBe('Water');
+      expect(body.amount).toBe(50);
+      expect(body.account_number).toBe('ACC123');
+      expect(body.status).toBe('Unpaid');
     });
   });
 });
