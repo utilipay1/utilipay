@@ -117,7 +117,7 @@ export function PropertyList() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleArchive(property._id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity border-muted-foreground/20 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                      className="border-muted-foreground/20 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
                     >
                       Archive Property
                     </Button>
