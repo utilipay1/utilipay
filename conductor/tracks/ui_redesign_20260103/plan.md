@@ -25,7 +25,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Urgency Indicators & Component Refresh' (Protocol in workflow.md)
 
 ## Phase 5: Final Polish & Verification
-- [ ] Task: Conduct a full audit of all UI components (`Button`, `Input`, `Dialog`) for monochrome consistency.
-- [ ] Task: Verify responsive behavior on mobile and tablet views.
-- [ ] Task: Run existing tests and update if UI changes caused breakages (e.g., searching for text that was in badges).
+- [x] Task: Conduct a full audit of all UI components (`Button`, `Input`, `Dialog`) for monochrome consistency. 417cdbe
+- [x] Task: Verify responsive behavior on mobile and tablet views. 417cdbe
+- [x] Task: Run existing tests and update if UI changes caused breakages (e.g., searching for text that was in badges). 417cdbe
 - [ ] Task: Conductor - User Manual Verification 'Final Polish & Verification' (Protocol in workflow.md)
