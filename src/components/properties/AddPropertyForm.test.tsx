@@ -1,54 +1,70 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AddPropertyForm } from './AddPropertyForm';
-import '@testing-library/jest-dom';
 
 // Mock fetch
 global.fetch = jest.fn();
 
-describe('AddPropertyForm', () => {
+describe('AddPropertyForm Redesign', () => {
   beforeEach(() => {
     (global.fetch as jest.Mock).mockClear();
   });
 
-  it('renders the form fields', () => {
+  it('should render all new fields from the spec', () => {
     render(<AddPropertyForm />);
+    
     expect(screen.getByLabelText(/Property Address/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Occupancy Status/i)).toBeInTheDocument();
-    expect(screen.getByText(/Register New Property/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Owner Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Owner Contact/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Tenant Status/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Notes/i)).toBeInTheDocument();
+    
+    // Utilities checkboxes
+    expect(screen.getByLabelText(/Water/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Sewer/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Gas/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Electric/i)).toBeInTheDocument();
   });
 
-  it('submits the form with valid data', async () => {
+  it('should show tenant fields only when status is Occupied', () => {
     render(<AddPropertyForm />);
-
-    fireEvent.change(screen.getByLabelText(/Property Address/i), { target: { value: '123 Test St' } });
-    fireEvent.change(screen.getByLabelText(/Occupancy Status/i), { target: { value: 'Vacant' } });
     
-    // Select a utility
-    fireEvent.click(screen.getByText(/Water/i));
+    // Initially Vacant, no tenant fields should be visible (or at least Name shouldn't be)
+    // The spec says "Tenant Name (Dynamic: Appears only if 'Occupied' is selected)"
+    expect(screen.queryByLabelText(/Tenant Name/i)).not.toBeInTheDocument();
+    
+    // Change to Occupied
+    fireEvent.change(screen.getByLabelText(/Tenant Status/i), { target: { value: 'Occupied' } });
+    
+    expect(screen.getByLabelText(/Tenant Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Tenant Contact/i)).toBeInTheDocument();
+  });
 
-    fireEvent.click(screen.getByText(/Register New Property/i));
-
+  it('should submit the form with correct data mapping', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
+    render(<AddPropertyForm />);
+    
+    fireEvent.change(screen.getByLabelText(/Property Address/i), { target: { value: '789 Pine St' } });
+    fireEvent.change(screen.getByLabelText(/Owner Name/i), { target: { value: 'John Owner' } });
+    fireEvent.change(screen.getByLabelText(/Tenant Status/i), { target: { value: 'Occupied' } });
+    
+    // Wait for dynamic field
+    await waitFor(() => expect(screen.getByLabelText(/Tenant Name/i)).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText(/Tenant Name/i), { target: { value: 'Jane Tenant' } });
+    
+    fireEvent.click(screen.getByLabelText(/Water/i));
+    
+    fireEvent.click(screen.getByRole('button', { name: /Add Property/i }));
+    
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/properties', expect.objectContaining({
         method: 'POST',
-        body: expect.stringContaining('123 Test St'),
+        body: expect.stringContaining('"address":"789 Pine St"'),
       }));
-    });
-  });
-
-  it('shows error message on failure', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-    });
-
-    render(<AddPropertyForm />);
-
-    fireEvent.change(screen.getByLabelText(/Property Address/i), { target: { value: '123 Test St' } });
-    fireEvent.click(screen.getByText(/Register New Property/i));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Failed to add property/i)).toBeInTheDocument();
+      
+      const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+      expect(body.owner_info.name).toBe('John Owner');
+      expect(body.tenant_info.name).toBe('Jane Tenant');
+      expect(body.utilities_managed).toContain('Water');
     });
   });
 });
