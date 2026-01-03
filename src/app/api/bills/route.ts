@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { BillSchema } from '@/lib/schemas';
 import { calculateNextBill } from '@/lib/billing';
+import { ZodError } from 'zod';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,8 +12,11 @@ export async function POST(req: NextRequest) {
     const client = await clientPromise;
     const db = client.db('utilipay');
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _id, ...billData } = validatedData;
+
     const currentBill = {
-      ...validatedData,
+      ...billData,
       createdAt: new Date(),
     };
 
@@ -25,9 +29,10 @@ export async function POST(req: NextRequest) {
     ]);
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error: any) {
-    if (error.name === 'ZodError') {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return NextResponse.json({ error: (error as any).errors }, { status: 400 });
     }
     console.error('POST /api/bills error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -51,6 +56,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(bills);
   } catch (error) {
+    console.error("GET /api/bills error:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

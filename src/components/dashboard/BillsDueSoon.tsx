@@ -4,15 +4,10 @@ import { useEffect, useState } from 'react';
 import { getAlertStatus } from '@/lib/billing';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
+import { BillSchema } from '@/lib/schemas';
+import { z } from 'zod';
 
-interface Bill {
-  _id: string;
-  property_id: string;
-  utility_type: string;
-  amount: number;
-  due_date: string;
-  status: string;
-}
+type Bill = z.infer<typeof BillSchema>;
 
 export function BillsDueSoon() {
   const [bills, setBills] = useState<Bill[]>([]);
@@ -23,7 +18,8 @@ export function BillsDueSoon() {
       const response = await fetch('/api/bills');
       if (response.ok) {
         const data = await response.json();
-        setBills(data);
+        const parsedData = z.array(BillSchema).parse(data);
+        setBills(parsedData);
       }
     } catch (error) {
       console.error('Failed to fetch bills:', error);

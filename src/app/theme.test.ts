@@ -18,7 +18,6 @@ describe('Theme Configuration', () => {
     // Looking for the .dark block and then the background variable
     // This is a simple regex check.
     // We expect something like: --background: oklch(0.2 0 0); or similar for charcoal
-    const darkBlockRegex = /\.dark\s*{[^}]*--background:\s*oklch\(0\.2\s+0\s+0\);[^}]*}/s;
     // We can also just check if the file contains the specific line if we are strict
     expect(cssContent).toContain('--background: oklch(0.2 0 0);'); 
   });

@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import * as xlsx from 'xlsx';
 import { format } from 'date-fns';
+import { BillSchema } from '@/lib/schemas';
+import { z } from 'zod';
+
+type Bill = z.infer<typeof BillSchema>;
 
 export function ExportBillsButton() {
   const [exporting, setExporting] = useState(false);
@@ -16,7 +20,7 @@ export function ExportBillsButton() {
         const bills = await response.json();
         
         // Flatten and format data for Excel
-        const data = bills.map((bill: any) => ({
+        const data = bills.map((bill: Bill) => ({
           'Utility Type': bill.utility_type,
           'Amount': bill.amount,
           'Due Date': format(new Date(bill.due_date), 'yyyy-MM-dd'),

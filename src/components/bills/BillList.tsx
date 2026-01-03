@@ -9,19 +9,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecordPaymentModal } from './RecordPaymentModal';
 import { ExportBillsButton } from './ExportBillsButton';
 import { format, differenceInCalendarDays } from 'date-fns';
+import { BillSchema } from '@/lib/schemas';
+import { z } from 'zod';
 
-interface Bill {
-  _id: string;
-  property_id: string;
-  utility_type: string;
-  amount: number;
-  status: string;
-  due_date: string;
-}
+type Bill = z.infer<typeof BillSchema>;
 
 export function BillList() {
   const [bills, setBills] = useState<Bill[]>([]);
@@ -33,7 +28,8 @@ export function BillList() {
       const response = await fetch('/api/bills');
       if (response.ok) {
         const data = await response.json();
-        setBills(data);
+        const parsedData = z.array(BillSchema).parse(data);
+        setBills(parsedData);
       }
     } catch (error) {
       console.error('Failed to fetch bills:', error);

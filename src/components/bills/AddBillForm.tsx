@@ -39,7 +39,7 @@ export function AddBillForm() {
     fetchProperties();
   }, []);
 
-  const form = useForm<FormValues>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       property_id: "",
@@ -69,9 +69,10 @@ export function AddBillForm() {
 
       setStatus("success");
       form.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       setStatus("error");
-      setErrorMessage(error.message || "An unexpected error occurred");
+      const message = error instanceof Error ? error.message : "An unexpected error occurred";
+      setErrorMessage(message);
     }
   }
 
@@ -163,7 +164,7 @@ export function AddBillForm() {
                     type="date" 
                     {...field} 
                     className="bg-muted/20 border-muted-foreground/20"
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value as string) || ''}
                     onChange={(e) => field.onChange(new Date(e.target.value))}
                   />
                 </FormControl>
@@ -182,7 +183,7 @@ export function AddBillForm() {
                     type="date" 
                     {...field} 
                     className="bg-muted/20 border-muted-foreground/20"
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value as string) || ''}
                     onChange={(e) => field.onChange(new Date(e.target.value))}
                   />
                 </FormControl>
@@ -204,7 +205,7 @@ export function AddBillForm() {
                     type="date" 
                     {...field} 
                     className="bg-muted/20 border-muted-foreground/20"
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value as string) || ''}
                     onChange={(e) => field.onChange(new Date(e.target.value))}
                   />
                 </FormControl>
@@ -223,7 +224,7 @@ export function AddBillForm() {
                     type="date" 
                     {...field} 
                     className="bg-muted/20 border-black dark:border-white focus:ring-black"
-                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value as string) || ''}
                     onChange={(e) => field.onChange(new Date(e.target.value))}
                   />
                 </FormControl>

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { BillSchema } from '@/lib/schemas';
 
 const paymentFormSchema = z.object({
   method: z.enum(['AGR Trust Account', 'Credit Card', 'Bank Transfer', 'Check', 'Other']),
@@ -29,15 +30,17 @@ const paymentFormSchema = z.object({
   payment_date: z.string().min(1, 'Payment date is required'),
 });
 
+type Bill = z.infer<typeof BillSchema>;
+
 interface RecordPaymentModalProps {
-  bill: any;
+  bill: Bill;
   onPaymentRecorded: () => void;
 }
 
 export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentModalProps) {
   const [open, setOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof paymentFormSchema>>({
+  const form = useForm({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
       method: 'AGR Trust Account',
@@ -90,6 +93,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                   <FormControl>
                     <select
                       {...field}
+                      value={field.value as string}
                       className="w-full p-2 border rounded-md bg-background"
                     >
                       <option value="AGR Trust Account">AGR Trust Account</option>
@@ -110,7 +114,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                 <FormItem>
                   <FormLabel>Confirmation Code</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} value={field.value as string} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,7 +127,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                 <FormItem>
                   <FormLabel>Service Fee</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" {...field} />
+                    <Input type="number" step="0.01" {...field} value={field.value as number} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -136,7 +140,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                 <FormItem>
                   <FormLabel>Payment Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" {...field} value={field.value as string} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

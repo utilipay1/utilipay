@@ -23,7 +23,7 @@ export function AddPropertyForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const form = useForm<FormValues>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       address: "",
@@ -48,9 +48,9 @@ export function AddPropertyForm() {
 
       setStatus("success");
       form.reset();
-    } catch (error: any) {
+    } catch (error) {
       setStatus("error");
-      setErrorMessage(error.message || "An unexpected error occurred");
+      setErrorMessage(error instanceof Error ? error.message : "An unexpected error occurred");
     }
   }
 
@@ -96,7 +96,7 @@ export function AddPropertyForm() {
           <div className="grid grid-cols-2 gap-3">
             {["Water", "Sewer", "Gas", "Electric"].map((utility) => (
               <label key={utility} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                form.watch("utilities_managed").includes(utility as any) 
+                form.watch("utilities_managed").includes(utility as "Water" | "Sewer" | "Gas" | "Electric") 
                 ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white' 
                 : 'bg-muted/10 border-muted-foreground/10 hover:border-muted-foreground/30'
               }`}>
@@ -104,11 +104,11 @@ export function AddPropertyForm() {
                   type="checkbox"
                   className="hidden"
                   value={utility}
-                  checked={form.watch("utilities_managed").includes(utility as any)}
+                  checked={form.watch("utilities_managed").includes(utility as "Water" | "Sewer" | "Gas" | "Electric")}
                   onChange={(e) => {
                     const current = form.getValues("utilities_managed");
                     if (e.target.checked) {
-                      form.setValue("utilities_managed", [...current, utility as any]);
+                      form.setValue("utilities_managed", [...current, utility as "Water" | "Sewer" | "Gas" | "Electric"]);
                     } else {
                       form.setValue(
                         "utilities_managed",

@@ -14,7 +14,8 @@ The primary user is a professional property manager overseeing approximately 80 
 ## Key Features
 
 ### Centralized Dashboard
-- **Urgency-First Alerts:** A "Bills Due Soon" section that prioritizes bills based on deadlines (5, 3, and 1-day intervals).
+- **Urgency-First Alerts:** A "Bills Due Soon" section that prioritizes bills based on daily countdowns, using subtle monochrome urgency indicators.
+- **Financial Summary:** A prominent "Total Due" tile providing an immediate overview of upcoming financial commitments.
 - **Property Portfolio View:** A searchable, comprehensive list of all properties showing the real-time status of each utility.
 - **Visual Calendar:** A bird's-eye view of the entire portfolio's billing schedule, showing upcoming and past-due dates.
 

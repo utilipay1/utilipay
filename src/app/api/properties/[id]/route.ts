@@ -23,6 +23,7 @@ export async function PATCH(
 
     return NextResponse.json(result);
   } catch (error) {
+    console.error("PATCH /api/properties/[id] error:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

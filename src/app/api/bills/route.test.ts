@@ -3,6 +3,23 @@
  */
 import { POST } from './route';
 import { NextRequest } from 'next/server';
+import clientPromise from '@/lib/mongodb';
+import { Collection, Db, MongoClient } from 'mongodb';
+
+// Mock types
+type MockCollection = Partial<Collection> & {
+  insertOne: jest.Mock;
+  find: jest.Mock;
+  insertMany: jest.Mock;
+};
+
+type MockDb = Partial<Db> & {
+  collection: jest.Mock<MockCollection>;
+};
+
+type MockClient = Partial<MongoClient> & {
+  db: jest.Mock<MockDb>;
+};
 
 jest.mock('@/lib/mongodb', () => ({
   __esModule: true,
@@ -15,6 +32,7 @@ jest.mock('@/lib/mongodb', () => ({
             toArray: jest.fn().mockResolvedValue([]),
           }),
         }),
+        insertMany: jest.fn().mockResolvedValue({ acknowledged: true, insertedCount: 2 }),
       }),
     }),
   }),
@@ -35,8 +53,8 @@ describe('POST /api/bills', () => {
 
     const mockInsertMany = jest.fn().mockResolvedValue({ acknowledged: true, insertedCount: 2 });
     
-    const clientPromise = require('@/lib/mongodb').default;
-    const client = await clientPromise;
+    const client = (await clientPromise) as unknown as MockClient;
+    // We need to cast through unknown to avoid TS errors with the mock structure
     (client.db().collection('bills').insertMany as jest.Mock) = mockInsertMany;
 
     const req = new NextRequest('http://localhost:3000/api/bills', {
@@ -45,7 +63,7 @@ describe('POST /api/bills', () => {
     });
 
     const response = await POST(req);
-    const data = await response.json();
+    await response.json();
 
     expect(response.status).toBe(201);
     expect(mockInsertMany).toHaveBeenCalledWith(
@@ -55,6 +73,7 @@ describe('POST /api/bills', () => {
       ])
     );
   });
+
 
   it('should return 400 if validation fails', async () => {
     const req = new NextRequest('http://localhost:3000/api/bills', {
@@ -74,9 +93,8 @@ describe('GET /api/bills', () => {
       { _id: '2', property_id: 'prop-2', amount: 200 },
     ];
 
-    const { GET } = require('./route');
-    const clientPromise = require('@/lib/mongodb').default;
-    const client = await clientPromise;
+    const { GET } = await import('./route');
+    const client = (await clientPromise) as unknown as MockClient;
     
     (client.db().collection('bills').find as jest.Mock).mockReturnValue({
       sort: jest.fn().mockReturnValue({

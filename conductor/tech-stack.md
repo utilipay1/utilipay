@@ -11,6 +11,7 @@
 ## UI & Styling
 - **shadcn/ui:** High-quality, accessible components (Tabs, Dialogs, Tables, Forms) built on Radix UI.
 - **Tailwind CSS:** Utility-first CSS for rapid, responsive, and high-density styling.
+- **next-themes:** Enables seamless switching between light, dark, and system color modes.
 - **Lucide React:** Icon library for consistent visual cues.
 
 ## Logic & Utilities
