@@ -21,7 +21,7 @@ jest.mock('@/lib/mongodb', () => ({
 }));
 
 describe('POST /api/bills', () => {
-  it('should create a new bill', async () => {
+  it('should create a new bill and a predictive draft bill', async () => {
     const billData = {
       property_id: '507f1f77bcf86cd799439011',
       utility_type: 'Water',
@@ -33,6 +33,12 @@ describe('POST /api/bills', () => {
       status: 'Unpaid',
     };
 
+    const mockInsertMany = jest.fn().mockResolvedValue({ acknowledged: true, insertedCount: 2 });
+    
+    const clientPromise = require('@/lib/mongodb').default;
+    const client = await clientPromise;
+    (client.db().collection('bills').insertMany as jest.Mock) = mockInsertMany;
+
     const req = new NextRequest('http://localhost:3000/api/bills', {
       method: 'POST',
       body: JSON.stringify(billData),
@@ -42,7 +48,12 @@ describe('POST /api/bills', () => {
     const data = await response.json();
 
     expect(response.status).toBe(201);
-    expect(data.insertedId).toBe('mock-bill-id');
+    expect(mockInsertMany).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ status: 'Unpaid', amount: 50.0 }), // Current bill
+        expect.objectContaining({ status: 'Unpaid', amount: 0 }),    // Predictive draft
+      ])
+    );
   });
 
   it('should return 400 if validation fails', async () => {

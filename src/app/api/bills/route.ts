@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { BillSchema } from '@/lib/schemas';
+import { calculateNextBill } from '@/lib/billing';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,10 +10,19 @@ export async function POST(req: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db('utilipay');
-    const result = await db.collection('bills').insertOne({
+    
+    const currentBill = {
       ...validatedData,
       createdAt: new Date(),
-    });
+    };
+
+    // Predictive billing: Generate next draft
+    const nextDraft = calculateNextBill(validatedData);
+    
+    const result = await db.collection('bills').insertMany([
+      currentBill,
+      { ...nextDraft, createdAt: new Date() }
+    ]);
 
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
