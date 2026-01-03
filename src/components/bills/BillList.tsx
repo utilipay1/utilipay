@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecordPaymentModal } from './RecordPaymentModal';
+import { ExportBillsButton } from './ExportBillsButton';
 import { format } from 'date-fns';
 
 interface Bill {
@@ -54,14 +55,18 @@ export function BillList() {
 
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="All" onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="All">All</TabsTrigger>
-          <TabsTrigger value="Unpaid">Unpaid</TabsTrigger>
-          <TabsTrigger value="Overdue">Overdue</TabsTrigger>
-          <TabsTrigger value="Paid">Paid</TabsTrigger>
-        </TabsList>
-        <div className="mt-4">
+      <div className="flex justify-between items-center">
+        <Tabs defaultValue="All" onValueChange={setActiveTab} className="w-auto">
+          <TabsList>
+            <TabsTrigger value="All">All</TabsTrigger>
+            <TabsTrigger value="Unpaid">Unpaid</TabsTrigger>
+            <TabsTrigger value="Overdue">Overdue</TabsTrigger>
+            <TabsTrigger value="Paid">Paid</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <ExportBillsButton />
+      </div>
+      <div className="mt-4">
           <div className="rounded-md border">
             <Table>
               <TableHeader>
