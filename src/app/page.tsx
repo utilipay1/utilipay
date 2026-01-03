@@ -1,12 +1,33 @@
+'use client';
+
+import { useEffect, useState } from "react";
 import { AddPropertyForm } from "@/components/properties/AddPropertyForm";
 import { PropertyList } from "@/components/properties/PropertyList";
 import { AddBillForm } from "@/components/bills/AddBillForm";
 import { BillList } from "@/components/bills/BillList";
 import { BillsDueSoon } from "@/components/dashboard/BillsDueSoon";
 import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
+import { SummaryTile } from "@/components/dashboard/SummaryTile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
+  const [bills, setBills] = useState([]);
+
+  useEffect(() => {
+    async function fetchBills() {
+      try {
+        const response = await fetch('/api/bills');
+        if (response.ok) {
+          const data = await response.json();
+          setBills(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch bills:', error);
+      }
+    }
+    fetchBills();
+  }, []);
+
   return (
     <div className="space-y-8">
       <div>
@@ -23,6 +44,9 @@ export default function Home() {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-10">
+          <section>
+            <SummaryTile bills={bills} />
+          </section>
           <section>
             <BillsDueSoon />
           </section>

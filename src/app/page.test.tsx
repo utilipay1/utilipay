@@ -1,20 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import Home from './page';
-import '@testing-library/jest-dom';
 
-// Mock subcomponents
-jest.mock('@/components/properties/AddPropertyForm', () => ({
-  AddPropertyForm: () => <div data-testid="add-property-form" />
-}));
-jest.mock('@/components/properties/PropertyList', () => ({
-  PropertyList: () => <div data-testid="property-list" />
-}));
-jest.mock('@/components/bills/AddBillForm', () => ({
-  AddBillForm: () => <div data-testid="add-bill-form" />
-}));
-jest.mock('@/components/bills/BillList', () => ({
-  BillList: () => <div data-testid="bill-list" />
-}));
+// Mock fetch
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve([]),
+  })
+) as jest.Mock;
+
 jest.mock('@/components/dashboard/BillsDueSoon', () => ({
   BillsDueSoon: () => <div data-testid="bills-due-soon" />
 }));
