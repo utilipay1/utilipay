@@ -13,12 +13,12 @@
 - [x] Task: Write tests for Property CRUD operations. e1dff11
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Property Management' (Protocol in workflow.md) 1219fa2
 
-## Phase 3: Billing & Prediction Engine
+## Phase 3: Billing & Prediction Engine [checkpoint: 1f12ea6]
 - [x] Task: Implement `lib/billing.ts` for next-cycle calculation and alert logic. 13b18c2
 - [x] Task: Create `AddBillForm` component and API route. de16986
 - [x] Task: Implement the "Predictive Billing" logic: Automatically create draft bills on current bill submission. 9f7b7d9
 - [x] Task: Write tests for billing logic and predictive engine. 9f7b7d9
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Billing & Prediction Engine' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Billing & Prediction Engine' (Protocol in workflow.md) 1f12ea6
 
 ## Phase 4: Dashboard & Alerts
 - [ ] Task: Build the Dashboard "Bills Due Soon" section with 5/3/1 day high-contrast alerts.
