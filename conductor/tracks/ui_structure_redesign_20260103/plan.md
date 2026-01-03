@@ -4,7 +4,8 @@ This plan implements a header-based navigation system and completely redesigns t
 
 ## Phase 1: Foundation & Navigation
 - [x] Task: Create View Switcher State & Header Component (TDD) 6c8403e
-- [ ] Task: Implement Main Layout with View Switching Logic (TDD)
+- [x] Task: Implement Main Layout with View Switching Logic (TDD) c60d1d6
+- [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Navigation' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Navigation' (Protocol in workflow.md)
 
 ## Phase 2: Dashboard View Implementation
