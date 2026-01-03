@@ -14,8 +14,8 @@
 
 ## Phase 3: Dashboard & Summary Tile
 - [x] Task: Create the `SummaryTile` component for "Total Due" and "Next 3 Bills". a61b430
-- [ ] Task: Integrate `SummaryTile` at the top of the Dashboard view.
-- [ ] Task: Update data fetching logic (or prop drilling) to provide aggregated "Total Due" data to the SummaryTile.
+- [x] Task: Integrate SummaryTile at the top of the Dashboard view. e701cbd
+- [x] Task: Update data fetching logic (or prop drilling) to provide aggregated "Total Due" data to the SummaryTile. e701cbd
 - [ ] Task: Conductor - User Manual Verification 'Dashboard & Summary Tile' (Protocol in workflow.md)
 
 ## Phase 4: Urgency Indicators & Component Refresh
