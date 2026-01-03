@@ -13,10 +13,16 @@ import { AddPropertyForm } from './AddPropertyForm';
 
 interface AddPropertyModalProps {
   trigger: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-export function AddPropertyModal({ trigger }: AddPropertyModalProps) {
+export function AddPropertyModal({ trigger, onSuccess }: AddPropertyModalProps) {
   const [open, setOpen] = useState(false);
+
+  const handleSuccess = () => {
+    setOpen(false);
+    if (onSuccess) onSuccess();
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -31,7 +37,7 @@ export function AddPropertyModal({ trigger }: AddPropertyModalProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <AddPropertyForm onSuccess={() => setOpen(false)} />
+          <AddPropertyForm onSuccess={handleSuccess} />
         </div>
       </DialogContent>
     </Dialog>
