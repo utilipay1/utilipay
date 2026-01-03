@@ -9,7 +9,7 @@
 ## Phase 2: Navigation & Layout Refactoring
 - [x] Task: Redesign `Navbar.tsx` to remove redundant links and keep only branding/user settings. 8e0e2d9
 - [x] Task: Consolidate navigation into the existing `Tabs` component on the main page. a15bb3b
-- [ ] Task: Update the main Layout component to ensure consistent spacing for the new design.
+- [x] Task: Update the main Layout component to ensure consistent spacing for the new design. 540b36d
 - [ ] Task: Conductor - User Manual Verification 'Navigation & Layout Refactoring' (Protocol in workflow.md)
 
 ## Phase 3: Dashboard & Summary Tile
