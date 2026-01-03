@@ -13,7 +13,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Navigation & Layout Refactoring' (Protocol in workflow.md)
 
 ## Phase 3: Dashboard & Summary Tile
-- [ ] Task: Create the `SummaryTile` component for "Total Due" and "Next 3 Bills".
+- [x] Task: Create the `SummaryTile` component for "Total Due" and "Next 3 Bills". a61b430
 - [ ] Task: Integrate `SummaryTile` at the top of the Dashboard view.
 - [ ] Task: Update data fetching logic (or prop drilling) to provide aggregated "Total Due" data to the SummaryTile.
 - [ ] Task: Conductor - User Manual Verification 'Dashboard & Summary Tile' (Protocol in workflow.md)
