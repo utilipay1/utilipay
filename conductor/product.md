@@ -21,9 +21,11 @@ The primary user is a professional property manager overseeing a large portfolio
 
 ### Predictive Billing Engine
 - **Next-Bill Scaffolding:** Upon entry of an initial bill, the system can generate a placeholder record for the following cycle to assist with tracking.
+- **Smart Chain Reaction:** When a placeholder bill (amount $0) is updated with the actual amount, the system automatically generates the next month's placeholder, ensuring the tracking chain continues without manual intervention.
 - **Trend Analysis:** The system estimates future bill amounts based on historical data (e.g., a 3-month rolling average) to assist with financial planning.
 
 ### Management & Reporting
+- **Bill Editing:** Edit bill details (amount, dates, notes) directly from the dashboard or bill list to keep records accurate.
 - **Simple Vendor Association:** Link properties and bills to specific utility providers for quick reference.
 - **Detailed Payment Tracking:** Capture specific statuses such as "Paid but not charged in books," along with service fees and transaction IDs.
 - **Financial Export:** Export current views and payment history to Excel/CSV for seamless integration with accounting workflows.
