@@ -136,7 +136,11 @@ export function AddBillForm() {
                   step="0.01" 
                   placeholder="0.00" 
                   {...field} 
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  value={field.value === 0 ? "" : field.value}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(value === "" ? 0 : parseFloat(value));
+                  }}
                 />
               </FormControl>
               <FormMessage />
