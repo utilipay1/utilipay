@@ -23,7 +23,7 @@
 ## Phase 4: Dashboard & Alerts
 - [x] Task: Build the Dashboard "Bills Due Soon" section with 5/3/1 day high-contrast alerts. c38cb39
 - [x] Task: Implement the Portfolio Table showing utility status per property. 1e2fafd
-- [ ] Task: Integrate the Global Notification Center with real-time alert counts.
+- [x] Task: Integrate the Global Notification Center with real-time alert counts. adcde99
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Dashboard & Alerts' (Protocol in workflow.md)
 
 ## Phase 5: Payments & Reporting
