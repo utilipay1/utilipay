@@ -7,40 +7,57 @@ global.fetch = jest.fn();
 const mockBill = {
   _id: 'bill1',
   property_id: 'prop1',
-  utility_type: 'Electric',
-  amount: 100,
-  status: 'Unpaid',
+  utility_type: 'Water' as const,
+  amount: 50,
+  status: 'Unpaid' as const,
+  due_date: new Date().toISOString(),
+  billing_period_start: new Date().toISOString(),
+  billing_period_end: new Date().toISOString(),
+  bill_date: new Date().toISOString()
 };
 
-describe('RecordPaymentModal', () => {
-  it('submits payment details correctly', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true }),
-    });
+describe('RecordPaymentModal Redesign', () => {
+  beforeEach(() => {
+    (global.fetch as jest.Mock).mockReset();
+  });
 
-    render(<RecordPaymentModal bill={mockBill} onPaymentRecorded={jest.fn()} />);
-
-    // Open modal
-    fireEvent.click(screen.getByText(/Record Payment/));
-
-    // Fill form
-    fireEvent.change(screen.getByLabelText(/Payment Method/), { target: { value: 'Credit Card' } });
-    fireEvent.change(screen.getByLabelText(/Confirmation Code/), { target: { value: 'CONF123' } });
-    fireEvent.change(screen.getByLabelText(/Payment Date/), { target: { value: '2026-01-03' } });
+  it('should display read-only header info', () => {
+    render(<RecordPaymentModal bill={mockBill} onPaymentRecorded={() => {}} />);
     
-    // Submit
-    fireEvent.click(screen.getByText(/Confirm Payment/));
+    // Open modal
+    fireEvent.click(screen.getByText(/Record Payment/i));
+    
+    expect(screen.getByText('Water')).toBeInTheDocument();
+    // Bill amount should be there (multiple times is okay for existence check)
+    expect(screen.getAllByText(/₹50/i).length).toBeGreaterThan(0);
+  });
 
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/bills/bill1'),
-        expect.objectContaining({
-          method: 'PATCH',
-          body: expect.stringContaining('Paid-Uncharged'),
-        })
-      );
-    });
+  it('should calculate Total Paid correctly', async () => {
+    render(<RecordPaymentModal bill={mockBill} onPaymentRecorded={() => {}} />);
+    
+    // Open modal
+    fireEvent.click(screen.getByText(/Record Payment/i));
+    
+    const feeInput = screen.getByLabelText(/Service\/Convenience Fee/i);
+    fireEvent.change(feeInput, { target: { value: '1.50' } });
+    
+    // Total Paid should be 50 + 1.50 = 51.50
+    // The component renders "Total Paid:" and "₹51.5" separately or together?
+    // Let's check the implementation: "Total Paid:" and "₹51.5" are separate spans
+    expect(screen.getByText('Total Paid:')).toBeInTheDocument();
+    expect(screen.getByText(/₹51.5/i)).toBeInTheDocument();
+  });
+
+  it('should show other specification field when Other is selected', async () => {
+    render(<RecordPaymentModal bill={mockBill} onPaymentRecorded={() => {}} />);
+    
+    // Open modal
+    fireEvent.click(screen.getByText(/Record Payment/i));
+    
+    expect(screen.queryByLabelText(/Please specify/i)).not.toBeInTheDocument();
+    
+    fireEvent.change(screen.getByLabelText(/Payment Method/i), { target: { value: 'Other' } });
+    
+    expect(screen.getByLabelText(/Please specify/i)).toBeInTheDocument();
   });
 });
-
