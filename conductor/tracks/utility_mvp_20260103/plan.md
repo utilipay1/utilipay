@@ -27,7 +27,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 4: Dashboard & Alerts' (Protocol in workflow.md) 66d9f42
 
 ## Phase 5: Payments & Reporting
-- [ ] Task: Create `RecordPaymentModal` and implementation for financial status transitions.
-- [ ] Task: Implement sub-tabs for Bill Status (All, Unpaid, Overdue, Paid views).
+- [x] Task: Create `RecordPaymentModal` and implementation for financial status transitions. b6d4467
+- [~] Task: Implement sub-tabs for Bill Status (All, Unpaid, Overdue, Paid views).
 - [ ] Task: Implement Excel export functionality using the `xlsx` library.
 - [ ] Task: Conductor - User Manual Verification 'Phase 5: Payments & Reporting' (Protocol in workflow.md)
