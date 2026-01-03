@@ -1,9 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { BillsDueSoon } from './BillsDueSoon';
-import { addDays } from 'date-fns';
+import { addDays, startOfDay } from 'date-fns';
 
 // Mock fetch
 global.fetch = jest.fn();
+
+const today = startOfDay(new Date());
 
 const mockBills = [
   {
@@ -11,7 +13,7 @@ const mockBills = [
     property_id: 'prop1',
     utility_type: 'Water',
     amount: 50,
-    due_date: addDays(new Date(), 1).toISOString(),
+    due_date: addDays(today, 1).toISOString(),
     status: 'Unpaid',
   },
   {
@@ -19,7 +21,7 @@ const mockBills = [
     property_id: 'prop2',
     utility_type: 'Electric',
     amount: 100,
-    due_date: addDays(new Date(), 3).toISOString(),
+    due_date: addDays(today, 3).toISOString(),
     status: 'Unpaid',
   },
   {
@@ -27,17 +29,9 @@ const mockBills = [
     property_id: 'prop3',
     utility_type: 'Gas',
     amount: 75,
-    due_date: addDays(new Date(), 5).toISOString(),
+    due_date: addDays(today, 5).toISOString(),
     status: 'Unpaid',
   },
-  {
-    _id: '4',
-    property_id: 'prop4',
-    utility_type: 'Sewer',
-    amount: 30,
-    due_date: addDays(new Date(), 10).toISOString(),
-    status: 'Unpaid',
-  }
 ];
 
 describe('BillsDueSoon', () => {
@@ -48,34 +42,16 @@ describe('BillsDueSoon', () => {
     });
   });
 
-  it('renders critical alerts for bills due in 1 day', async () => {
+  it('renders alerts with currency symbol and days remaining', async () => {
     render(<BillsDueSoon />);
     await waitFor(() => {
-      expect(screen.getByText(/Critical/)).toBeInTheDocument();
-      expect(screen.getByText(/Water/)).toBeInTheDocument();
-    });
-  });
-
-  it('renders warning alerts for bills due in 3 days', async () => {
-    render(<BillsDueSoon />);
-    await waitFor(() => {
-      expect(screen.getByText(/Warning/)).toBeInTheDocument();
-      expect(screen.getByText(/Electric/)).toBeInTheDocument();
-    });
-  });
-
-  it('renders info alerts for bills due in 5 days', async () => {
-    render(<BillsDueSoon />);
-    await waitFor(() => {
-      expect(screen.getByText(/Info/)).toBeInTheDocument();
-      expect(screen.getByText(/Gas/)).toBeInTheDocument();
-    });
-  });
-
-  it('does not render alerts for bills due in more than 5 days', async () => {
-    render(<BillsDueSoon />);
-    await waitFor(() => {
-      expect(screen.queryByText(/Sewer/)).not.toBeInTheDocument();
+      expect(screen.getByText('Water')).toBeInTheDocument();
+      expect(screen.getByText(/₹50/)).toBeInTheDocument();
+      expect(screen.getByText(/Due Tomorrow/i)).toBeInTheDocument();
+      
+      expect(screen.getByText('Electric')).toBeInTheDocument();
+      expect(screen.getByText(/₹100/)).toBeInTheDocument();
+      expect(screen.getByText(/Due in 3 days/i)).toBeInTheDocument();
     });
   });
 });

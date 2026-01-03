@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getAlertStatus } from '@/lib/billing';
-import { format } from 'date-fns';
+import { format, differenceInCalendarDays } from 'date-fns';
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
 
 interface Bill {
@@ -37,14 +37,18 @@ export function BillsDueSoon() {
   }, []);
 
   const alerts = bills
-    .map((bill) => ({
-      ...bill,
-      alertStatus: getAlertStatus(new Date(bill.due_date)),
-    }))
-    .filter((bill) => bill.alertStatus !== null && bill.status === 'Unpaid');
+    .map((bill) => {
+      const daysRemaining = differenceInCalendarDays(new Date(bill.due_date), new Date());
+      return {
+        ...bill,
+        daysRemaining,
+        alertStatus: getAlertStatus(new Date(bill.due_date)),
+      };
+    })
+    .filter((bill) => bill.alertStatus !== null && bill.status === 'Unpaid')
+    .sort((a, b) => a.daysRemaining - b.daysRemaining);
 
   if (loading) return <div>Loading alerts...</div>;
-
 
   if (alerts.length === 0) {
     return (
@@ -56,31 +60,41 @@ export function BillsDueSoon() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Bills Due Soon</h2>
+      <h2 className="text-xl font-semibold tracking-tight">Bills Due Soon</h2>
       <div className="grid gap-4">
         {alerts.map((bill) => (
           <div
             key={bill._id}
-            className={`p-4 border rounded-lg flex justify-between items-center ${
-              bill.alertStatus === 'Critical'
-                ? 'bg-red-50 border-red-200 text-red-900'
-                : bill.alertStatus === 'Warning'
-                ? 'bg-amber-50 border-amber-200 text-amber-900'
-                : 'bg-blue-50 border-blue-200 text-blue-900'
-            }`}
+            className={`p-5 border rounded-xl flex justify-between items-center bg-card shadow-sm relative overflow-hidden`}
           >
-            <div>
-              <div className="font-bold">{bill.utility_type}</div>
-              <div className="text-sm opacity-90">
-                Due: {format(new Date(bill.due_date), 'PPP')}
+            {/* Accent Line */}
+            <div 
+              className={`absolute left-0 top-0 bottom-0 w-1 ${
+                bill.daysRemaining <= 3 ? 'bg-urgency-high' : 'bg-urgency-medium'
+              }`}
+            />
+            
+            <div className="pl-2">
+              <div className="font-bold text-lg">{bill.utility_type}</div>
+              <div 
+                className={`text-sm font-medium ${
+                  bill.daysRemaining <= 3 ? 'text-urgency-high' : 'text-urgency-medium'
+                }`}
+              >
+                {bill.daysRemaining === 0 
+                  ? 'Due Today' 
+                  : bill.daysRemaining === 1 
+                  ? 'Due Tomorrow' 
+                  : `Due in ${bill.daysRemaining} days`}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {format(new Date(bill.due_date), 'PPP')}
               </div>
             </div>
-            <div className="text-right flex items-center gap-4">
-              <div>
-                <div className="text-lg font-bold">${bill.amount.toFixed(2)}</div>
-                <div className="text-xs uppercase font-extrabold tracking-wider">
-                  {bill.alertStatus}
-                </div>
+
+            <div className="text-right flex items-center gap-6">
+              <div className="text-2xl font-black tracking-tighter">
+                ₹{bill.amount.toLocaleString()}
               </div>
               <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
             </div>

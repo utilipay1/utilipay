@@ -11,7 +11,7 @@ describe('SummaryTile', () => {
   it('should display total due amount', () => {
     render(<SummaryTile bills={mockBills} />);
     // Total = 100 + 50 + 200 = 350
-    expect(screen.getByText(/\$350/)).toBeInTheDocument();
+    expect(screen.getByText(/₹350/)).toBeInTheDocument();
   });
 
   it('should list next 3 bills', () => {

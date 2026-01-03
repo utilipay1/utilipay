@@ -89,7 +89,7 @@ export function BillList() {
                   filteredBills.map((bill) => (
                     <TableRow key={bill._id}>
                       <TableCell className="font-medium">{bill.utility_type}</TableCell>
-                      <TableCell>${bill.amount.toFixed(2)}</TableCell>
+                      <TableCell>₹{bill.amount.toFixed(2)}</TableCell>
                       <TableCell>{format(new Date(bill.due_date), 'PP')}</TableCell>
                       <TableCell>{bill.status}</TableCell>
                       <TableCell className="text-right">

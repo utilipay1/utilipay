@@ -23,7 +23,7 @@ export function SummaryTile({ bills }: SummaryTileProps) {
     <div className="grid gap-6 md:grid-cols-2">
       <div className="border rounded-2xl p-8 bg-black text-white dark:bg-white dark:text-black shadow-lg flex flex-col justify-center">
         <p className="text-sm font-medium opacity-80 uppercase tracking-widest">Total Due This Month</p>
-        <h2 className="text-5xl font-extrabold mt-2">${totalDue.toLocaleString()}</h2>
+        <h2 className="text-5xl font-extrabold mt-2">₹{totalDue.toLocaleString()}</h2>
       </div>
       
       <div className="border rounded-2xl p-8 bg-card shadow-sm flex flex-col justify-center">
@@ -36,7 +36,7 @@ export function SummaryTile({ bills }: SummaryTileProps) {
                   <p className="font-semibold">{bill.utility_type}</p>
                   <p className="text-xs text-muted-foreground">{format(new Date(bill.due_date), 'MMM d, yyyy')}</p>
                 </div>
-                <p className="font-bold">${bill.amount}</p>
+                <p className="font-bold">₹{bill.amount}</p>
               </div>
             ))
           ) : (
