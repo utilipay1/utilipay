@@ -23,7 +23,8 @@ This plan implements a header-based navigation system and completely redesigns t
 
 ## Phase 4: Bills View & "Add Bill" Redesign
 - [x] Task: Implement Bills View with "Charged in Books" toggle and "Add Bill" Button (TDD) 51f6159
-- [ ] Task: Create Redesigned "Add Bill" Modal (Property dropdown, Date pickers) (TDD)
+- [x] Task: Create Redesigned "Add Bill" Modal (Property dropdown, Date pickers) (TDD) af69072
+- [ ] Task: Conductor - User Manual Verification 'Phase 4: Bills View & "Add Bill" Redesign' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Bills View & "Add Bill" Redesign' (Protocol in workflow.md)
 
 ## Phase 5: Record Payment Redesign
