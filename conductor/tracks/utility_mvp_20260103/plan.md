@@ -26,8 +26,8 @@
 - [x] Task: Integrate the Global Notification Center with real-time alert counts. adcde99
 - [x] Task: Conductor - User Manual Verification 'Phase 4: Dashboard & Alerts' (Protocol in workflow.md) 66d9f42
 
-## Phase 5: Payments & Reporting
+## Phase 5: Payments & Reporting [checkpoint: 7ff6860]
 - [x] Task: Create `RecordPaymentModal` and implementation for financial status transitions. b6d4467
 - [x] Task: Implement sub-tabs for Bill Status (All, Unpaid, Overdue, Paid views). 3c1c390
 - [x] Task: Implement Excel export functionality using the `xlsx` library. cb61dfd
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: Payments & Reporting' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 5: Payments & Reporting' (Protocol in workflow.md) 7ff6860
