@@ -1,34 +1,57 @@
 import { render, screen } from '@testing-library/react';
 import Home from './page';
 
-// Mock fetch
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve([]),
-  })
-) as jest.Mock;
-
+// Mock dependencies
 jest.mock('@/components/dashboard/BillsDueSoon', () => ({
   BillsDueSoon: () => <div data-testid="bills-due-soon" />
 }));
 jest.mock('@/components/dashboard/PortfolioTable', () => ({
   PortfolioTable: () => <div data-testid="portfolio-table" />
 }));
+jest.mock('@/components/dashboard/SummaryTile', () => ({
+  SummaryTile: () => <div data-testid="summary-tile" />
+}));
+jest.mock('@/components/properties/PropertyList', () => ({
+  PropertyList: () => <div data-testid="property-list" />
+}));
+jest.mock('@/components/bills/BillList', () => ({
+  BillList: () => <div data-testid="bill-list" />
+}));
+
+const mockUseView = jest.fn();
+jest.mock('@/context/ViewContext', () => ({
+  useView: () => mockUseView()
+}));
 
 describe('Home Page', () => {
-  it('should render the dashboard title', () => {
-    render(<Home />);
-    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
+  beforeEach(() => {
+    mockUseView.mockReset();
   });
 
-  it('should render navigation tabs', () => {
+  it('should render Dashboard view logic', () => {
+    mockUseView.mockReturnValue({ currentView: 'dashboard' });
     render(<Home />);
-    expect(screen.getByText('Overview')).toBeInTheDocument();
-    expect(screen.getByText('Properties')).toBeInTheDocument();
-    expect(screen.getByText('All Bills')).toBeInTheDocument();
-    expect(screen.getByText('Manage')).toBeInTheDocument();
+    // Check for dashboard elements
+    expect(screen.getByTestId('summary-tile')).toBeInTheDocument();
+    expect(screen.getByTestId('bills-due-soon')).toBeInTheDocument();
+    expect(screen.getByTestId('portfolio-table')).toBeInTheDocument();
+    
+    // Check absence of other views
+    expect(screen.queryByTestId('property-list')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bill-list')).not.toBeInTheDocument();
+  });
+
+  it('should render Properties view logic', () => {
+    mockUseView.mockReturnValue({ currentView: 'properties' });
+    render(<Home />);
+    expect(screen.getByTestId('property-list')).toBeInTheDocument();
+    expect(screen.queryByTestId('summary-tile')).not.toBeInTheDocument();
+  });
+
+  it('should render Bills view logic', () => {
+    mockUseView.mockReturnValue({ currentView: 'bills' });
+    render(<Home />);
+    expect(screen.getByTestId('bill-list')).toBeInTheDocument();
+    expect(screen.queryByTestId('summary-tile')).not.toBeInTheDocument();
   });
 });
-
-
