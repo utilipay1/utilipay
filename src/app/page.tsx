@@ -5,26 +5,35 @@ import { PropertyList } from "@/components/properties/PropertyList";
 import { BillList } from "@/components/bills/BillList";
 import { BillsDueSoon } from "@/components/dashboard/BillsDueSoon";
 import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
-import { SummaryTile } from "@/components/dashboard/SummaryTile";
+import { SummaryTiles } from "@/components/dashboard/SummaryTiles";
 import { useView } from "@/context/ViewContext";
 
 export default function Home() {
   const [bills, setBills] = useState([]);
+  const [properties, setProperties] = useState([]);
   const { currentView } = useView();
 
   useEffect(() => {
-    async function fetchBills() {
+    async function fetchData() {
       try {
-        const response = await fetch('/api/bills');
-        if (response.ok) {
-          const data = await response.json();
+        const [billsRes, propsRes] = await Promise.all([
+          fetch('/api/bills'),
+          fetch('/api/properties')
+        ]);
+        
+        if (billsRes.ok) {
+          const data = await billsRes.json();
           setBills(data);
         }
+        if (propsRes.ok) {
+          const data = await propsRes.json();
+          setProperties(data);
+        }
       } catch (error) {
-        console.error('Failed to fetch bills:', error);
+        console.error('Failed to fetch data:', error);
       }
     }
-    fetchBills();
+    fetchData();
   }, []);
 
   return (
@@ -36,7 +45,7 @@ export default function Home() {
             <p className="text-muted-foreground mt-2">Manage your property utilities and upcoming bills.</p>
           </div>
           <section>
-            <SummaryTile bills={bills} />
+            <SummaryTiles bills={bills} properties={properties} />
           </section>
           <section>
             <BillsDueSoon />

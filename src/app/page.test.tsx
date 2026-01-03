@@ -8,8 +8,8 @@ jest.mock('@/components/dashboard/BillsDueSoon', () => ({
 jest.mock('@/components/dashboard/PortfolioTable', () => ({
   PortfolioTable: () => <div data-testid="portfolio-table" />
 }));
-jest.mock('@/components/dashboard/SummaryTile', () => ({
-  SummaryTile: () => <div data-testid="summary-tile" />
+jest.mock('@/components/dashboard/SummaryTiles', () => ({
+  SummaryTiles: () => <div data-testid="summary-tiles" />
 }));
 jest.mock('@/components/properties/PropertyList', () => ({
   PropertyList: () => <div data-testid="property-list" />
@@ -32,7 +32,7 @@ describe('Home Page', () => {
     mockUseView.mockReturnValue({ currentView: 'dashboard' });
     render(<Home />);
     // Check for dashboard elements
-    expect(screen.getByTestId('summary-tile')).toBeInTheDocument();
+    expect(screen.getByTestId('summary-tiles')).toBeInTheDocument();
     expect(screen.getByTestId('bills-due-soon')).toBeInTheDocument();
     expect(screen.getByTestId('portfolio-table')).toBeInTheDocument();
     
@@ -45,13 +45,13 @@ describe('Home Page', () => {
     mockUseView.mockReturnValue({ currentView: 'properties' });
     render(<Home />);
     expect(screen.getByTestId('property-list')).toBeInTheDocument();
-    expect(screen.queryByTestId('summary-tile')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('summary-tiles')).not.toBeInTheDocument();
   });
 
   it('should render Bills view logic', () => {
     mockUseView.mockReturnValue({ currentView: 'bills' });
     render(<Home />);
     expect(screen.getByTestId('bill-list')).toBeInTheDocument();
-    expect(screen.queryByTestId('summary-tile')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('summary-tiles')).not.toBeInTheDocument();
   });
 });
