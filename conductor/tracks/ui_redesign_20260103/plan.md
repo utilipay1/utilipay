@@ -12,7 +12,7 @@
 - [x] Task: Update the main Layout component to ensure consistent spacing for the new design. 540b36d
 - [ ] Task: Conductor - User Manual Verification 'Navigation & Layout Refactoring' (Protocol in workflow.md)
 
-## Phase 3: Dashboard & Summary Tile
+## Phase 3: Dashboard & Summary Tile [checkpoint: c43edd2]
 - [x] Task: Create the `SummaryTile` component for "Total Due" and "Next 3 Bills". a61b430
 - [x] Task: Integrate SummaryTile at the top of the Dashboard view. e701cbd
 - [x] Task: Update data fetching logic (or prop drilling) to provide aggregated "Total Due" data to the SummaryTile. e701cbd
