@@ -1,6 +1,6 @@
 # Plan: Modern Monochrome UI Redesign
 
-## Phase 1: Foundation & Theme Setup
+## Phase 1: Foundation & Theme Setup [checkpoint: e5f2cf2]
 - [x] Task: Define Monochrome Design System variables in Tailwind CSS (Colors, Elevation). 3c3c308
 - [x] Task: Implement `next-themes` for Light/Dark/System switching. c69f871
 - [x] Task: Update `globals.css` with monochrome base styles and font hierarchy. 42d102f
