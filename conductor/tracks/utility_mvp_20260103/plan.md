@@ -20,11 +20,11 @@
 - [x] Task: Write tests for billing logic and predictive engine. 9f7b7d9
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Billing & Prediction Engine' (Protocol in workflow.md) 1f12ea6
 
-## Phase 4: Dashboard & Alerts
+## Phase 4: Dashboard & Alerts [checkpoint: 66d9f42]
 - [x] Task: Build the Dashboard "Bills Due Soon" section with 5/3/1 day high-contrast alerts. c38cb39
 - [x] Task: Implement the Portfolio Table showing utility status per property. 1e2fafd
 - [x] Task: Integrate the Global Notification Center with real-time alert counts. adcde99
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Dashboard & Alerts' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Dashboard & Alerts' (Protocol in workflow.md) 66d9f42
 
 ## Phase 5: Payments & Reporting
 - [ ] Task: Create `RecordPaymentModal` and implementation for financial status transitions.
