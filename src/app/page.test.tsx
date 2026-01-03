@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 import Home from './page';
 
 // Mock dependencies
-jest.mock('@/components/dashboard/BillsDueSoon', () => ({
-  BillsDueSoon: () => <div data-testid="bills-due-soon" />
+jest.mock('@/components/dashboard/DashboardAlerts', () => ({
+  DashboardAlerts: () => <div data-testid="dashboard-alerts" />
 }));
 jest.mock('@/components/dashboard/PortfolioTable', () => ({
   PortfolioTable: () => <div data-testid="portfolio-table" />
@@ -33,7 +33,7 @@ describe('Home Page', () => {
     render(<Home />);
     // Check for dashboard elements
     expect(screen.getByTestId('summary-tiles')).toBeInTheDocument();
-    expect(screen.getByTestId('bills-due-soon')).toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-alerts')).toBeInTheDocument();
     expect(screen.getByTestId('portfolio-table')).toBeInTheDocument();
     
     // Check absence of other views
