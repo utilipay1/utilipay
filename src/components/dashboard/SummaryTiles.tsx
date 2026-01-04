@@ -1,9 +1,14 @@
+import { isSameMonth, parseISO } from 'date-fns';
+
 interface Bill {
   _id: string;
   utility_type: string;
   amount: number;
   due_date: string;
   status: string;
+  payment?: {
+    payment_date: string | Date;
+  };
 }
 
 interface Property {
@@ -17,11 +22,20 @@ interface SummaryTilesProps {
 }
 
 export function SummaryTiles({ bills, properties }: SummaryTilesProps) {
+  const currentDate = new Date();
+  
   const unpaidBills = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue');
-  const paidBills = bills.filter(b => b.status.startsWith('Paid'));
+  const paidBillsThisMonth = bills.filter(b => {
+    if (!b.status.startsWith('Paid') || !b.payment?.payment_date) return false;
+    // Handle both string and Date objects for payment_date
+    const paymentDate = typeof b.payment.payment_date === 'string' 
+      ? parseISO(b.payment.payment_date) 
+      : b.payment.payment_date;
+    return isSameMonth(paymentDate, currentDate);
+  });
   
   const totalDue = unpaidBills.reduce((acc, b) => acc + b.amount, 0);
-  const totalPaid = paidBills.reduce((acc, b) => acc + b.amount, 0);
+  const totalPaidThisMonth = paidBillsThisMonth.reduce((acc, b) => acc + b.amount, 0);
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -31,8 +45,8 @@ export function SummaryTiles({ bills, properties }: SummaryTilesProps) {
       </div>
       
       <div className="border rounded-xl p-6 bg-card shadow-sm">
-        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Paid</p>
-        <h2 className="text-3xl font-bold mt-2 text-primary">₹{totalPaid.toLocaleString()}</h2>
+        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Paid This Month</p>
+        <h2 className="text-3xl font-bold mt-2 text-primary">₹{totalPaidThisMonth.toLocaleString()}</h2>
       </div>
 
       <div className="border rounded-xl p-6 bg-card shadow-sm">
