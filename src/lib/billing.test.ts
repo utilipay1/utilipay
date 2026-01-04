@@ -21,9 +21,15 @@ describe('billing logic', () => {
       expect(nextBill.amount).toBe(0); // Draft should be 0 or same? Spec says "placeholder"
       expect(nextBill.status).toBe('Unpaid');
       
-      // Check dates (roughly 30 days ahead)
+      // Check dates
+      // Current: Jan 1 - Jan 31 (31 days). Diff = 30.
+      // Next Start: Feb 1.
+      // Next End: Feb 1 + 30 days = Mar 3 (2026 is not a leap year).
       expect(nextBill.billing_period_start).toEqual(new Date('2026-02-01'));
-      expect(nextBill.billing_period_end).toEqual(new Date('2026-03-02')); // 30 days after Jan 31
+      expect(nextBill.billing_period_end).toEqual(new Date('2026-03-03'));
+      
+      // Bill Date: Feb 1 + 31 days = Mar 4.
+      expect(nextBill.bill_date).toEqual(new Date('2026-03-04'));
     });
   });
 

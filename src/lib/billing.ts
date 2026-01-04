@@ -11,10 +11,15 @@ export interface BillInput {
 }
 
 export function calculateNextBill(currentBill: BillInput) {
+  const periodDuration = differenceInCalendarDays(currentBill.billing_period_end, currentBill.billing_period_start);
+  
   const nextStart = addDays(currentBill.billing_period_end, 1);
-  const nextEnd = addDays(nextStart, 29); // 30-day cycle inclusive
-  const nextBillDate = addDays(currentBill.bill_date, 30);
-  const nextDueDate = addDays(currentBill.due_date, 30);
+  const nextEnd = addDays(nextStart, periodDuration);
+  
+  // Shift bill and due dates by the full cycle length (duration + 1 day to account for inclusive start)
+  const cycleLength = periodDuration + 1;
+  const nextBillDate = addDays(currentBill.bill_date, cycleLength);
+  const nextDueDate = addDays(currentBill.due_date, cycleLength);
 
   return {
     property_id: currentBill.property_id,
