@@ -22,6 +22,7 @@ interface Bill {
   utility_type: string;
   status: string;
   due_date: string;
+  bill_date: string;
   amount: number;
 }
 
@@ -81,9 +82,12 @@ export function PortfolioTable() {
                       // Priority: Overdue -> Unpaid (Real Amount) -> Paid -> Any
                       const overdueBill = relevantBills.find(b => b.status === 'Overdue');
                       
-                      // Find earliest unpaid bill with actual amount (not placeholder)
+                      // Find earliest unpaid bill that is either real (amount > 0) or effectively due (bill date passed)
                       const unpaidRealBill = relevantBills
-                        .filter(b => b.status === 'Unpaid' && b.amount > 0)
+                        .filter(b => 
+                          b.status === 'Unpaid' && 
+                          (b.amount > 0 || new Date() >= new Date(b.bill_date))
+                        )
                         .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())[0];
 
                       const latestPaidBill = relevantBills

@@ -26,6 +26,7 @@ const mockBills = [
     status: 'Unpaid',
     amount: 100, // Real unpaid bill
     due_date: new Date().toISOString(),
+    bill_date: new Date().toISOString(),
   },
   {
     property_id: 'prop1',
@@ -33,21 +34,41 @@ const mockBills = [
     status: 'Paid-Charged',
     amount: 50,
     due_date: new Date().toISOString(),
+    bill_date: new Date().toISOString(),
   },
-  // Prop 2 Water: Paid bill exists + Unpaid placeholder (amount 0) exists
+  // Prop 2 Water: Paid bill exists + Future Placeholder (should be ignored)
   {
     property_id: 'prop2',
     utility_type: 'Water',
     status: 'Paid-Charged',
     amount: 80,
     due_date: '2026-01-01',
+    bill_date: '2025-12-01',
   },
   {
     property_id: 'prop2',
     utility_type: 'Water',
     status: 'Unpaid',
-    amount: 0, // Placeholder
+    amount: 0, // Future Placeholder
+    due_date: '2099-02-01',
+    bill_date: '2099-01-01', // Future bill date
+  },
+  // Prop 2 Gas: Paid bill exists + Actionable Placeholder (bill date passed)
+  {
+    property_id: 'prop2',
+    utility_type: 'Gas',
+    status: 'Paid-Charged',
+    amount: 40,
+    due_date: '2025-12-01',
+    bill_date: '2025-11-01',
+  },
+  {
+    property_id: 'prop2',
+    utility_type: 'Gas',
+    status: 'Unpaid',
+    amount: 0, // Actionable Placeholder
     due_date: '2026-02-01',
+    bill_date: '2020-01-01', // Past bill date (definitely passed)
   },
 ];
 
@@ -86,11 +107,12 @@ describe('PortfolioTable', () => {
       expect(prop1Row).toHaveTextContent('Water: Unpaid');
       expect(prop1Row).toHaveTextContent('Electric: Paid');
       
-      // Prop 2 Water should be Paid (ignoring the placeholder)
+      // Prop 2 Water should be Paid (ignoring the future placeholder)
       const prop2Row = screen.getByText('456 Elm St').closest('tr');
       expect(prop2Row).toHaveTextContent('Water: Paid');
-      // Prop 2 Gas has no bills
-      expect(prop2Row).toHaveTextContent('Gas: No Bill');
+      
+      // Prop 2 Gas should be Unpaid (placeholder bill date passed)
+      expect(prop2Row).toHaveTextContent('Gas: Unpaid');
     });
   });
 });
