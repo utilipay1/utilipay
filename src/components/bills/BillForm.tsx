@@ -38,6 +38,7 @@ interface BillFormProps {
 interface Property {
   _id: string;
   address: string;
+  utilities_managed: string[];
 }
 
 export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormProps) {
@@ -89,6 +90,10 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     }
     fetchProperties();
   }, []);
+
+  const selectedPropertyId = form.watch("property_id");
+  const selectedProperty = properties.find(p => p._id === selectedPropertyId);
+  const utilityOptions = selectedProperty ? selectedProperty.utilities_managed : ["Water", "Sewer", "Gas", "Electric"];
 
   async function onSubmit(values: FormValues) {
     setStatus("submitting");
@@ -155,10 +160,12 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
                     {...field}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="Water">Water</option>
-                    <option value="Sewer">Sewer</option>
-                    <option value="Gas">Gas</option>
-                    <option value="Electric">Electric</option>
+                    {!selectedProperty && <option value="">Select a property first</option>}
+                    {utilityOptions.map((utility) => (
+                      <option key={utility} value={utility}>
+                        {utility}
+                      </option>
+                    ))}
                   </select>
                 </FormControl>
                 <FormMessage />

@@ -5,8 +5,8 @@ import { BillForm } from './BillForm';
 global.fetch = jest.fn();
 
 const mockProperties = [
-  { _id: 'prop1', address: '123 Main St' },
-  { _id: 'prop2', address: '456 Oak Ave' },
+  { _id: 'prop1', address: '123 Main St', utilities_managed: ['Water', 'Electric'] },
+  { _id: 'prop2', address: '456 Oak Ave', utilities_managed: ['Gas'] },
 ];
 
 describe('BillForm', () => {
