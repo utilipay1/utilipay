@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { getAlertStatus } from '@/lib/billing';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
-import { EditBillModal } from '@/components/bills/EditBillModal';
+import { BillModal } from '@/components/bills/BillModal';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
 
@@ -15,6 +15,8 @@ type Bill = z.infer<typeof BillSchema>;
 export function BillsDueSoon() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchBills = async () => {
     try {
@@ -34,6 +36,11 @@ export function BillsDueSoon() {
   useEffect(() => {
     fetchBills();
   }, []);
+
+  const handleEditClick = (bill: Bill) => {
+    setSelectedBill(bill);
+    setIsModalOpen(true);
+  };
 
   const alerts = bills
     .map((bill) => {
@@ -96,21 +103,28 @@ export function BillsDueSoon() {
                 ₹{bill.amount.toLocaleString()}
               </div>
               <div className="flex gap-2">
-                <EditBillModal 
-                  bill={bill} 
-                  trigger={
-                    <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  }
-                  onSuccess={fetchBills}
-                />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-9 w-9 text-muted-foreground hover:text-primary"
+                  onClick={() => handleEditClick(bill)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
                 <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      <BillModal
+        bill={selectedBill}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchBills}
+        defaultMode="edit"
+      />
     </div>
   );
 }

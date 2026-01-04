@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { format, differenceInCalendarDays, isBefore, startOfDay } from 'date-fns';
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
-import { EditBillModal } from '@/components/bills/EditBillModal';
+import { BillModal } from '@/components/bills/BillModal';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
 
@@ -14,6 +14,8 @@ type Bill = z.infer<typeof BillSchema>;
 export function DashboardAlerts() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchBills = async () => {
     try {
@@ -35,6 +37,11 @@ export function DashboardAlerts() {
   }, []);
 
   const today = startOfDay(new Date());
+
+  const handleEditClick = (bill: Bill) => {
+    setSelectedBill(bill);
+    setIsModalOpen(true);
+  };
 
   const unpaidBills = bills.filter(b => b.status === 'Unpaid');
   
@@ -99,15 +106,14 @@ export function DashboardAlerts() {
             ₹{bill.amount.toLocaleString()}
           </div>
           <div className="flex gap-2">
-            <EditBillModal 
-              bill={bill} 
-              trigger={
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              }
-              onSuccess={fetchBills}
-            />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+              onClick={() => handleEditClick(bill)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
             <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
           </div>
         </div>
@@ -116,34 +122,44 @@ export function DashboardAlerts() {
   };
 
   return (
-    <div className="grid gap-8 md:grid-cols-2">
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-destructive" />
-          Overdue
-        </h3>
-        <div className="space-y-3">
-          {overdueAlerts.length > 0 ? (
-            overdueAlerts.map(b => renderAlertCard(b, true))
-          ) : (
-            <p className="text-sm text-muted-foreground italic">No overdue bills.</p>
-          )}
+    <div className="space-y-8">
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-destructive" />
+            Overdue
+          </h3>
+          <div className="space-y-3">
+            {overdueAlerts.length > 0 ? (
+              overdueAlerts.map(b => renderAlertCard(b, true))
+            ) : (
+              <p className="text-sm text-muted-foreground italic">No overdue bills.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-urgency-high" />
+            Upcoming
+          </h3>
+          <div className="space-y-3">
+            {upcomingAlerts.length > 0 ? (
+              upcomingAlerts.map(b => renderAlertCard(b, false))
+            ) : (
+              <p className="text-sm text-muted-foreground italic">No upcoming bills this week.</p>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-urgency-high" />
-          Upcoming
-        </h3>
-        <div className="space-y-3">
-          {upcomingAlerts.length > 0 ? (
-            upcomingAlerts.map(b => renderAlertCard(b, false))
-          ) : (
-            <p className="text-sm text-muted-foreground italic">No upcoming bills this week.</p>
-          )}
-        </div>
-      </div>
+      <BillModal
+        bill={selectedBill}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchBills}
+        defaultMode="edit"
+      />
     </div>
   );
 }
