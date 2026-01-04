@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -11,26 +11,23 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { PropertyModal } from "./PropertyModal";
-import { Edit, Archive } from "lucide-react";
+import { Edit, Archive, RotateCcw } from "lucide-react";
 import { PropertySchema } from "@/lib/schemas";
 import { z } from "zod";
 
 type Property = z.infer<typeof PropertySchema>;
 
-export function PropertyList({ search = "" }: { search?: string }) {
+export function PropertyList({ search = "", showArchived = false }: { search?: string; showArchived?: boolean }) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  async function fetchProperties() {
+  const fetchProperties = useCallback(async () => {
     try {
-      const response = await fetch("/api/properties");
+      setLoading(true);
+      const response = await fetch(`/api/properties?archived=${showArchived}`);
       if (response.ok) {
         const data = await response.json();
         setProperties(data);
@@ -40,24 +37,32 @@ export function PropertyList({ search = "" }: { search?: string }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [showArchived]);
 
-  async function handleArchive(e: React.MouseEvent, id: string) {
+  useEffect(() => {
+    fetchProperties();
+  }, [fetchProperties]);
+
+  async function handleArchive(e: React.MouseEvent, property: Property) {
     e.stopPropagation(); // Prevent row click
-    if (!confirm("Are you sure you want to archive this property?")) return;
+    const action = property.is_archived ? "restore" : "archive";
+    if (!confirm(`Are you sure you want to ${action} this property?`)) return;
     
     try {
-      const response = await fetch(`/api/properties/${id}`, {
+      const response = await fetch(`/api/properties/${property._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_archived: true }),
+        body: JSON.stringify({ is_archived: !property.is_archived }),
       });
 
       if (response.ok) {
-        setProperties((prev) => prev.filter((p) => p._id !== id));
+        // If we are showing "Active Only", and we archive one, it should disappear.
+        // If we are showing "Archived Only" (assuming showArchived means ONLY archived, or ALL? API says: true=archived, false=active).
+        // So in both cases, the item toggles out of the current view.
+        setProperties((prev) => prev.filter((p) => p._id !== property._id));
       }
     } catch (error) {
-      console.error("Failed to archive property:", error);
+      console.error(`Failed to ${action} property:`, error);
     }
   }
 
@@ -105,7 +110,7 @@ export function PropertyList({ search = "" }: { search?: string }) {
               filteredProperties.map((property) => (
                 <TableRow 
                   key={property._id} 
-                  className="group hover:bg-muted/50 transition-colors cursor-pointer"
+                  className={`group hover:bg-muted/50 transition-colors cursor-pointer ${property.is_archived ? 'opacity-60 bg-muted/20' : ''}`}
                   onClick={() => handleRowClick(property)}
                 >
                   <TableCell className="font-semibold text-base py-5 px-6">{property.address}</TableCell>
@@ -141,11 +146,11 @@ export function PropertyList({ search = "" }: { search?: string }) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={(e) => handleArchive(e, property._id!)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
-                        title="Archive Property"
+                        onClick={(e) => handleArchive(e, property)}
+                        className={`h-8 w-8 text-muted-foreground hover:text-${property.is_archived ? 'primary' : 'destructive'} transition-colors`}
+                        title={property.is_archived ? "Restore Property" : "Archive Property"}
                       >
-                        <Archive className="w-4 h-4" />
+                        {property.is_archived ? <RotateCcw className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
                       </Button>
                     </div>
                   </TableCell>

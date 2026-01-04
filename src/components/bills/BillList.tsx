@@ -15,7 +15,7 @@ import { format, differenceInCalendarDays } from 'date-fns';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Switch } from '@/components/ui/switch';
-import { Edit } from 'lucide-react';
+import { Edit, Archive, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type Bill = z.infer<typeof BillSchema>;
@@ -49,6 +49,26 @@ export function BillList({ bills, properties, onRefresh }: BillListProps) {
       }
     } catch (error) {
       console.error('Failed to update charged status:', error);
+    }
+  };
+
+  const handleArchive = async (e: React.MouseEvent, bill: Bill) => {
+    e.stopPropagation();
+    const action = bill.is_archived ? 'restore' : 'archive';
+    if (!confirm(`Are you sure you want to ${action} this bill?`)) return;
+
+    try {
+      const response = await fetch(`/api/bills/${bill._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_archived: !bill.is_archived }),
+      });
+
+      if (response.ok) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error(`Failed to ${action} bill:`, error);
     }
   };
 
@@ -93,13 +113,13 @@ export function BillList({ bills, properties, onRefresh }: BillListProps) {
                 const daysRemaining = differenceInCalendarDays(new Date(bill.due_date), new Date());
                 const isUnpaid = bill.status === 'Unpaid' || bill.status === 'Overdue';
                 const isPaid = bill.status.startsWith('Paid');
-                const isUrgent = isUnpaid && daysRemaining <= 7;
+                const isUrgent = isUnpaid && daysRemaining <= 7 && !bill.is_archived;
                 const propertyAddress = properties[bill.property_id] || "Unknown Property";
                 
                 return (
                   <TableRow 
                     key={bill._id} 
-                    className="relative group hover:bg-muted/50 transition-colors cursor-pointer"
+                    className={`relative group hover:bg-muted/50 transition-colors cursor-pointer ${bill.is_archived ? 'opacity-60 bg-muted/20' : ''}`}
                     onClick={() => handleRowClick(bill)}
                   >
                     <TableCell className="p-0">
@@ -137,7 +157,7 @@ export function BillList({ bills, properties, onRefresh }: BillListProps) {
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <Switch 
-                        disabled={!isPaid}
+                        disabled={!isPaid || bill.is_archived}
                         checked={bill.status === 'Paid-Charged'}
                         onCheckedChange={() => handleToggleCharged({ stopPropagation: () => {} } as React.MouseEvent, bill._id!, bill.status)}
                       />
@@ -149,10 +169,20 @@ export function BillList({ bills, properties, onRefresh }: BillListProps) {
                           size="icon" 
                           className="h-8 w-8 text-muted-foreground hover:text-primary"
                           onClick={(e) => handleEditClick(e, bill)}
+                          title="Edit"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        {isUnpaid ? (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className={`h-8 w-8 text-muted-foreground hover:text-${bill.is_archived ? 'primary' : 'destructive'}`}
+                          onClick={(e) => handleArchive(e, bill)}
+                          title={bill.is_archived ? "Restore" : "Archive"}
+                        >
+                          {bill.is_archived ? <RotateCcw className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                        </Button>
+                        {!bill.is_archived && isUnpaid ? (
                           <div onClick={(e) => e.stopPropagation()}>
                               <RecordPaymentModal bill={bill} onPaymentRecorded={onRefresh} />
                           </div>

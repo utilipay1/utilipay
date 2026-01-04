@@ -29,6 +29,7 @@ export const BillSchema = z.object({
   due_date: z.coerce.date(),
   status: z.enum(['Unpaid', 'Overdue', 'Paid-Uncharged', 'Paid-Charged']),
   notes: z.string().optional(),
+  is_archived: z.boolean().default(false),
   payment: z.object({
     payment_date: z.coerce.date(),
     method: z.string(),

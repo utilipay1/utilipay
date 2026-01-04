@@ -26,13 +26,14 @@ export function BillsView() {
     utilityType: new Set(),
     propertyId: new Set(),
     search: "",
+    showArchived: false,
   });
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [billsRes, propsRes] = await Promise.all([
-        fetch('/api/bills'),
+        fetch(`/api/bills?archived=${filters.showArchived}`),
         fetch('/api/properties')
       ]);
 
@@ -56,7 +57,7 @@ export function BillsView() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters.showArchived]);
 
   useEffect(() => {
     fetchData();

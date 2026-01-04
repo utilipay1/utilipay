@@ -29,19 +29,29 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const showArchived = searchParams.get('archived') === 'true';
+
     const client = await clientPromise;
     const db = client.db('utilipay');
+
+    const query = showArchived ? { is_archived: true } : { is_archived: { $ne: true } };
+
     const properties = await db
       .collection('properties')
-      .find({ is_archived: { $ne: true } })
+      .find(query)
       .sort({ createdAt: -1 })
       .toArray();
 
     return NextResponse.json(properties);
   } catch (error) {
-    console.error("GET /api/properties error:", error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("GET /api/properties error details:", {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      raw: error
+    });
+    return NextResponse.json({ error: 'Internal Server Error', details: String(error) }, { status: 500 });
   }
 }

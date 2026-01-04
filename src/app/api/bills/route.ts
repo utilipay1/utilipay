@@ -43,11 +43,24 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const propertyId = searchParams.get('propertyId');
+    const showArchived = searchParams.get('archived') === 'true';
 
     const client = await clientPromise;
     const db = client.db('utilipay');
     
-    const query = propertyId ? { property_id: propertyId } : {};
+    // Build query
+    const query: Record<string, unknown> = {};
+    
+    if (propertyId) {
+      query.property_id = propertyId;
+    }
+
+    if (showArchived) {
+      query.is_archived = true;
+    } else {
+      query.is_archived = { $ne: true };
+    }
+
     const bills = await db
       .collection('bills')
       .find(query)

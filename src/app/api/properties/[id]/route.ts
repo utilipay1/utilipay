@@ -21,6 +21,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
+    // Cascading Archive: If property is archived, archive its bills
+    if (body.is_archived === true) {
+      await db.collection('bills').updateMany(
+        { property_id: id },
+        { $set: { is_archived: true } }
+      );
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("PATCH /api/properties/[id] error:", error);

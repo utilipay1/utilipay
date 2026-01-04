@@ -23,6 +23,7 @@ const formSchema = BillSchema.omit({ _id: true, payment: true }).extend({
   billing_period_end: z.string(),
   bill_date: z.string(),
   due_date: z.string(),
+  is_archived: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -57,6 +58,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     due_date: new Date(initialData.due_date).toISOString().split('T')[0],
     status: initialData.status,
     notes: initialData.notes || "",
+    is_archived: initialData.is_archived,
   } : {
     property_id: "",
     utility_type: "Water",
@@ -68,6 +70,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     due_date: new Date().toISOString().split('T')[0],
     status: "Unpaid",
     notes: "",
+    is_archived: false,
   };
 
   const form = useForm<FormValues>({

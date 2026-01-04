@@ -6,9 +6,12 @@ import { AddPropertyModal } from './AddPropertyModal';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 export function PropertiesView() {
   const [search, setSearch] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleRefresh = useCallback(() => {
@@ -30,16 +33,26 @@ export function PropertiesView() {
         />
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-4">
         <Input
           placeholder="Search by address..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-md bg-muted/20"
         />
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="show-archived-props"
+            checked={showArchived}
+            onCheckedChange={setShowArchived}
+          />
+          <Label htmlFor="show-archived-props" className="text-sm font-medium">
+            Archived
+          </Label>
+        </div>
       </div>
 
-      <PropertyList search={search} key={refreshKey} />
+      <PropertyList search={search} showArchived={showArchived} key={refreshKey} />
     </div>
   );
 }
