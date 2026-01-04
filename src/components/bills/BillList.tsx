@@ -15,8 +15,16 @@ import { format, differenceInCalendarDays } from 'date-fns';
 import { BillSchema, PropertySchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Switch } from '@/components/ui/switch';
-import { Edit, Archive, RotateCcw } from 'lucide-react';
+import { Edit, Archive, RotateCcw, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Bill = z.infer<typeof BillSchema>;
 type Property = z.infer<typeof PropertySchema>;
@@ -73,6 +81,23 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
       }
     } catch (error) {
       console.error(`Failed to ${action} bill:`, error);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, bill: Bill) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to permanently delete this bill? This action cannot be undone.")) return;
+
+    try {
+      const response = await fetch(`/api/bills/${bill._id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error('Failed to delete bill:', error);
     }
   };
 
@@ -167,30 +192,53 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
                       />
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-muted-foreground hover:text-primary"
-                          onClick={(e) => handleEditClick(e, bill)}
-                          title="Edit"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className={`h-8 w-8 text-muted-foreground hover:text-${bill.is_archived ? 'primary' : 'destructive'}`}
-                          onClick={(e) => handleArchive(e, bill)}
-                          title={bill.is_archived ? "Restore" : "Archive"}
-                        >
-                          {bill.is_archived ? <RotateCcw className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                        </Button>
-                        {!bill.is_archived && isUnpaid ? (
-                          <div onClick={(e) => e.stopPropagation()}>
-                              <RecordPaymentModal bill={bill} onPaymentRecorded={onRefresh} />
-                          </div>
-                        ) : null}
+                      <div className="flex justify-end items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        {!bill.is_archived && isUnpaid && (
+                           <RecordPaymentModal bill={bill} onPaymentRecorded={onRefresh} />
+                        )}
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem 
+                              onClick={(e) => handleEditClick(e, bill)}
+                              className="cursor-pointer"
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={(e) => handleArchive(e, bill)}
+                              className="cursor-pointer"
+                            >
+                              {bill.is_archived ? (
+                                <>
+                                  <RotateCcw className="mr-2 h-4 w-4" />
+                                  Restore
+                                </>
+                              ) : (
+                                <>
+                                  <Archive className="mr-2 h-4 w-4" />
+                                  Archive
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={(e) => handleDelete(e, bill)} 
+                              className="text-destructive focus:text-destructive cursor-pointer"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -35,3 +35,29 @@ export async function PATCH(
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const id = (await params).id;
+    const client = await clientPromise;
+    const db = client.db('utilipay');
+
+    // 1. Delete the property
+    const result = await db.collection('properties').deleteOne({ _id: new ObjectId(id) });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
+    // 2. Cascade delete all associated bills
+    await db.collection('bills').deleteMany({ property_id: id });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/properties/[id] error:", error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

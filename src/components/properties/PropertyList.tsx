@@ -11,9 +11,17 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { PropertyModal } from "./PropertyModal";
-import { Edit, Archive, RotateCcw } from "lucide-react";
+import { Edit, Archive, RotateCcw, MoreHorizontal, Trash2 } from "lucide-react";
 import { PropertySchema, CompanySchema } from "@/lib/schemas";
 import { z } from "zod";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Property = z.infer<typeof PropertySchema>;
 type Company = z.infer<typeof CompanySchema>;
@@ -78,6 +86,23 @@ export function PropertyList({ search = "", showArchived = false }: { search?: s
       }
     } catch (error) {
       console.error(`Failed to ${action} property:`, error);
+    }
+  }
+
+  async function handleDelete(e: React.MouseEvent, property: Property) {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to PERMANENTLY delete this property and ALL associated bills? This action cannot be undone.")) return;
+
+    try {
+      const response = await fetch(`/api/properties/${property._id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setProperties((prev) => prev.filter((p) => p._id !== property._id));
+      }
+    } catch (error) {
+      console.error("Failed to delete property:", error);
     }
   }
 
@@ -148,25 +173,49 @@ export function PropertyList({ search = "", showArchived = false }: { search?: s
                     </div>
                   </TableCell>
                   <TableCell className="text-right py-5 px-6">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => handleEditClick(e, property)}
-                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        title="Edit Property"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => handleArchive(e, property)}
-                        className={`h-8 w-8 text-muted-foreground hover:text-${property.is_archived ? 'primary' : 'destructive'} transition-colors`}
-                        title={property.is_archived ? "Restore Property" : "Archive Property"}
-                      >
-                        {property.is_archived ? <RotateCcw className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
-                      </Button>
+                    <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem 
+                            onClick={(e) => handleEditClick(e, property)}
+                            className="cursor-pointer"
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={(e) => handleArchive(e, property)}
+                            className="cursor-pointer"
+                          >
+                            {property.is_archived ? (
+                              <>
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Restore
+                              </>
+                            ) : (
+                              <>
+                                <Archive className="mr-2 h-4 w-4" />
+                                Archive
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={(e) => handleDelete(e, property)} 
+                            className="text-destructive focus:text-destructive cursor-pointer"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>

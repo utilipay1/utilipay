@@ -29,9 +29,9 @@ export function BillsView() {
     showArchived: false,
   });
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const [billsRes, propsRes, companiesRes] = await Promise.all([
         fetch(`/api/bills?archived=${filters.showArchived}`),
         fetch('/api/properties?archived=all'),
@@ -70,7 +70,7 @@ export function BillsView() {
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [filters.showArchived]);
 
@@ -110,7 +110,7 @@ export function BillsView() {
         <div className="flex items-center gap-2">
           <ExportBillsButton bills={filteredBills} properties={properties} />
           <AddBillModal 
-            onSuccess={fetchData}
+            onSuccess={() => fetchData(true)}
             trigger={
               <Button className="gap-2">
                 <Plus className="w-4 h-4" />
@@ -136,7 +136,7 @@ export function BillsView() {
             properties={properties} 
             fullProperties={fullProperties}
             companies={companies}
-            onRefresh={fetchData} 
+            onRefresh={() => fetchData(true)} 
           />
         )}
       </div>
