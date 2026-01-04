@@ -22,25 +22,29 @@ export function ExportBillsButton({ bills, properties }: ExportBillsButtonProps)
     setExporting(true);
     try {
       // Flatten and format data for Excel
-      const data = bills.map((bill: Bill) => ({
-        'Property': properties[bill.property_id] || 'Unknown',
-        'Utility Type': bill.utility_type,
-        'Account Number': bill.account_number || '',
-        'Status': bill.status,
-        'Amount': bill.amount,
-        'Due Date': format(new Date(bill.due_date), 'yyyy-MM-dd'),
-        'Bill Date': format(new Date(bill.bill_date), 'yyyy-MM-dd'),
-        'Billing Start': format(new Date(bill.billing_period_start), 'yyyy-MM-dd'),
-        'Billing End': format(new Date(bill.billing_period_end), 'yyyy-MM-dd'),
-        'Notes': bill.notes || '',
-        'Payment Date': bill.payment?.payment_date 
-          ? format(new Date(bill.payment.payment_date), 'yyyy-MM-dd') 
-          : '',
-        'Payment Method': bill.payment?.method || '',
-        'Confirmation Code': bill.payment?.confirmation_code || '',
-        'Service Fee': bill.payment?.service_fee || 0,
-        'Charged in Books': bill.status === 'Paid-Charged' ? 'Yes' : 'No',
-      }));
+      const data = bills.map((bill: Bill) => {
+        const serviceFee = bill.payment?.service_fee || 0;
+        return {
+          'Property': properties[bill.property_id] || 'Unknown',
+          'Utility Type': bill.utility_type,
+          'Account Number': bill.account_number || '',
+          'Status': bill.status,
+          'Amount': bill.amount,
+          'Service Fee': serviceFee,
+          'Total': bill.amount + serviceFee,
+          'Due Date': format(new Date(bill.due_date), 'MM-dd-yyyy'),
+          'Bill Date': format(new Date(bill.bill_date), 'MM-dd-yyyy'),
+          'Billing Start': format(new Date(bill.billing_period_start), 'MM-dd-yyyy'),
+          'Billing End': format(new Date(bill.billing_period_end), 'MM-dd-yyyy'),
+          'Notes': bill.notes || '',
+          'Payment Date': bill.payment?.payment_date 
+            ? format(new Date(bill.payment.payment_date), 'MM-dd-yyyy') 
+            : '',
+          'Payment Method': bill.payment?.method || '',
+          'Confirmation Code': bill.payment?.confirmation_code || '',
+          'Charged in Books': bill.status === 'Paid-Charged' ? 'Yes' : 'No',
+        };
+      });
 
       const worksheet = xlsx.utils.json_to_sheet(data);
       const workbook = xlsx.utils.book_new();
