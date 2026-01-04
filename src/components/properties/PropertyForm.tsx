@@ -27,6 +27,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { CreateCompanyDialog } from "@/components/companies/CreateCompanyDialog";
+import { ManageCompaniesDialog } from "@/components/companies/ManageCompaniesDialog";
 
 const formSchema = PropertySchema;
 type FormValues = z.infer<typeof formSchema>;
@@ -44,9 +45,11 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
   const [errorMessage, setErrorMessage] = useState("");
   const [companies, setCompanies] = useState<Company[]>([]);
   
-  // State for creating new company on the fly
+  // State for creating/managing companies
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
   const [activeUtilityForCreation, setActiveUtilityForCreation] = useState<"Water" | "Sewer" | "Gas" | "Electric" | null>(null);
+  const [activeUtilityForManage, setActiveUtilityForManage] = useState<string | null>(null);
 
   const defaultValues: FormValues = initialData || {
     address: "",
@@ -74,18 +77,19 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
   const tenantStatus = form.watch("tenant_status");
   const utilitiesManaged = form.watch("utilities_managed");
 
-  useEffect(() => {
-    async function fetchCompanies() {
-      try {
-        const response = await fetch("/api/companies");
-        if (response.ok) {
-          const data = await response.json();
-          setCompanies(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch companies:", error);
+  const fetchCompanies = async () => {
+    try {
+      const response = await fetch("/api/companies");
+      if (response.ok) {
+        const data = await response.json();
+        setCompanies(data);
       }
+    } catch (error) {
+      console.error("Failed to fetch companies:", error);
     }
+  };
+
+  useEffect(() => {
     fetchCompanies();
   }, []);
 
@@ -292,6 +296,9 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
                                   if (val === "NEW") {
                                     setActiveUtilityForCreation(utility);
                                     setIsCreateDialogOpen(true);
+                                  } else if (val === "MANAGE") {
+                                    setActiveUtilityForManage(utility);
+                                    setIsManageDialogOpen(true);
                                   } else {
                                     field.onChange(val);
                                   }
@@ -313,6 +320,9 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
                                   <SelectSeparator />
                                   <SelectItem value="NEW" className="font-bold text-primary">
                                     + Create New Provider
+                                  </SelectItem>
+                                  <SelectItem value="MANAGE" className="font-medium text-muted-foreground">
+                                    Manage Providers...
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
@@ -378,6 +388,16 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
           onClose={() => setIsCreateDialogOpen(false)} 
           onSuccess={handleCompanyCreateSuccess}
           defaultServiceType={activeUtilityForCreation}
+        />
+      )}
+
+      {activeUtilityForManage && (
+        <ManageCompaniesDialog
+          isOpen={isManageDialogOpen}
+          onClose={() => setIsManageDialogOpen(false)}
+          serviceType={activeUtilityForManage}
+          companies={companies}
+          onRefresh={fetchCompanies}
         />
       )}
     </>
