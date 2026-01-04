@@ -39,7 +39,7 @@ export function BillDetails({ bill, propertyName, onEdit }: BillDetailsProps) {
         </Button>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Financials */}
         <div className="space-y-3 p-4 border rounded-xl bg-muted/10">
           <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
