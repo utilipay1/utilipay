@@ -6,19 +6,19 @@ import { AddBillModal } from './AddBillModal';
 import { ExportBillsButton } from './ExportBillsButton';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { BillSchema } from '@/lib/schemas';
+import { BillSchema, PropertySchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { BillsToolbar, BillFiltersState } from './BillsToolbar';
 
 type Bill = z.infer<typeof BillSchema>;
-interface Property {
-  _id: string;
-  address: string;
-}
+type Property = z.infer<typeof PropertySchema>;
+type Company = z.infer<typeof CompanySchema>;
 
 export function BillsView() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [properties, setProperties] = useState<Record<string, string>>({}); // Map id -> address
+  const [fullProperties, setFullProperties] = useState<Record<string, Property>>({});
+  const [companies, setCompanies] = useState<Record<string, Company>>({});
   const [loading, setLoading] = useState(true);
   
   const [filters, setFilters] = useState<BillFiltersState>({
@@ -32,14 +32,16 @@ export function BillsView() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [billsRes, propsRes] = await Promise.all([
+      const [billsRes, propsRes, companiesRes] = await Promise.all([
         fetch(`/api/bills?archived=${filters.showArchived}`),
-        fetch('/api/properties?archived=all')
+        fetch('/api/properties?archived=all'),
+        fetch('/api/companies')
       ]);
 
-      if (billsRes.ok && propsRes.ok) {
+      if (billsRes.ok && propsRes.ok && companiesRes.ok) {
         const billsData = await billsRes.json();
         const propsData = await propsRes.json();
+        const companiesData = await companiesRes.json();
         
         const parsedBills = z.array(BillSchema).parse(billsData);
         // Ensure consistent sorting by due_date ascending
@@ -47,10 +49,23 @@ export function BillsView() {
         setBills(parsedBills);
 
         const propsMap: Record<string, string> = {};
+        const propsFullMap: Record<string, Property> = {};
         propsData.forEach((p: Property) => {
-          propsMap[p._id] = p.address;
+          if (p._id) {
+            propsMap[p._id] = p.address;
+            propsFullMap[p._id] = p;
+          }
         });
         setProperties(propsMap);
+        setFullProperties(propsFullMap);
+
+        const companiesMap: Record<string, Company> = {};
+        companiesData.forEach((c: Company) => {
+          if (c._id) {
+            companiesMap[c._id] = c;
+          }
+        });
+        setCompanies(companiesMap);
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -119,6 +134,8 @@ export function BillsView() {
           <BillList 
             bills={filteredBills} 
             properties={properties} 
+            fullProperties={fullProperties}
+            companies={companies}
             onRefresh={fetchData} 
           />
         )}

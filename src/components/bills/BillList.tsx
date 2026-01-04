@@ -12,21 +12,25 @@ import {
 import { RecordPaymentModal } from './RecordPaymentModal';
 import { BillModal } from './BillModal';
 import { format, differenceInCalendarDays } from 'date-fns';
-import { BillSchema } from '@/lib/schemas';
+import { BillSchema, PropertySchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Switch } from '@/components/ui/switch';
 import { Edit, Archive, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type Bill = z.infer<typeof BillSchema>;
+type Property = z.infer<typeof PropertySchema>;
+type Company = z.infer<typeof CompanySchema>;
 
 interface BillListProps {
   bills: Bill[];
   properties: Record<string, string>;
+  fullProperties: Record<string, Property>;
+  companies: Record<string, Company>;
   onRefresh: () => void;
 }
 
-export function BillList({ bills, properties, onRefresh }: BillListProps) {
+export function BillList({ bills, properties, fullProperties, companies, onRefresh }: BillListProps) {
   // Modal state
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,12 +140,13 @@ export function BillList({ bills, properties, onRefresh }: BillListProps) {
                     </TableCell>
                     <TableCell className="font-semibold">{bill.utility_type}</TableCell>
                     <TableCell className="font-medium text-base">₹{bill.amount.toLocaleString()}</TableCell>
-                                                                    <TableCell>
-                                                                      <div className="flex flex-col">
-                                                                        <span className={isUrgent ? (daysRemaining <= 3 ? 'text-urgency-high font-medium' : 'text-urgency-medium font-medium') : ''}>
-                                                                          {format(new Date(bill.due_date), 'PP')}
-                                                                        </span>
-                                                                        {isUrgent && (                          <span className={`text-[10px] uppercase font-bold tracking-wider ${daysRemaining <= 3 ? 'text-urgency-high' : 'text-urgency-medium'}`}>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className={isUrgent ? (daysRemaining <= 3 ? 'text-urgency-high font-medium' : 'text-urgency-medium font-medium') : ''}>
+                          {format(new Date(bill.due_date), 'PP')}
+                        </span>
+                        {isUrgent && (
+                          <span className={`text-[10px] uppercase font-bold tracking-wider ${daysRemaining <= 3 ? 'text-urgency-high' : 'text-urgency-medium'}`}>
                             {daysRemaining <= 0 ? 'Due' : `In ${daysRemaining} days`}
                           </span>
                         )}
@@ -199,6 +204,9 @@ export function BillList({ bills, properties, onRefresh }: BillListProps) {
       <BillModal
         bill={selectedBill}
         propertyName={selectedBill ? properties[selectedBill.property_id] : undefined}
+        companyName={selectedBill && fullProperties[selectedBill.property_id]?.utility_companies?.[selectedBill.utility_type] 
+          ? companies[fullProperties[selectedBill.property_id]!.utility_companies![selectedBill.utility_type]!]?.name 
+          : undefined}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => {

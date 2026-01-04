@@ -9,13 +9,15 @@ import {
 } from "@/components/ui/dialog";
 import { PropertyForm } from "./PropertyForm";
 import { PropertyDetails } from "./PropertyDetails";
-import { PropertySchema } from "@/lib/schemas";
+import { PropertySchema, CompanySchema } from "@/lib/schemas";
 import { z } from "zod";
 
 type Property = z.infer<typeof PropertySchema>;
+type Company = z.infer<typeof CompanySchema>;
 
 interface PropertyModalProps {
   property: Property | null;
+  companies?: Record<string, Company>;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -24,6 +26,7 @@ interface PropertyModalProps {
 
 export function PropertyModal({ 
   property, 
+  companies,
   isOpen, 
   onClose, 
   onSuccess,
@@ -62,6 +65,7 @@ export function PropertyModal({
         {mode === "view" ? (
           <PropertyDetails 
             property={property} 
+            companies={companies}
             onEdit={() => setMode("edit")} 
           />
         ) : (

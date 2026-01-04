@@ -9,15 +9,19 @@ type Bill = z.infer<typeof BillSchema>;
 interface BillDetailsProps {
   bill: Bill;
   propertyName?: string;
+  companyName?: string;
   onEdit: () => void;
 }
 
-export function BillDetails({ bill, propertyName, onEdit }: BillDetailsProps) {
+export function BillDetails({ bill, propertyName, companyName, onEdit }: BillDetailsProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
           <h2 className="text-xl font-bold">{bill.utility_type} Bill</h2>
+          {companyName && (
+            <div className="text-lg font-semibold text-primary">{companyName}</div>
+          )}
           {propertyName && (
             <p className="text-muted-foreground">{propertyName}</p>
           )}

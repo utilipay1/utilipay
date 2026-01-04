@@ -1,5 +1,17 @@
 import { z } from 'zod';
 
+export const CompanySchema = z.object({
+  _id: z.string().optional(),
+  name: z.string().min(1, "Company name is required"),
+  service_type: z.enum(['Water', 'Sewer', 'Gas', 'Electric']),
+  contact_info: z.object({
+    phone: z.string().optional(),
+    website: z.string().optional(),
+    email: z.string().optional(),
+  }).optional(),
+  createdAt: z.coerce.date().optional(),
+});
+
 export const PropertySchema = z.object({
   _id: z.string().optional(), // MongoDB ID
   address: z.string().min(1, "Address is required"),
@@ -13,6 +25,8 @@ export const PropertySchema = z.object({
     contact: z.string().optional(),
   }).optional(),
   utilities_managed: z.array(z.enum(['Water', 'Sewer', 'Gas', 'Electric'])),
+  // Map of Utility Type -> Company ID
+  utility_companies: z.record(z.string(), z.string()).optional(), 
   notes: z.string().optional(),
   is_archived: z.boolean().default(false),
 });

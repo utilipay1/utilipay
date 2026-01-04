@@ -12,13 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { PropertyModal } from "./PropertyModal";
 import { Edit, Archive, RotateCcw } from "lucide-react";
-import { PropertySchema } from "@/lib/schemas";
+import { PropertySchema, CompanySchema } from "@/lib/schemas";
 import { z } from "zod";
 
 type Property = z.infer<typeof PropertySchema>;
+type Company = z.infer<typeof CompanySchema>;
 
 export function PropertyList({ search = "", showArchived = false }: { search?: string; showArchived?: boolean }) {
   const [properties, setProperties] = useState<Property[]>([]);
+  const [companies, setCompanies] = useState<Record<string, Company>>({});
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,10 +29,23 @@ export function PropertyList({ search = "", showArchived = false }: { search?: s
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/properties?archived=${showArchived}`);
-      if (response.ok) {
-        const data = await response.json();
-        setProperties(data);
+      const [propsRes, companiesRes] = await Promise.all([
+        fetch(`/api/properties?archived=${showArchived}`),
+        fetch('/api/companies')
+      ]);
+
+      if (propsRes.ok && companiesRes.ok) {
+        const propsData = await propsRes.json();
+        const companiesData = await companiesRes.json();
+        setProperties(propsData);
+
+        const companiesMap: Record<string, Company> = {};
+        companiesData.forEach((c: Company) => {
+          if (c._id) {
+            companiesMap[c._id] = c;
+          }
+        });
+        setCompanies(companiesMap);
       }
     } catch (error) {
       console.error("Failed to fetch properties:", error);
@@ -163,6 +178,7 @@ export function PropertyList({ search = "", showArchived = false }: { search?: s
 
       <PropertyModal
         property={selectedProperty}
+        companies={companies}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => {

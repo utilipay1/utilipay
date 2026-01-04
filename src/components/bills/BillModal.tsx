@@ -17,6 +17,7 @@ type Bill = z.infer<typeof BillSchema>;
 interface BillModalProps {
   bill: Bill | null;
   propertyName?: string;
+  companyName?: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -26,6 +27,7 @@ interface BillModalProps {
 export function BillModal({ 
   bill, 
   propertyName,
+  companyName,
   isOpen, 
   onClose, 
   onSuccess,
@@ -59,6 +61,7 @@ export function BillModal({
           <BillDetails 
             bill={bill} 
             propertyName={propertyName}
+            companyName={companyName}
             onEdit={() => setMode("edit")} 
           />
         ) : (

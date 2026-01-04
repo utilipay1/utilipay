@@ -1,16 +1,18 @@
-import { PropertySchema } from "@/lib/schemas";
+import { PropertySchema, CompanySchema } from "@/lib/schemas";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Edit, User, Home, Lightbulb, FileText, Phone } from "lucide-react";
 
 type Property = z.infer<typeof PropertySchema>;
+type Company = z.infer<typeof CompanySchema>;
 
 interface PropertyDetailsProps {
   property: Property;
+  companies?: Record<string, Company>;
   onEdit: () => void;
 }
 
-export function PropertyDetails({ property, onEdit }: PropertyDetailsProps) {
+export function PropertyDetails({ property, companies, onEdit }: PropertyDetailsProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
@@ -81,11 +83,21 @@ export function PropertyDetails({ property, onEdit }: PropertyDetailsProps) {
         </div>
         <div className="flex flex-wrap gap-2">
           {property.utilities_managed.length > 0 ? (
-            property.utilities_managed.map((utility) => (
-              <div key={utility} className="px-3 py-1.5 rounded-md border bg-card font-medium text-sm flex items-center gap-2 shadow-sm">
-                {utility}
-              </div>
-            ))
+            property.utilities_managed.map((utility) => {
+              const companyId = property.utility_companies?.[utility];
+              const companyName = companyId && companies?.[companyId]?.name;
+              
+              return (
+                <div key={utility} className="px-3 py-1.5 rounded-md border bg-card font-medium text-sm flex items-center gap-2 shadow-sm">
+                  <span>{utility}</span>
+                  {companyName && (
+                    <span className="text-xs text-muted-foreground border-l pl-2 ml-1">
+                      {companyName}
+                    </span>
+                  )}
+                </div>
+              );
+            })
           ) : (
             <span className="text-sm text-muted-foreground italic">No utilities managed.</span>
           )}
