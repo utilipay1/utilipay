@@ -1,27 +1,100 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { BillList } from './BillList';
 import { AddBillModal } from './AddBillModal';
 import { ExportBillsButton } from './ExportBillsButton';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { BillSchema } from '@/lib/schemas';
+import { z } from 'zod';
+import { BillsToolbar, BillFiltersState } from './BillsToolbar';
+
+type Bill = z.infer<typeof BillSchema>;
+interface Property {
+  _id: string;
+  address: string;
+}
 
 export function BillsView() {
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [properties, setProperties] = useState<Record<string, string>>({}); // Map id -> address
+  const [loading, setLoading] = useState(true);
+  
+  const [filters, setFilters] = useState<BillFiltersState>({
+    status: new Set(),
+    utilityType: new Set(),
+    propertyId: new Set(),
+    search: "",
+  });
 
-  const handleRefresh = useCallback(() => {
-    setRefreshKey(prev => prev + 1);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [billsRes, propsRes] = await Promise.all([
+        fetch('/api/bills'),
+        fetch('/api/properties')
+      ]);
+
+      if (billsRes.ok && propsRes.ok) {
+        const billsData = await billsRes.json();
+        const propsData = await propsRes.json();
+        
+        const parsedBills = z.array(BillSchema).parse(billsData);
+        // Ensure consistent sorting by due_date ascending
+        parsedBills.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+        setBills(parsedBills);
+
+        const propsMap: Record<string, string> = {};
+        propsData.forEach((p: Property) => {
+          propsMap[p._id] = p.address;
+        });
+        setProperties(propsMap);
+      }
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const filteredBills = bills.filter((bill) => {
+    // Search Filter (Address)
+    const address = properties[bill.property_id] || "";
+    if (filters.search && !address.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false;
+    }
+
+    // Status Filter
+    if (filters.status.size > 0 && !filters.status.has(bill.status)) {
+        return false;
+    }
+
+    // Utility Filter
+    if (filters.utilityType.size > 0 && !filters.utilityType.has(bill.utility_type)) {
+        return false;
+    }
+
+    // Property Filter (ID match)
+    if (filters.propertyId.size > 0 && !filters.propertyId.has(bill.property_id)) {
+        return false;
+    }
+
+    return true;
+  });
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Bills</h1>
         <div className="flex items-center gap-2">
-          <ExportBillsButton />
+          <ExportBillsButton bills={filteredBills} properties={properties} />
           <AddBillModal 
-            onSuccess={handleRefresh}
+            onSuccess={fetchData}
             trigger={
               <Button className="gap-2">
                 <Plus className="w-4 h-4" />
@@ -32,7 +105,23 @@ export function BillsView() {
         </div>
       </div>
 
-      <BillList key={refreshKey} />
+      <div className="space-y-4">
+        <BillsToolbar 
+          filters={filters} 
+          setFilters={setFilters} 
+          properties={properties} 
+        />
+        
+        {loading ? (
+           <div>Loading bills...</div>
+        ) : (
+          <BillList 
+            bills={filteredBills} 
+            properties={properties} 
+            onRefresh={fetchData} 
+          />
+        )}
+      </div>
     </div>
   );
 }

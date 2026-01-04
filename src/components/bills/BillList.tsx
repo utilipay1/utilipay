@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -17,64 +17,20 @@ import { z } from 'zod';
 import { Switch } from '@/components/ui/switch';
 import { Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { BillsToolbar, BillFiltersState } from './BillsToolbar';
 
 type Bill = z.infer<typeof BillSchema>;
-interface Property {
-  _id: string;
-  address: string;
+
+interface BillListProps {
+  bills: Bill[];
+  properties: Record<string, string>;
+  onRefresh: () => void;
 }
 
-export function BillList() {
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [properties, setProperties] = useState<Record<string, string>>({}); // Map id -> address
-  const [loading, setLoading] = useState(true);
-  
-  const [filters, setFilters] = useState<BillFiltersState>({
-    status: new Set(),
-    utilityType: new Set(),
-    propertyId: new Set(),
-    search: "",
-  });
-  
+export function BillList({ bills, properties, onRefresh }: BillListProps) {
   // Modal state
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [billsRes, propsRes] = await Promise.all([
-        fetch('/api/bills'),
-        fetch('/api/properties')
-      ]);
-
-      if (billsRes.ok && propsRes.ok) {
-        const billsData = await billsRes.json();
-        const propsData = await propsRes.json();
-        
-        const parsedBills = z.array(BillSchema).parse(billsData);
-        // Ensure consistent sorting by due_date ascending
-        parsedBills.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
-        setBills(parsedBills);
-
-        const propsMap: Record<string, string> = {};
-        propsData.forEach((p: Property) => {
-          propsMap[p._id] = p.address;
-        });
-        setProperties(propsMap);
-      }
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleToggleCharged = async (e: React.MouseEvent, billId: string, currentStatus: string) => {
     e.stopPropagation(); // Prevent row click
@@ -89,7 +45,7 @@ export function BillList() {
       });
 
       if (response.ok) {
-        setBills(prev => prev.map(b => b._id === billId ? { ...b, status: newStatus as Bill['status'] } : b));
+        onRefresh();
       }
     } catch (error) {
       console.error('Failed to update charged status:', error);
@@ -109,152 +65,118 @@ export function BillList() {
     setIsModalOpen(true);
   };
 
-  if (loading) return <div>Loading bills...</div>;
-
-  const filteredBills = bills.filter((bill) => {
-    // Search Filter (Address)
-    const address = properties[bill.property_id] || "";
-    if (filters.search && !address.toLowerCase().includes(filters.search.toLowerCase())) {
-      return false;
-    }
-
-    // Status Filter
-    if (filters.status.size > 0 && !filters.status.has(bill.status)) {
-        return false;
-    }
-
-    // Utility Filter
-    if (filters.utilityType.size > 0 && !filters.utilityType.has(bill.utility_type)) {
-        return false;
-    }
-
-    // Property Filter (ID match)
-    if (filters.propertyId.size > 0 && !filters.propertyId.has(bill.property_id)) {
-        return false;
-    }
-
-    return true;
-  });
-
   return (
-    <div className="space-y-4">
-      <BillsToolbar 
-        filters={filters} 
-        setFilters={setFilters} 
-        properties={properties} 
-      />
-      <div className="mt-4">
-          <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="w-[12px] p-0"></TableHead>
-                  <TableHead>Property</TableHead>
-                  <TableHead>Utility</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Charged in Books</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredBills.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground italic">
-                      No bills found.
+    <>
+      <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
+        <Table>
+          <TableHeader className="bg-muted/30">
+            <TableRow>
+              <TableHead className="w-[12px] p-0"></TableHead>
+              <TableHead>Property</TableHead>
+              <TableHead>Utility</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Due Date</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Charged in Books</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {bills.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground italic">
+                  No bills found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              bills.map((bill) => {
+                const daysRemaining = differenceInCalendarDays(new Date(bill.due_date), new Date());
+                const isUnpaid = bill.status === 'Unpaid' || bill.status === 'Overdue';
+                const isPaid = bill.status.startsWith('Paid');
+                const isUrgent = isUnpaid && daysRemaining <= 7;
+                const propertyAddress = properties[bill.property_id] || "Unknown Property";
+                
+                return (
+                  <TableRow 
+                    key={bill._id} 
+                    className="relative group hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => handleRowClick(bill)}
+                  >
+                    <TableCell className="p-0">
+                      {isUrgent && (
+                        <div 
+                          className={`w-1 h-full absolute left-0 top-0 ${
+                            daysRemaining <= 3 ? 'bg-urgency-high' : 'bg-urgency-medium'
+                          }`} 
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium max-w-[200px] truncate" title={propertyAddress}>
+                      {propertyAddress}
+                    </TableCell>
+                    <TableCell className="font-semibold">{bill.utility_type}</TableCell>
+                    <TableCell className="font-medium text-base">₹{bill.amount.toLocaleString()}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className={isUrgent ? (daysRemaining <= 3 ? 'text-urgency-high font-medium' : 'text-urgency-medium font-medium') : ''}>
+                          {format(new Date(bill.due_date), 'PP')}
+                        </span>
+                        {isUrgent && (
+                          <span className={`text-[10px] uppercase font-bold tracking-wider ${daysRemaining <= 3 ? 'text-urgency-high' : 'text-urgency-medium'}`}>
+                            {daysRemaining <= 0 ? 'Due' : `In ${daysRemaining} days`}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                        isPaid ? 'bg-green-50 text-green-700 border-green-100' : 'bg-muted text-muted-foreground border-muted-foreground/20'
+                      }`}>
+                        {bill.status === 'Paid-Charged' ? 'Paid' : bill.status === 'Paid-Uncharged' ? 'Paid' : bill.status}
+                      </span>
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Switch 
+                        disabled={!isPaid}
+                        checked={bill.status === 'Paid-Charged'}
+                        onCheckedChange={() => handleToggleCharged({ stopPropagation: () => {} } as React.MouseEvent, bill._id!, bill.status)}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-muted-foreground hover:text-primary"
+                          onClick={(e) => handleEditClick(e, bill)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        {isUnpaid ? (
+                          <div onClick={(e) => e.stopPropagation()}>
+                              <RecordPaymentModal bill={bill} onPaymentRecorded={onRefresh} />
+                          </div>
+                        ) : null}
+                      </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  filteredBills.map((bill) => {
-                    const daysRemaining = differenceInCalendarDays(new Date(bill.due_date), new Date());
-                    const isUnpaid = bill.status === 'Unpaid' || bill.status === 'Overdue';
-                    const isPaid = bill.status.startsWith('Paid');
-                    const isUrgent = isUnpaid && daysRemaining <= 7;
-                    const propertyAddress = properties[bill.property_id] || "Unknown Property";
-                    
-                    return (
-                      <TableRow 
-                        key={bill._id} 
-                        className="relative group hover:bg-muted/50 transition-colors cursor-pointer"
-                        onClick={() => handleRowClick(bill)}
-                      >
-                        <TableCell className="p-0">
-                          {isUrgent && (
-                            <div 
-                              className={`w-1 h-full absolute left-0 top-0 ${
-                                daysRemaining <= 3 ? 'bg-urgency-high' : 'bg-urgency-medium'
-                              }`} 
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell className="font-medium max-w-[200px] truncate" title={propertyAddress}>
-                          {propertyAddress}
-                        </TableCell>
-                        <TableCell className="font-semibold">{bill.utility_type}</TableCell>
-                        <TableCell className="font-medium text-base">₹{bill.amount.toLocaleString()}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className={isUrgent ? (daysRemaining <= 3 ? 'text-urgency-high font-medium' : 'text-urgency-medium font-medium') : ''}>
-                              {format(new Date(bill.due_date), 'PP')}
-                            </span>
-                            {isUrgent && (
-                              <span className={`text-[10px] uppercase font-bold tracking-wider ${daysRemaining <= 3 ? 'text-urgency-high' : 'text-urgency-medium'}`}>
-                                {daysRemaining <= 0 ? 'Due' : `In ${daysRemaining} days`}
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
-                            isPaid ? 'bg-green-50 text-green-700 border-green-100' : 'bg-muted text-muted-foreground border-muted-foreground/20'
-                          }`}>
-                            {bill.status === 'Paid-Charged' ? 'Paid' : bill.status === 'Paid-Uncharged' ? 'Paid' : bill.status}
-                          </span>
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <Switch 
-                            disabled={!isPaid}
-                            checked={bill.status === 'Paid-Charged'}
-                            onCheckedChange={() => handleToggleCharged({ stopPropagation: () => {} } as React.MouseEvent, bill._id!, bill.status)}
-                          />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end items-center gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-muted-foreground hover:text-primary"
-                              onClick={(e) => handleEditClick(e, bill)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            {isUnpaid ? (
-                              <div onClick={(e) => e.stopPropagation()}>
-                                 <RecordPaymentModal bill={bill} onPaymentRecorded={fetchData} />
-                              </div>
-                            ) : null}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-        <BillModal
-          bill={selectedBill}
-          propertyName={selectedBill ? properties[selectedBill.property_id] : undefined}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSuccess={() => {
-            fetchData();
-          }}
-          defaultMode={modalMode}
-        />
-    </div>
+      <BillModal
+        bill={selectedBill}
+        propertyName={selectedBill ? properties[selectedBill.property_id] : undefined}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          onRefresh();
+        }}
+        defaultMode={modalMode}
+      />
+    </>
   );
 }
