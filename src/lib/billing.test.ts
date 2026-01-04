@@ -8,6 +8,7 @@ describe('billing logic', () => {
         property_id: 'prop-1',
         utility_type: 'Water' as const,
         amount: 100,
+        account_number: 'ACC-123',
         billing_period_start: new Date('2026-01-01'),
         billing_period_end: new Date('2026-01-31'),
         bill_date: new Date('2026-02-01'),
@@ -20,6 +21,7 @@ describe('billing logic', () => {
       expect(nextBill.utility_type).toBe(currentBill.utility_type);
       expect(nextBill.amount).toBe(0); // Draft should be 0 or same? Spec says "placeholder"
       expect(nextBill.status).toBe('Unpaid');
+      expect(nextBill.account_number).toBe('ACC-123'); // Should persist
       
       // Check dates
       // Current: Jan 1 - Jan 31 (31 days). Diff = 30.

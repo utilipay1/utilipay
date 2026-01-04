@@ -4,6 +4,7 @@ export interface BillInput {
   property_id: string;
   utility_type: 'Water' | 'Sewer' | 'Gas' | 'Electric';
   amount: number;
+  account_number?: string;
   billing_period_start: Date;
   billing_period_end: Date;
   bill_date: Date;
@@ -25,6 +26,7 @@ export function calculateNextBill(currentBill: BillInput) {
     property_id: currentBill.property_id,
     utility_type: currentBill.utility_type,
     amount: 0,
+    account_number: currentBill.account_number,
     billing_period_start: nextStart,
     billing_period_end: nextEnd,
     bill_date: nextBillDate,
