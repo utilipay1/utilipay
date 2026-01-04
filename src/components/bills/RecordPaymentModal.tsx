@@ -183,7 +183,16 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                 <FormItem>
                   <FormLabel>Service/Convenience Fee</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" placeholder="0.00" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
+                    <Input 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="0.00" 
+                      {...field} 
+                      onChange={e => {
+                        const value = e.target.value;
+                        field.onChange(value === "" ? "" : parseFloat(value));
+                      }} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
