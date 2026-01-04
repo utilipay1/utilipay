@@ -56,25 +56,27 @@ export function BillDetails({ bill, propertyName, onEdit }: BillDetailsProps) {
         </div>
 
         {/* Dates */}
-        <div className="space-y-3 p-4 border rounded-xl bg-muted/10">
+        <div className="space-y-4 p-5 border rounded-xl bg-muted/10">
           <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             <Calendar className="w-4 h-4" />
             Key Dates
           </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Due Date:</span>
-              <span className="font-medium">{format(new Date(bill.due_date), 'PPP')}</span>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Due Date</span>
+              <span className="font-bold">{format(new Date(bill.due_date), 'PPP')}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Bill Date:</span>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Bill Date</span>
               <span className="font-medium">{format(new Date(bill.bill_date), 'PPP')}</span>
             </div>
-            <div className="flex justify-between border-t pt-2 mt-2">
-              <span className="text-muted-foreground">Period:</span>
-              <span className="font-medium text-right">
-                {format(new Date(bill.billing_period_start), 'MMM d')} - {format(new Date(bill.billing_period_end), 'MMM d, yyyy')}
-              </span>
+            <div className="pt-3 mt-1 border-t">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-muted-foreground">Service Period</span>
+              </div>
+              <div className="font-medium text-right bg-background/50 p-2 rounded border border-dashed">
+                {format(new Date(bill.billing_period_start), 'MMM d')} — {format(new Date(bill.billing_period_end), 'MMM d, yyyy')}
+              </div>
             </div>
           </div>
         </div>
