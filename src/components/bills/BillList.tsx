@@ -11,41 +11,65 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecordPaymentModal } from './RecordPaymentModal';
-import { EditBillModal } from './EditBillModal';
+import { BillModal } from './BillModal';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Switch } from '@/components/ui/switch';
-import { Pencil } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type Bill = z.infer<typeof BillSchema>;
+interface Property {
+  _id: string;
+  address: string;
+}
 
 export function BillList() {
   const [bills, setBills] = useState<Bill[]>([]);
+  const [properties, setProperties] = useState<Record<string, string>>({}); // Map id -> address
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
+  
+  // Modal state
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
-  const fetchBills = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch('/api/bills');
-      if (response.ok) {
-        const data = await response.json();
-        const parsedData = z.array(BillSchema).parse(data);
-        setBills(parsedData);
+      setLoading(true);
+      const [billsRes, propsRes] = await Promise.all([
+        fetch('/api/bills'),
+        fetch('/api/properties')
+      ]);
+
+      if (billsRes.ok && propsRes.ok) {
+        const billsData = await billsRes.json();
+        const propsData = await propsRes.json();
+        
+        const parsedBills = z.array(BillSchema).parse(billsData);
+        setBills(parsedBills);
+
+        const propsMap: Record<string, string> = {};
+        propsData.forEach((p: Property) => {
+          propsMap[p._id] = p.address;
+        });
+        setProperties(propsMap);
       }
     } catch (error) {
-      console.error('Failed to fetch bills:', error);
+      console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBills();
+    fetchData();
   }, []);
 
-  const handleToggleCharged = async (billId: string, currentStatus: string) => {
+  const handleToggleCharged = async (e: React.MouseEvent, billId: string, currentStatus: string) => {
+    e.stopPropagation(); // Prevent row click
     const isCharged = currentStatus === 'Paid-Charged';
     const newStatus = isCharged ? 'Paid-Uncharged' : 'Paid-Charged';
     
@@ -62,6 +86,19 @@ export function BillList() {
     } catch (error) {
       console.error('Failed to update charged status:', error);
     }
+  };
+
+  const handleRowClick = (bill: Bill) => {
+    setSelectedBill(bill);
+    setModalMode("view");
+    setIsModalOpen(true);
+  };
+
+  const handleEditClick = (e: React.MouseEvent, bill: Bill) => {
+    e.stopPropagation();
+    setSelectedBill(bill);
+    setModalMode("edit");
+    setIsModalOpen(true);
   };
 
   if (loading) return <div>Loading bills...</div>;
@@ -89,6 +126,7 @@ export function BillList() {
               <TableHeader className="bg-muted/30">
                 <TableRow>
                   <TableHead className="w-[12px] p-0"></TableHead>
+                  <TableHead>Property</TableHead>
                   <TableHead>Utility</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Due Date</TableHead>
@@ -100,7 +138,7 @@ export function BillList() {
               <TableBody>
                 {filteredBills.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground italic">
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground italic">
                       No bills found.
                     </TableCell>
                   </TableRow>
@@ -110,9 +148,14 @@ export function BillList() {
                     const isUnpaid = bill.status === 'Unpaid' || bill.status === 'Overdue';
                     const isPaid = bill.status.startsWith('Paid');
                     const isUrgent = isUnpaid && daysRemaining <= 7;
+                    const propertyAddress = properties[bill.property_id] || "Unknown Property";
                     
                     return (
-                      <TableRow key={bill._id} className="relative group hover:bg-muted/50 transition-colors">
+                      <TableRow 
+                        key={bill._id} 
+                        className="relative group hover:bg-muted/50 transition-colors cursor-pointer"
+                        onClick={() => handleRowClick(bill)}
+                      >
                         <TableCell className="p-0">
                           {isUrgent && (
                             <div 
@@ -121,6 +164,9 @@ export function BillList() {
                               }`} 
                             />
                           )}
+                        </TableCell>
+                        <TableCell className="font-medium max-w-[200px] truncate" title={propertyAddress}>
+                          {propertyAddress}
                         </TableCell>
                         <TableCell className="font-semibold">{bill.utility_type}</TableCell>
                         <TableCell className="font-medium text-base">₹{bill.amount.toLocaleString()}</TableCell>
@@ -143,26 +189,27 @@ export function BillList() {
                             {bill.status === 'Paid-Charged' ? 'Paid' : bill.status === 'Paid-Uncharged' ? 'Paid' : bill.status}
                           </span>
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <Switch 
                             disabled={!isPaid}
                             checked={bill.status === 'Paid-Charged'}
-                            onCheckedChange={() => handleToggleCharged(bill._id!, bill.status)}
+                            onCheckedChange={() => handleToggleCharged({ stopPropagation: () => {} } as React.MouseEvent, bill._id!, bill.status)}
                           />
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end items-center gap-2">
-                            <EditBillModal 
-                              bill={bill} 
-                              trigger={
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              }
-                              onSuccess={fetchBills}
-                            />
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-muted-foreground hover:text-primary"
+                              onClick={(e) => handleEditClick(e, bill)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
                             {isUnpaid ? (
-                              <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
+                              <div onClick={(e) => e.stopPropagation()}>
+                                 <RecordPaymentModal bill={bill} onPaymentRecorded={fetchData} />
+                              </div>
                             ) : null}
                           </div>
                         </TableCell>
@@ -174,6 +221,17 @@ export function BillList() {
             </Table>
           </div>
         </div>
+
+        <BillModal
+          bill={selectedBill}
+          propertyName={selectedBill ? properties[selectedBill.property_id] : undefined}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            fetchData();
+          }}
+          defaultMode={modalMode}
+        />
     </div>
   );
 }

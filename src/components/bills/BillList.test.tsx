@@ -29,34 +29,69 @@ const mockBills = [
   },
 ];
 
+const mockProperties = [
+  { _id: 'prop1', address: '123 Main St' },
+  { _id: 'prop2', address: '456 Oak Ave' },
+];
+
 describe('BillList', () => {
   beforeEach(() => {
     (global.fetch as jest.Mock).mockReset();
+    (global.fetch as jest.Mock).mockImplementation((url) => {
+      if (url === '/api/bills') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockBills,
+        });
+      }
+      if (url === '/api/properties') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockProperties,
+        });
+      }
+      return Promise.resolve({ ok: false });
+    });
   });
 
   it('renders all bills by default', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBills,
-    });
+    // Mock implementation is already set in beforeEach
 
     render(<BillList />);
     await waitFor(() => {
       expect(screen.getByText('Water')).toBeInTheDocument();
       expect(screen.getByText('Electric')).toBeInTheDocument();
+      expect(screen.getByText('123 Main St')).toBeInTheDocument(); // Verify property address too
     });
   });
 
   it('toggles charged status for paid bills', async () => {
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockBills,
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ modifiedCount: 1 }),
-      });
+    // The initial load mocks are handled by beforeEach.
+    // We need to override or append the mock for the PATCH request.
+    // Since fetch is called internally, we can spy or ensure the next call returns what we want if we were using sequential mocks.
+    // With mockImplementation, we can add a condition for the specific PATCH url.
+    
+    (global.fetch as jest.Mock).mockImplementation((url, options) => {
+       if (url === '/api/bills') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockBills,
+        });
+      }
+      if (url === '/api/properties') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockProperties,
+        });
+      }
+      if (url === '/api/bills/2' && options?.method === 'PATCH') {
+         return Promise.resolve({
+          ok: true,
+          json: async () => ({ modifiedCount: 1 }),
+        });
+      }
+      return Promise.resolve({ ok: false });
+    });
 
     render(<BillList />);
 

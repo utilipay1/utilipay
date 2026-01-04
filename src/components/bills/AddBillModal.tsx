@@ -9,7 +9,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { AddBillForm } from './AddBillForm';
+import { BillForm } from './BillForm';
 
 interface AddBillModalProps {
   trigger: React.ReactNode;
@@ -33,11 +33,11 @@ export function AddBillModal({ trigger, onSuccess }: AddBillModalProps) {
         <DialogHeader>
           <DialogTitle>Add New Bill</DialogTitle>
           <DialogDescription>
-            Manually enter a utility bill for a specific property.
+            Record a new utility bill.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <AddBillForm onSuccess={handleSuccess} />
+          <BillForm mode="create" onSuccess={handleSuccess} />
         </div>
       </DialogContent>
     </Dialog>

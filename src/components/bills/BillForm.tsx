@@ -17,10 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
-// Extend the schema to allow empty string for amount during editing
-const formSchema = BillSchema.omit({ _id: true }).extend({
+const formSchema = BillSchema.omit({ _id: true, payment: true }).extend({
   amount: z.coerce.number().min(0),
-  // Override dates to be strings for form handling
   billing_period_start: z.string(),
   billing_period_end: z.string(),
   bill_date: z.string(),
@@ -28,32 +26,53 @@ const formSchema = BillSchema.omit({ _id: true }).extend({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+type Bill = z.infer<typeof BillSchema>;
+
+interface BillFormProps {
+  initialData?: Bill;
+  mode: "create" | "edit";
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
 
 interface Property {
   _id: string;
   address: string;
 }
 
-export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
+export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const defaultValues: FormValues = initialData ? {
+    property_id: initialData.property_id,
+    utility_type: initialData.utility_type,
+    amount: initialData.amount,
+    account_number: initialData.account_number || "",
+    billing_period_start: new Date(initialData.billing_period_start).toISOString().split('T')[0],
+    billing_period_end: new Date(initialData.billing_period_end).toISOString().split('T')[0],
+    bill_date: new Date(initialData.bill_date).toISOString().split('T')[0],
+    due_date: new Date(initialData.due_date).toISOString().split('T')[0],
+    status: initialData.status,
+    notes: initialData.notes || "",
+  } : {
+    property_id: "",
+    utility_type: "Water",
+    amount: 0,
+    account_number: "",
+    billing_period_start: new Date().toISOString().split('T')[0],
+    billing_period_end: new Date().toISOString().split('T')[0],
+    bill_date: new Date().toISOString().split('T')[0],
+    due_date: new Date().toISOString().split('T')[0],
+    status: "Unpaid",
+    notes: "",
+  };
+
   const form = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(formSchema) as any,
-    defaultValues: {
-      property_id: "",
-      utility_type: "Water",
-      amount: 0,
-      account_number: "",
-      billing_period_start: new Date().toISOString().split('T')[0],
-      billing_period_end: new Date().toISOString().split('T')[0],
-      bill_date: new Date().toISOString().split('T')[0],
-      due_date: new Date().toISOString().split('T')[0],
-      status: "Unpaid",
-      notes: "",
-    },
+    defaultValues,
   });
 
   useEffect(() => {
@@ -74,18 +93,21 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
   async function onSubmit(values: FormValues) {
     setStatus("submitting");
     try {
-      const response = await fetch("/api/bills", {
-        method: "POST",
+      const url = mode === "create" ? "/api/bills" : `/api/bills/${initialData?._id}`;
+      const method = mode === "create" ? "POST" : "PATCH";
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add bill");
+        throw new Error(`Failed to ${mode} bill`);
       }
 
       setStatus("success");
-      form.reset();
+      if (mode === "create") form.reset();
       if (onSuccess) onSuccess();
     } catch (error) {
       setStatus("error");
@@ -106,6 +128,7 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
                 <select
                   {...field}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={mode === 'edit'} // Usually property doesn't change for a bill, but allows if needed. Let's keep it enabled or disabled based on preference. Current EditBillModal allows it.
                 >
                   <option value="">Select a property</option>
                   {properties.map((p) => (
@@ -266,17 +289,31 @@ export function AddBillForm({ onSuccess }: { onSuccess?: () => void }) {
 
         {status === "error" && (
           <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
-            {errorMessage || "Failed to add bill"}
+            {errorMessage || `Failed to ${mode} bill`}
           </div>
         )}
         
-        <Button 
-          type="submit" 
-          className="w-full font-bold py-6 rounded-xl transition-transform active:scale-[0.98]" 
-          disabled={status === "submitting"}
-        >
-          {status === "submitting" ? "Adding Bill..." : "Add Bill"}
-        </Button>
+        <div className="flex gap-3">
+          {onCancel && (
+             <Button 
+               type="button" 
+               variant="outline" 
+               className="flex-1"
+               onClick={onCancel}
+             >
+               Cancel
+             </Button>
+          )}
+          <Button 
+            type="submit" 
+            className="flex-1 font-bold transition-transform active:scale-[0.98]" 
+            disabled={status === "submitting"}
+          >
+            {status === "submitting" 
+              ? (mode === "create" ? "Adding..." : "Updating...") 
+              : (mode === "create" ? "Add Bill" : "Update Bill")}
+          </Button>
+        </div>
       </form>
     </Form>
   );
