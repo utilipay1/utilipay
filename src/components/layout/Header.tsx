@@ -73,23 +73,28 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right">
-                <SheetHeader>
-                  <SheetTitle>Navigation</SheetTitle>
+              <SheetContent side="left" className="w-[300px] sm:w-[400px] pr-0">
+                <SheetHeader className="px-1 text-left">
+                  <SheetTitle className="sr-only">Navigation</SheetTitle>
                   <SheetDescription className="sr-only">
                     Mobile navigation menu
                   </SheetDescription>
+                  <div className="flex items-center gap-2 py-4">
+                    <span className="font-black text-2xl tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                      UtiliPay
+                    </span>
+                  </div>
                 </SheetHeader>
-                <nav className="flex flex-col gap-4 mt-8">
+                <nav className="flex flex-col gap-2 mt-4 pr-6">
                   {navItems.map((item) => (
                     <button
                       key={item.value}
                       onClick={() => handleNavClick(item.value)}
                       className={cn(
-                        "flex items-center py-2 text-lg font-semibold transition-colors text-left",
+                        "flex items-center px-4 py-3 text-base font-medium transition-all rounded-lg text-left",
                         currentView === item.value
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-primary/10 text-primary hover:bg-primary/15"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
                       {item.label}
