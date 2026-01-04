@@ -34,7 +34,7 @@ export function BillsView() {
       setLoading(true);
       const [billsRes, propsRes] = await Promise.all([
         fetch(`/api/bills?archived=${filters.showArchived}`),
-        fetch('/api/properties')
+        fetch('/api/properties?archived=all')
       ]);
 
       if (billsRes.ok && propsRes.ok) {

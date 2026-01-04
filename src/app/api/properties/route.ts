@@ -32,12 +32,19 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const showArchived = searchParams.get('archived') === 'true';
+    const archivedParam = searchParams.get('archived');
 
     const client = await clientPromise;
     const db = client.db('utilipay');
 
-    const query = showArchived ? { is_archived: true } : { is_archived: { $ne: true } };
+    let query = {};
+    if (archivedParam === 'all') {
+      query = {};
+    } else if (archivedParam === 'true') {
+      query = { is_archived: true };
+    } else {
+      query = { is_archived: { $ne: true } };
+    }
 
     const properties = await db
       .collection('properties')
