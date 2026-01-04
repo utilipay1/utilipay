@@ -49,6 +49,8 @@ export function BillList() {
         const propsData = await propsRes.json();
         
         const parsedBills = z.array(BillSchema).parse(billsData);
+        // Ensure consistent sorting by due_date ascending
+        parsedBills.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
         setBills(parsedBills);
 
         const propsMap: Record<string, string> = {};
