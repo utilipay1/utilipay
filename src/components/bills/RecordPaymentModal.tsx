@@ -169,7 +169,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                 <FormItem>
                   <FormLabel>Confirmation Code</FormLabel>
                   <FormControl>
-                    <Input placeholder="Utility confirmation number" {...field} />
+                    <Input placeholder="Confirmation number" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
