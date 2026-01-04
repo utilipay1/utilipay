@@ -3,7 +3,7 @@ import { SummaryTiles } from './SummaryTiles';
 
 const mockBills = [
   { _id: '1', property_id: 'p1', utility_type: 'Water', amount: 100, due_date: '2026-01-10', status: 'Unpaid' },
-  { _id: '2', property_id: 'p2', utility_type: 'Gas', amount: 50, due_date: '2026-01-12', status: 'Paid' },
+  { _id: '2', property_id: 'p2', utility_type: 'Gas', amount: 50, due_date: '2026-01-12', status: 'Paid-Charged' },
   { _id: '3', property_id: 'p3', utility_type: 'Electricity', amount: 200, due_date: '2026-01-15', status: 'Unpaid' },
 ];
 

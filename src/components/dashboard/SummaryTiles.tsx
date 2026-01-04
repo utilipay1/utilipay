@@ -18,7 +18,7 @@ interface SummaryTilesProps {
 
 export function SummaryTiles({ bills, properties }: SummaryTilesProps) {
   const unpaidBills = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue');
-  const paidBills = bills.filter(b => b.status === 'Paid');
+  const paidBills = bills.filter(b => b.status.startsWith('Paid'));
   
   const totalDue = unpaidBills.reduce((acc, b) => acc + b.amount, 0);
   const totalPaid = paidBills.reduce((acc, b) => acc + b.amount, 0);
