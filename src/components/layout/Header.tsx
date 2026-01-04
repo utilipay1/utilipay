@@ -1,6 +1,16 @@
+import { useState } from 'react';
 import { View } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Menu } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+  SheetHeader,
+  SheetDescription
+} from "@/components/ui/sheet";
 
 interface HeaderProps {
   currentView: View;
@@ -8,11 +18,18 @@ interface HeaderProps {
 }
 
 export default function Header({ currentView, onViewChange }: HeaderProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   const navItems: { label: string; value: View }[] = [
     { label: 'Dashboard', value: 'dashboard' },
     { label: 'Properties', value: 'properties' },
     { label: 'Bills', value: 'bills' },
   ];
+
+  const handleNavClick = (view: View) => {
+    onViewChange(view);
+    setIsOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -21,13 +38,14 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
           <div className="flex items-center gap-8">
             <div 
               className="flex items-center cursor-pointer group" 
-              onClick={() => onViewChange('dashboard')}
+              onClick={() => handleNavClick('dashboard')}
             >
               <span className="font-black text-2xl tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:to-primary transition-all duration-300">
-              Utility Bill Manager
+                UtiliPay
               </span>
             </div>
             
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-1 bg-muted/50 p-1 rounded-xl border border-muted-foreground/5">
               {navItems.map((item) => (
                 <button
@@ -47,7 +65,39 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Action icons or Profile could go here */}
+            {/* Mobile Menu Trigger */}
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right">
+                <SheetHeader>
+                  <SheetTitle>Navigation</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Mobile navigation menu
+                  </SheetDescription>
+                </SheetHeader>
+                <nav className="flex flex-col gap-4 mt-8">
+                  {navItems.map((item) => (
+                    <button
+                      key={item.value}
+                      onClick={() => handleNavClick(item.value)}
+                      className={cn(
+                        "flex items-center py-2 text-lg font-semibold transition-colors text-left",
+                        currentView === item.value
+                          ? "text-primary"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
