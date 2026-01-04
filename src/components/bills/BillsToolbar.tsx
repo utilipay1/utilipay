@@ -73,15 +73,15 @@ export function BillsToolbar({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-1 items-center space-x-2">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
           <Input
             placeholder="Filter by address..."
             value={filters.search}
             onChange={(event) =>
               setFilters({ ...filters, search: event.target.value })
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full lg:w-[250px]"
           />
           
           <DataTableFacetedFilter
