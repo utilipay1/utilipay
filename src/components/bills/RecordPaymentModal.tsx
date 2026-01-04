@@ -26,7 +26,7 @@ import { BillSchema } from '@/lib/schemas';
 
 const paymentFormSchema = z.object({
   payment_date: z.string().min(1, 'Payment date is required'),
-  method: z.enum(['AGR Trust Account', 'Credit Card', 'Bank Transfer', 'Check', 'Other']),
+  method: z.enum(['Operating A/C', 'Credit Card', 'Other']),
   method_other: z.string().optional(),
   confirmation_code: z.string().optional(),
   service_fee: z.coerce.number().min(0).default(0),
@@ -47,7 +47,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
     resolver: zodResolver(paymentFormSchema) as any,
     defaultValues: {
       payment_date: new Date().toISOString().split('T')[0],
-      method: 'AGR Trust Account',
+      method: 'Operating A/C',
       method_other: '',
       confirmation_code: '',
       service_fee: 0,
@@ -136,10 +136,8 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                       {...field}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <option value="AGR Trust Account">AGR Trust Account</option>
+                      <option value="Operating A/C">Operating A/C</option>
                       <option value="Credit Card">Credit Card</option>
-                      <option value="Bank Transfer">Bank Transfer</option>
-                      <option value="Check">Check</option>
                       <option value="Other">Other</option>
                     </select>
                   </FormControl>
@@ -154,9 +152,9 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                 name="method_other"
                 render={({ field }) => (
                   <FormItem className="animate-in fade-in slide-in-from-top-1">
-                    <FormLabel>Please specify</FormLabel>
+                    <FormLabel>Nature of Payment</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter payment method" {...field} />
+                      <Input placeholder="Describe the payment method" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

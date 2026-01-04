@@ -58,6 +58,6 @@ describe('RecordPaymentModal Redesign', () => {
     
     fireEvent.change(screen.getByLabelText(/Payment Method/i), { target: { value: 'Other' } });
     
-    expect(screen.getByLabelText(/Please specify/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Nature of Payment/i)).toBeInTheDocument();
   });
 });

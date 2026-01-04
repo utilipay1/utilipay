@@ -31,7 +31,7 @@ export const BillSchema = z.object({
   notes: z.string().optional(),
   payment: z.object({
     payment_date: z.coerce.date(),
-    method: z.enum(['AGR Trust Account', 'Credit Card', 'Bank Transfer', 'Check', 'Other']),
+    method: z.string(),
     confirmation_code: z.string().optional(),
     service_fee: z.number().min(0).default(0),
   }).optional(),
