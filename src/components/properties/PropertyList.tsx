@@ -10,18 +10,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { PropertyModal } from "./PropertyModal";
+import { Edit, Archive } from "lucide-react";
+import { PropertySchema } from "@/lib/schemas";
+import { z } from "zod";
 
-interface Property {
-  _id: string;
-  address: string;
-  tenant_status: string;
-  utilities_managed: string[];
-  is_archived: boolean;
-}
+type Property = z.infer<typeof PropertySchema>;
 
 export function PropertyList({ search = "" }: { search?: string }) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
   useEffect(() => {
     fetchProperties();
@@ -41,7 +42,10 @@ export function PropertyList({ search = "" }: { search?: string }) {
     }
   }
 
-  async function handleArchive(id: string) {
+  async function handleArchive(e: React.MouseEvent, id: string) {
+    e.stopPropagation(); // Prevent row click
+    if (!confirm("Are you sure you want to archive this property?")) return;
+    
     try {
       const response = await fetch(`/api/properties/${id}`, {
         method: "PATCH",
@@ -56,6 +60,19 @@ export function PropertyList({ search = "" }: { search?: string }) {
       console.error("Failed to archive property:", error);
     }
   }
+
+  const handleRowClick = (property: Property) => {
+    setSelectedProperty(property);
+    setModalMode("view");
+    setIsModalOpen(true);
+  };
+
+  const handleEditClick = (e: React.MouseEvent, property: Property) => {
+    e.stopPropagation(); // Prevent row click
+    setSelectedProperty(property);
+    setModalMode("edit");
+    setIsModalOpen(true);
+  };
 
   const filteredProperties = properties.filter((p) =>
     p.address.toLowerCase().includes(search.toLowerCase())
@@ -86,10 +103,18 @@ export function PropertyList({ search = "" }: { search?: string }) {
               </TableRow>
             ) : (
               filteredProperties.map((property) => (
-                <TableRow key={property._id} className="group hover:bg-muted/50 transition-colors">
+                <TableRow 
+                  key={property._id} 
+                  className="group hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => handleRowClick(property)}
+                >
                   <TableCell className="font-semibold text-base py-5 px-6">{property.address}</TableCell>
                   <TableCell className="py-5 px-6">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-muted text-muted-foreground border-muted-foreground/20">
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                      property.tenant_status === 'Occupied' 
+                        ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' 
+                        : 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800'
+                    }`}>
                       {property.tenant_status}
                     </span>
                   </TableCell>
@@ -103,14 +128,26 @@ export function PropertyList({ search = "" }: { search?: string }) {
                     </div>
                   </TableCell>
                   <TableCell className="text-right py-5 px-6">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleArchive(property._id)}
-                      className="border-muted-foreground/20 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
-                    >
-                      Archive Property
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleEditClick(e, property)}
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        title="Edit Property"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleArchive(e, property._id!)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
+                        title="Archive Property"
+                      >
+                        <Archive className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -118,6 +155,17 @@ export function PropertyList({ search = "" }: { search?: string }) {
           </TableBody>
         </Table>
       </div>
+
+      <PropertyModal
+        property={selectedProperty}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          fetchProperties();
+          setIsModalOpen(false);
+        }}
+        defaultMode={modalMode}
+      />
     </div>
   );
 }

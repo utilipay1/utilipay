@@ -9,7 +9,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { AddPropertyForm } from './AddPropertyForm';
+import { PropertyForm } from './PropertyForm';
 
 interface AddPropertyModalProps {
   trigger: React.ReactNode;
@@ -37,7 +37,7 @@ export function AddPropertyModal({ trigger, onSuccess }: AddPropertyModalProps) 
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <AddPropertyForm onSuccess={handleSuccess} />
+          <PropertyForm mode="create" onSuccess={handleSuccess} />
         </div>
       </DialogContent>
     </Dialog>

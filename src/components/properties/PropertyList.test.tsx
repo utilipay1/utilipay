@@ -13,6 +13,7 @@ const mockProperties = [
 describe('PropertyList', () => {
   beforeEach(() => {
     (global.fetch as jest.Mock).mockClear();
+    global.confirm = jest.fn(() => true); // Mock confirm to always return true
   });
 
   it('renders a list of properties', async () => {
@@ -60,7 +61,7 @@ describe('PropertyList', () => {
 
     await waitFor(() => screen.getByText('123 Main St'));
 
-    const archiveButtons = screen.getAllByText(/Archive/i);
+    const archiveButtons = screen.getAllByTitle(/Archive Property/i);
     fireEvent.click(archiveButtons[0]);
 
     await waitFor(() => {

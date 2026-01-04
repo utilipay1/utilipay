@@ -17,31 +17,40 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
-const formSchema = PropertySchema.omit({ _id: true });
+const formSchema = PropertySchema;
 type FormValues = z.infer<typeof formSchema>;
 
-export function AddPropertyForm({ onSuccess }: { onSuccess?: () => void }) {
+interface PropertyFormProps {
+  initialData?: FormValues;
+  mode: "create" | "edit";
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export function PropertyForm({ initialData, mode, onSuccess, onCancel }: PropertyFormProps) {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const defaultValues: FormValues = initialData || {
+    address: "",
+    owner_info: {
+      name: "",
+      contact: "",
+    },
+    tenant_status: "Vacant",
+    tenant_info: {
+      name: "",
+      contact: "",
+    },
+    utilities_managed: [],
+    notes: "",
+    is_archived: false,
+  };
 
   const form = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(formSchema) as any,
-    defaultValues: {
-      address: "",
-      owner_info: {
-        name: "",
-        contact: "",
-      },
-      tenant_status: "Vacant",
-      tenant_info: {
-        name: "",
-        contact: "",
-      },
-      utilities_managed: [],
-      notes: "",
-      is_archived: false,
-    },
+    defaultValues,
   });
 
   const tenantStatus = form.watch("tenant_status");
@@ -49,18 +58,26 @@ export function AddPropertyForm({ onSuccess }: { onSuccess?: () => void }) {
   async function onSubmit(values: FormValues) {
     setStatus("submitting");
     try {
-      const response = await fetch("/api/properties", {
-        method: "POST",
+      const url = mode === "create" ? "/api/properties" : `/api/properties/${values._id}`;
+      const method = mode === "create" ? "POST" : "PATCH";
+
+      // Ensure _id is not in the body for create, but is needed for the URL in edit
+      // For PATCH, we send the whole body or just changes. Sending whole body is easier here.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _id, ...body } = values;
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add property");
+        throw new Error(`Failed to ${mode} property`);
       }
 
       setStatus("success");
-      form.reset();
+      if (mode === "create") form.reset();
       if (onSuccess) onSuccess();
     } catch (error) {
       setStatus("error");
@@ -213,17 +230,31 @@ export function AddPropertyForm({ onSuccess }: { onSuccess?: () => void }) {
 
         {status === "error" && (
           <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
-            {errorMessage || "Failed to add property"}
+            {errorMessage || `Failed to ${mode} property`}
           </div>
         )}
         
-        <Button 
-          type="submit" 
-          className="w-full font-bold py-6 rounded-xl transition-transform active:scale-[0.98]" 
-          disabled={status === "submitting"}
-        >
-          {status === "submitting" ? "Adding Property..." : "Add Property"}
-        </Button>
+        <div className="flex gap-3">
+          {onCancel && (
+             <Button 
+               type="button" 
+               variant="outline" 
+               className="flex-1"
+               onClick={onCancel}
+             >
+               Cancel
+             </Button>
+          )}
+          <Button 
+            type="submit" 
+            className="flex-1 font-bold transition-transform active:scale-[0.98]" 
+            disabled={status === "submitting"}
+          >
+            {status === "submitting" 
+              ? (mode === "create" ? "Adding..." : "Saving...") 
+              : (mode === "create" ? "Add Property" : "Save Changes")}
+          </Button>
+        </div>
       </form>
     </Form>
   );
