@@ -35,13 +35,13 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 max-w-5xl">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-8 pl-1">
             <div 
               className="flex items-center cursor-pointer group" 
               onClick={() => handleNavClick('dashboard')}
             >
-              <span className="font-black text-2xl tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:to-primary transition-all duration-300">
-                UtiliPay
+              <span className="font-black text-xl lg:text-2xl tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:to-primary transition-all duration-300">
+                Utility Bill Manager
               </span>
             </div>
             
@@ -73,30 +73,33 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[400px] pr-0">
-                <SheetHeader className="px-1 text-left">
+              <SheetContent side="left" className="w-[300px] sm:w-[400px] pr-0 border-r bg-background">
+                <SheetHeader className="px-6 text-left border-b h-16 flex justify-center">
                   <SheetTitle className="sr-only">Navigation</SheetTitle>
                   <SheetDescription className="sr-only">
                     Mobile navigation menu
                   </SheetDescription>
-                  <div className="flex items-center gap-2 py-4">
-                    <span className="font-black text-2xl tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                      UtiliPay
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-xl tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                      Utility Bill Manager
                     </span>
                   </div>
                 </SheetHeader>
-                <nav className="flex flex-col gap-2 mt-4 pr-6">
+                <nav className="flex flex-col gap-1 mt-6 px-4">
                   {navItems.map((item) => (
                     <button
                       key={item.value}
                       onClick={() => handleNavClick(item.value)}
                       className={cn(
-                        "flex items-center px-4 py-3 text-base font-medium transition-all rounded-lg text-left",
+                        "flex items-center px-4 py-3 text-sm font-medium transition-all rounded-md text-left relative overflow-hidden group",
                         currentView === item.value
-                          ? "bg-primary/10 text-primary hover:bg-primary/15"
+                          ? "bg-primary/5 text-primary"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
+                      {currentView === item.value && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+                      )}
                       {item.label}
                     </button>
                   ))}

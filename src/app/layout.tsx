@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "UtiliPay",
+  title: "Utility Bill Manager",
   description: "Utility Bill Tracker",
 };
 
