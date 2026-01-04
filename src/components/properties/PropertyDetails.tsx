@@ -1,6 +1,5 @@
 import { PropertySchema } from "@/lib/schemas";
 import { z } from "zod";
-import { Badge } from "@/components/ui/badge"; // Assuming we have Badge or I'll use simple spans
 import { Button } from "@/components/ui/button";
 import { Edit, User, Home, Lightbulb, FileText, Phone } from "lucide-react";
 
