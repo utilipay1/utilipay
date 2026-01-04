@@ -24,7 +24,7 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
               onClick={() => onViewChange('dashboard')}
             >
               <span className="font-black text-2xl tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:to-primary transition-all duration-300">
-                UtiliPay
+              Utility Bill Manager
               </span>
             </div>
             
