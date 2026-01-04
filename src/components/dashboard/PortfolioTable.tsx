@@ -22,6 +22,7 @@ interface Bill {
   utility_type: string;
   status: string;
   due_date: string;
+  amount: number;
 }
 
 export function PortfolioTable() {
@@ -71,33 +72,47 @@ export function PortfolioTable() {
                 <TableCell className="py-4">
                   <div className="flex flex-wrap gap-2">
                     {property.utilities_managed.map((utility) => {
-                      // Find the latest bill for this property and utility
-                      const latestBill = bills
-                        .filter(
-                          (b) =>
-                            b.property_id === property._id &&
-                            b.utility_type === utility
-                        )
-                        .sort(
-                          (a, b) =>
-                            new Date(b.due_date).getTime() -
-                            new Date(a.due_date).getTime()
-                        )[0];
+                      const relevantBills = bills.filter(
+                        (b) =>
+                          b.property_id === property._id &&
+                          b.utility_type === utility
+                      );
+
+                      // Priority: Overdue -> Unpaid (Real Amount) -> Paid -> Any
+                      const overdueBill = relevantBills.find(b => b.status === 'Overdue');
+                      
+                      // Find earliest unpaid bill with actual amount (not placeholder)
+                      const unpaidRealBill = relevantBills
+                        .filter(b => b.status === 'Unpaid' && b.amount > 0)
+                        .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())[0];
+
+                      const latestPaidBill = relevantBills
+                        .filter(b => b.status.startsWith('Paid'))
+                        .sort((a, b) => new Date(b.due_date).getTime() - new Date(a.due_date).getTime())[0];
+
+                      const displayBill = overdueBill || unpaidRealBill || latestPaidBill || relevantBills[0];
+
+                      const status = displayBill ? displayBill.status : 'No Bill';
+                      const isPaid = status.startsWith('Paid');
+                      const isUnpaid = status === 'Unpaid';
+                      const isOverdue = status === 'Overdue';
 
                       return (
                         <div
                           key={utility}
                           className={`px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${
-                            latestBill
-                              ? latestBill.status === 'Unpaid'
+                            displayBill
+                              ? isUnpaid
                                 ? 'bg-muted text-foreground border-muted-foreground/30'
-                                : latestBill.status === 'Paid'
+                                : isPaid
                                 ? 'bg-green-50 text-green-700 border-green-200'
+                                : isOverdue 
+                                ? 'bg-red-50 text-red-700 border-red-200'
                                 : 'bg-muted text-muted-foreground border-muted-foreground/20'
                               : 'bg-muted/30 text-muted-foreground/50 border-transparent'
                           }`}
                         >
-                          {utility}: {latestBill ? latestBill.status : 'No Bill'}
+                          {utility}: {isPaid ? 'Paid' : status}
                         </div>
                       );
                     })}
