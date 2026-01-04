@@ -62,16 +62,16 @@ export function BillDetails({ bill, propertyName, onEdit }: BillDetailsProps) {
             Key Dates
           </div>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground whitespace-nowrap">Due Date:</span>
-              <span className="font-medium whitespace-nowrap text-right">{format(new Date(bill.due_date), 'PPP')}</span>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Due Date:</span>
+              <span className="font-medium">{format(new Date(bill.due_date), 'PPP')}</span>
             </div>
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground whitespace-nowrap">Bill Date:</span>
-              <span className="font-medium whitespace-nowrap text-right">{format(new Date(bill.bill_date), 'PPP')}</span>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Bill Date:</span>
+              <span className="font-medium">{format(new Date(bill.bill_date), 'PPP')}</span>
             </div>
-            <div className="flex justify-between border-t pt-2 mt-2 gap-4">
-              <span className="text-muted-foreground whitespace-nowrap">Period:</span>
+            <div className="flex justify-between border-t pt-2 mt-2">
+              <span className="text-muted-foreground">Period:</span>
               <span className="font-medium text-right">
                 {format(new Date(bill.billing_period_start), 'MMM d')} - {format(new Date(bill.billing_period_end), 'MMM d, yyyy')}
               </span>
