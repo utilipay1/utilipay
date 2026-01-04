@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecordPaymentModal } from './RecordPaymentModal';
 import { BillModal } from './BillModal';
 import { format, differenceInCalendarDays } from 'date-fns';
@@ -18,6 +17,7 @@ import { z } from 'zod';
 import { Switch } from '@/components/ui/switch';
 import { Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { BillsToolbar, BillFiltersState } from './BillsToolbar';
 
 type Bill = z.infer<typeof BillSchema>;
 interface Property {
@@ -29,7 +29,13 @@ export function BillList() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [properties, setProperties] = useState<Record<string, string>>({}); // Map id -> address
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('All');
+  
+  const [filters, setFilters] = useState<BillFiltersState>({
+    status: new Set(),
+    utilityType: new Set(),
+    propertyId: new Set(),
+    search: "",
+  });
   
   // Modal state
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
@@ -105,23 +111,38 @@ export function BillList() {
 
   if (loading) return <div>Loading bills...</div>;
 
-  const filteredBills = 
-    activeTab === 'All' ? bills :
-    activeTab === 'Paid' ? bills.filter(b => b.status.startsWith('Paid')) :
-    bills.filter(b => b.status === activeTab);
+  const filteredBills = bills.filter((bill) => {
+    // Search Filter (Address)
+    const address = properties[bill.property_id] || "";
+    if (filters.search && !address.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false;
+    }
+
+    // Status Filter
+    if (filters.status.size > 0 && !filters.status.has(bill.status)) {
+        return false;
+    }
+
+    // Utility Filter
+    if (filters.utilityType.size > 0 && !filters.utilityType.has(bill.utility_type)) {
+        return false;
+    }
+
+    // Property Filter (ID match)
+    if (filters.propertyId.size > 0 && !filters.propertyId.has(bill.property_id)) {
+        return false;
+    }
+
+    return true;
+  });
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <Tabs defaultValue="All" onValueChange={setActiveTab} className="w-auto">
-          <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="All">All</TabsTrigger>
-            <TabsTrigger value="Unpaid">Unpaid</TabsTrigger>
-            <TabsTrigger value="Overdue">Overdue</TabsTrigger>
-            <TabsTrigger value="Paid">Paid</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+      <BillsToolbar 
+        filters={filters} 
+        setFilters={setFilters} 
+        properties={properties} 
+      />
       <div className="mt-4">
           <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
             <Table>
