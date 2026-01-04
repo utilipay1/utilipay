@@ -136,13 +136,12 @@ export function BillList({ bills, properties, onRefresh }: BillListProps) {
                     </TableCell>
                     <TableCell className="font-semibold">{bill.utility_type}</TableCell>
                     <TableCell className="font-medium text-base">₹{bill.amount.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className={isUrgent ? (daysRemaining <= 3 ? 'text-urgency-high font-medium' : 'text-urgency-medium font-medium') : ''}>
-                          {format(new Date(bill.due_date), 'PP')}
-                        </span>
-                        {isUrgent && (
-                          <span className={`text-[10px] uppercase font-bold tracking-wider ${daysRemaining <= 3 ? 'text-urgency-high' : 'text-urgency-medium'}`}>
+                                                                    <TableCell>
+                                                                      <div className="flex flex-col">
+                                                                        <span className={isUrgent ? (daysRemaining <= 3 ? 'text-urgency-high font-medium' : 'text-urgency-medium font-medium') : ''}>
+                                                                          {format(new Date(bill.due_date), 'PP')}
+                                                                        </span>
+                                                                        {isUrgent && (                          <span className={`text-[10px] uppercase font-bold tracking-wider ${daysRemaining <= 3 ? 'text-urgency-high' : 'text-urgency-medium'}`}>
                             {daysRemaining <= 0 ? 'Due' : `In ${daysRemaining} days`}
                           </span>
                         )}

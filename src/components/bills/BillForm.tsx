@@ -16,13 +16,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const formSchema = BillSchema.omit({ _id: true, payment: true }).extend({
   amount: z.coerce.number().min(0),
-  billing_period_start: z.string(),
-  billing_period_end: z.string(),
-  bill_date: z.string(),
-  due_date: z.string(),
+  billing_period_start: z.date(),
+  billing_period_end: z.date(),
+  bill_date: z.date(),
+  due_date: z.date(),
   is_archived: z.boolean().default(false),
 });
 
@@ -52,10 +53,10 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     utility_type: initialData.utility_type,
     amount: initialData.amount,
     account_number: initialData.account_number || "",
-    billing_period_start: new Date(initialData.billing_period_start).toISOString().split('T')[0],
-    billing_period_end: new Date(initialData.billing_period_end).toISOString().split('T')[0],
-    bill_date: new Date(initialData.bill_date).toISOString().split('T')[0],
-    due_date: new Date(initialData.due_date).toISOString().split('T')[0],
+    billing_period_start: new Date(initialData.billing_period_start),
+    billing_period_end: new Date(initialData.billing_period_end),
+    bill_date: new Date(initialData.bill_date),
+    due_date: new Date(initialData.due_date),
     status: initialData.status,
     notes: initialData.notes || "",
     is_archived: initialData.is_archived,
@@ -64,10 +65,10 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     utility_type: "Water",
     amount: 0,
     account_number: "",
-    billing_period_start: new Date().toISOString().split('T')[0],
-    billing_period_end: new Date().toISOString().split('T')[0],
-    bill_date: new Date().toISOString().split('T')[0],
-    due_date: new Date().toISOString().split('T')[0],
+    billing_period_start: new Date(),
+    billing_period_end: new Date(),
+    bill_date: new Date(),
+    due_date: new Date(),
     status: "Unpaid",
     notes: "",
     is_archived: false,
@@ -135,7 +136,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
               <FormControl>
                 <select
                   {...field}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   disabled={mode === 'edit'} // Usually property doesn't change for a bill, but allows if needed. Let's keep it enabled or disabled based on preference. Current EditBillModal allows it.
                 >
                   <option value="">Select a property</option>
@@ -161,7 +162,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
                 <FormControl>
                   <select
                     {...field}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   >
                     {!selectedProperty && <option value="">Select a property first</option>}
                     {utilityOptions.map((utility) => (
@@ -218,12 +219,12 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
             control={form.control}
             name="billing_period_start"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Billing Period Start</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="date" 
-                    {...field} 
+                  <DatePicker 
+                    date={field.value} 
+                    setDate={field.onChange} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -234,12 +235,12 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
             control={form.control}
             name="billing_period_end"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Billing Period End</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="date" 
-                    {...field} 
+                  <DatePicker 
+                    date={field.value} 
+                    setDate={field.onChange} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -253,12 +254,12 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
             control={form.control}
             name="bill_date"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Bill Date</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="date" 
-                    {...field} 
+                  <DatePicker 
+                    date={field.value} 
+                    setDate={field.onChange} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -269,12 +270,12 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
             control={form.control}
             name="due_date"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Due Date</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="date" 
-                    {...field} 
+                  <DatePicker 
+                    date={field.value} 
+                    setDate={field.onChange} 
                   />
                 </FormControl>
                 <FormMessage />

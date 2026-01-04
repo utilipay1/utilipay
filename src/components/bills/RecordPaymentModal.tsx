@@ -23,9 +23,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { BillSchema } from '@/lib/schemas';
+import { DatePicker } from '@/components/ui/date-picker';
 
 const paymentFormSchema = z.object({
-  payment_date: z.string().min(1, 'Payment date is required'),
+  payment_date: z.date(),
   method: z.enum(['Operating A/C', 'Credit Card', 'Other']),
   method_other: z.string().optional(),
   confirmation_code: z.string().optional(),
@@ -46,7 +47,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(paymentFormSchema) as any,
     defaultValues: {
-      payment_date: new Date().toISOString().split('T')[0],
+      payment_date: new Date(),
       method: 'Operating A/C',
       method_other: '',
       confirmation_code: '',
@@ -66,7 +67,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
         body: JSON.stringify({
           status: 'Paid-Uncharged',
           payment: {
-            payment_date: new Date(values.payment_date),
+            payment_date: values.payment_date,
             method: values.method === 'Other' ? `Other: ${values.method_other}` : values.method,
             confirmation_code: values.confirmation_code,
             service_fee: values.service_fee,
@@ -86,7 +87,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white transition-colors">
+        <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer">
           Record Payment
         </Button>
       </DialogTrigger>
@@ -115,10 +116,13 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
               control={form.control}
               name="payment_date"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Payment Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <DatePicker 
+                      date={field.value} 
+                      setDate={field.onChange} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -134,7 +138,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
                   <FormControl>
                     <select
                       {...field}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                     >
                       <option value="Operating A/C">Operating A/C</option>
                       <option value="Credit Card">Credit Card</option>
