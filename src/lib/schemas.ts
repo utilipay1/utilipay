@@ -54,3 +54,11 @@ export const BillSchema = z.object({
     service_fee: z.number().min(0).default(0),
   }).optional(),
 });
+
+export const UserNoteSchema = z.object({
+  _id: z.string().optional(),
+  userId: z.string().optional(),
+  content: z.string().min(1, "Note content cannot be empty"),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
