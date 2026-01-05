@@ -41,6 +41,9 @@
     "xlsx": "^0.18.5",
     "zod": "^4.3.4"
   },
+  "overrides": {
+    "mongodb": "^7.0.0"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
