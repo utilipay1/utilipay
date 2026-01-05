@@ -1,30 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { auth } from '@/auth';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await req.json();
 
     const client = await clientPromise;
     const db = client.db('utilipay');
-    const result = await db.collection('properties').updateOne(
-      { _id: new ObjectId(id) },
-      { $set: body }
-    );
 
-    if (result.matchedCount === 0) {
+    // Verify ownership
+    const propertyId = new ObjectId(id);
+    const property = await db.collection('properties').findOne({ _id: propertyId });
+    if (!property) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
+    if (property.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const result = await db.collection('properties').updateOne(
+      { _id: propertyId },
+      { $set: body }
+    );
 
     // Cascading Archive: If property is archived, archive its bills
     if (body.is_archived === true) {
       await db.collection('bills').updateMany(
-        { property_id: id },
+        { property_id: id, userId: session.user.id }, // Security: ensure userId match
         { $set: { is_archived: true } }
       );
     }
@@ -41,19 +54,30 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const id = (await params).id;
     const client = await clientPromise;
     const db = client.db('utilipay');
+    const propertyId = new ObjectId(id);
 
-    // 1. Delete the property
-    const result = await db.collection('properties').deleteOne({ _id: new ObjectId(id) });
-
-    if (result.deletedCount === 0) {
+    // Verify ownership
+    const property = await db.collection('properties').findOne({ _id: propertyId });
+    if (!property) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
+    if (property.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // 1. Delete the property
+    const result = await db.collection('properties').deleteOne({ _id: propertyId });
 
     // 2. Cascade delete all associated bills
-    await db.collection('bills').deleteMany({ property_id: id });
+    await db.collection('bills').deleteMany({ property_id: id, userId: session.user.id });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const CompanySchema = z.object({
   _id: z.string().optional(),
+  userId: z.string().optional(),
   name: z.string().min(1, "Company name is required"),
   service_type: z.enum(['Water', 'Sewer', 'Gas', 'Electric']),
   contact_info: z.object({
@@ -14,6 +15,7 @@ export const CompanySchema = z.object({
 
 export const PropertySchema = z.object({
   _id: z.string().optional(), // MongoDB ID
+  userId: z.string().optional(),
   address: z.string().min(1, "Address is required"),
   owner_info: z.object({
     name: z.string().optional(),
@@ -33,6 +35,7 @@ export const PropertySchema = z.object({
 
 export const BillSchema = z.object({
   _id: z.string().optional(),
+  userId: z.string().optional(),
   property_id: z.string().min(1, "Property ID is required"),
   utility_type: z.enum(['Water', 'Sewer', 'Gas', 'Electric']),
   amount: z.number().min(0),

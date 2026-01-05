@@ -2,17 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { CompanySchema } from '@/lib/schemas';
+import { auth } from '@/auth';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await req.json();
     
     // Partial validation for updates
-    // We parse with partial() to allow updating single fields
     const validatedData = CompanySchema.partial().parse(body);
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -20,15 +25,21 @@ export async function PATCH(
 
     const client = await clientPromise;
     const db = client.db('utilipay');
-    
-    const result = await db.collection('companies').updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { ...updateData, updatedAt: new Date() } }
-    );
+    const companyId = new ObjectId(id);
 
-    if (result.matchedCount === 0) {
+    // Verify ownership
+    const company = await db.collection('companies').findOne({ _id: companyId });
+    if (!company) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 });
     }
+    if (company.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    
+    const result = await db.collection('companies').updateOne(
+      { _id: companyId },
+      { $set: { ...updateData, updatedAt: new Date() } }
+    );
 
     return NextResponse.json(result);
   } catch (error) {
@@ -42,15 +53,26 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
     const client = await clientPromise;
     const db = client.db('utilipay');
+    const companyId = new ObjectId(id);
 
-    const result = await db.collection('companies').deleteOne({ _id: new ObjectId(id) });
-
-    if (result.deletedCount === 0) {
+    // Verify ownership
+    const company = await db.collection('companies').findOne({ _id: companyId });
+    if (!company) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 });
     }
+    if (company.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const result = await db.collection('companies').deleteOne({ _id: companyId });
 
     return NextResponse.json({ success: true });
   } catch (error) {

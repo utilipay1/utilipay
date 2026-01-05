@@ -1,0 +1,38 @@
+import { signIn } from "@/auth"
+import { Button } from "@/components/ui/button"
+import { Building2 } from "lucide-react"
+
+export default function LoginPage() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-muted/30">
+      <div className="w-full max-w-[400px] space-y-8 p-8 border rounded-2xl bg-background shadow-xl">
+        <div className="flex flex-col items-center text-center space-y-2">
+          <div className="p-3 bg-primary/10 rounded-full mb-2">
+            <Building2 className="w-8 h-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Utility Bill Manager</h1>
+          <p className="text-sm text-muted-foreground">
+            Sign in to manage your property utilities
+          </p>
+        </div>
+
+        <form
+          action={async () => {
+            "use server"
+            await signIn("google", { redirectTo: "/" })
+          }}
+        >
+          <Button 
+            className="w-full h-12 text-base font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer" 
+            type="submit"
+          >
+            <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+              <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+            </svg>
+            Continue with Google
+          </Button>
+        </form>
+      </div>
+    </div>
+  )
+}

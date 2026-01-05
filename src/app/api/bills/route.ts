@@ -3,9 +3,15 @@ import clientPromise from '@/lib/mongodb';
 import { BillSchema } from '@/lib/schemas';
 import { calculateNextBill } from '@/lib/billing';
 import { ZodError } from 'zod';
+import { auth } from '@/auth';
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const validatedData = BillSchema.parse(body);
 
@@ -17,6 +23,7 @@ export async function POST(req: NextRequest) {
 
     const currentBill = {
       ...billData,
+      userId: session.user.id, // Inject user ownership
       createdAt: new Date(),
     };
 
@@ -25,7 +32,7 @@ export async function POST(req: NextRequest) {
     
     const result = await db.collection('bills').insertMany([
       currentBill,
-      { ...nextDraft, createdAt: new Date() }
+      { ...nextDraft, userId: session.user.id, createdAt: new Date() }
     ]);
 
     return NextResponse.json(result, { status: 201 });
@@ -41,6 +48,11 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const propertyId = searchParams.get('propertyId');
     const showArchived = searchParams.get('archived') === 'true';
@@ -49,7 +61,9 @@ export async function GET(req: NextRequest) {
     const db = client.db('utilipay');
     
     // Build query
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = {
+      userId: session.user.id // Filter by user ownership
+    };
     
     if (propertyId) {
       query.property_id = propertyId;

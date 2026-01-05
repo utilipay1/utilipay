@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { CompanySchema } from '@/lib/schemas';
 import { ZodError } from 'zod';
+import { auth } from '@/auth';
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const validatedData = CompanySchema.parse(body);
 
@@ -16,6 +22,7 @@ export async function POST(req: NextRequest) {
     
     const result = await db.collection('companies').insertOne({
       ...companyData,
+      userId: session.user.id, // Inject user ownership
       createdAt: new Date(),
     });
 
@@ -31,13 +38,23 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const serviceType = searchParams.get('type');
 
     const client = await clientPromise;
     const db = client.db('utilipay');
 
-    const query = serviceType ? { service_type: serviceType } : {};
+    const query: Record<string, unknown> = {
+      userId: session.user.id // Filter by user ownership
+    };
+    if (serviceType) {
+      query.service_type = serviceType;
+    }
 
     const companies = await db
       .collection('companies')

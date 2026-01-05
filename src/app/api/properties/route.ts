@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { PropertySchema } from '@/lib/schemas';
 import { ZodError } from 'zod';
+import { auth } from '@/auth';
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const validatedData = PropertySchema.parse(body);
 
@@ -16,6 +22,7 @@ export async function POST(req: NextRequest) {
     
     const result = await db.collection('properties').insertOne({
       ...propertyData,
+      userId: session.user.id, // Inject user ownership
       createdAt: new Date(),
     });
 
@@ -31,19 +38,27 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const archivedParam = searchParams.get('archived');
 
     const client = await clientPromise;
     const db = client.db('utilipay');
 
-    let query = {};
+    const query: Record<string, unknown> = {
+      userId: session.user.id // Filter by user ownership
+    };
+
     if (archivedParam === 'all') {
-      query = {};
+      // No extra filter
     } else if (archivedParam === 'true') {
-      query = { is_archived: true };
+      query.is_archived = true;
     } else {
-      query = { is_archived: { $ne: true } };
+      query.is_archived = { $ne: true };
     }
 
     const properties = await db

@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { calculateNextBill } from '@/lib/billing';
+import { auth } from '@/auth';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const id = (await params).id;
     const body = await req.json();
 
@@ -16,11 +22,15 @@ export async function PATCH(
     const collection = db.collection('bills');
     const billId = new ObjectId(id);
 
-    // Fetch original bill to check if it was a placeholder
+    // Fetch original bill to verify ownership
     const originalBill = await collection.findOne({ _id: billId });
 
     if (!originalBill) {
       return NextResponse.json({ error: 'Bill not found' }, { status: 404 });
+    }
+
+    if (originalBill.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     await collection.updateOne(
@@ -28,14 +38,10 @@ export async function PATCH(
       { $set: { ...body, updatedAt: new Date() } }
     );
 
-    // Predictive Billing Trigger:
-    // If the bill was a placeholder (amount 0) and is now being "filled in" (amount > 0),
-    // generate the NEXT placeholder to keep the chain alive.
+    // ... (Predictive Billing logic stays same, it will naturally use body/original values)
+    // Actually, ensure next predictive bill also gets the userId injected
     if (originalBill.amount === 0 && body.amount > 0) {
       try {
-        // Construct the full updated bill object for calculation
-        // We use the body values (which are strings from JSON) and convert to Date where needed
-        // or fall back to originalBill values.
         const updatedBillData = {
           property_id: body.property_id || originalBill.property_id,
           utility_type: body.utility_type || originalBill.utility_type,
@@ -48,10 +54,9 @@ export async function PATCH(
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const nextDraft = calculateNextBill(updatedBillData as any);
-        await collection.insertOne({ ...nextDraft, createdAt: new Date() });
+        await collection.insertOne({ ...nextDraft, userId: session.user.id, createdAt: new Date() });
       } catch (err) {
         console.error('Failed to generate next predictive bill:', err);
-        // Don't fail the request, just log the error
       }
     }
 
@@ -67,15 +72,26 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const id = (await params).id;
     const client = await clientPromise;
     const db = client.db('utilipay');
-    
-    const result = await db.collection('bills').deleteOne({ _id: new ObjectId(id) });
+    const billId = new ObjectId(id);
 
-    if (result.deletedCount === 0) {
+    // Verify ownership
+    const bill = await db.collection('bills').findOne({ _id: billId });
+    if (!bill) {
       return NextResponse.json({ error: 'Bill not found' }, { status: 404 });
     }
+    if (bill.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    
+    const result = await db.collection('bills').deleteOne({ _id: billId });
 
     return NextResponse.json({ success: true });
   } catch (error) {

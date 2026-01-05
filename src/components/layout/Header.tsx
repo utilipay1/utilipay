@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { View } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 import {
   Sheet,
   SheetContent,
@@ -66,6 +67,16 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hidden md:flex text-muted-foreground hover:text-destructive cursor-pointer"
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              title="Sign Out"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+
             {/* Mobile Menu Trigger */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
@@ -74,8 +85,8 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[400px] pr-0 border-r bg-background">
-                <SheetHeader className="px-6 text-left border-b h-16 flex justify-center">
+              <SheetContent side="left" className="w-[300px] sm:w-[400px] pr-0 border-r bg-background flex flex-col">
+                <SheetHeader className="px-6 text-left border-b h-16 flex shrink-0 justify-center">
                   <SheetTitle className="sr-only">Navigation</SheetTitle>
                   <SheetDescription className="sr-only">
                     Mobile navigation menu
@@ -86,7 +97,7 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
                     </span>
                   </div>
                 </SheetHeader>
-                <nav className="flex flex-col gap-1 mt-6 px-4">
+                <nav className="flex flex-col gap-1 mt-6 px-4 flex-1">
                   {navItems.map((item) => (
                     <button
                       key={item.value}
@@ -105,6 +116,16 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
                     </button>
                   ))}
                 </nav>
+                <div className="p-4 border-t mt-auto">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-muted-foreground hover:text-destructive gap-3 px-4"
+                    onClick={() => signOut({ callbackUrl: '/login' })}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Sign Out
+                  </Button>
+                </div>
               </SheetContent>
             </Sheet>
           </div>
