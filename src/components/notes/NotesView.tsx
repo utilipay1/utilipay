@@ -1,16 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Building, FileText } from "lucide-react";
+import { Edit, Trash2, Building, FileText, Calendar } from "lucide-react";
 import { PropertySchema, BillSchema } from "@/lib/schemas";
 import { z } from "zod";
 import { format } from "date-fns";
@@ -22,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { NotesToolbar, NotesFiltersState } from "./NotesToolbar";
+import { Badge } from "@/components/ui/badge";
 
 type Property = z.infer<typeof PropertySchema>;
 type Bill = z.infer<typeof BillSchema>;
@@ -29,9 +22,9 @@ type Bill = z.infer<typeof BillSchema>;
 interface NoteItem {
   id: string;
   type: "property" | "bill";
-  sourceName: string; // Address for property, Utility + Property for bill
+  sourceName: string; 
   content: string;
-  propertyId: string; // Added for filtering
+  propertyId: string;
   date?: string;
 }
 
@@ -54,7 +47,7 @@ export function NotesView() {
       setLoading(true);
       const [propsRes, billsRes] = await Promise.all([
         fetch("/api/properties?archived=all"),
-        fetch("/api/bills?archived=true"), // Fetch archived as well
+        fetch("/api/bills?archived=true"),
       ]);
       
       const billsResActive = await fetch("/api/bills");
@@ -64,7 +57,6 @@ export function NotesView() {
         const billsDataArchived: Bill[] = await billsRes.json();
         const billsDataActive: Bill[] = await billsResActive.json();
         
-        // Merge and deduplicate bills based on ID
         const allBills = [...billsDataActive, ...billsDataArchived];
         const uniqueBills = Array.from(new Map(allBills.map(item => [item._id, item])).values());
 
@@ -160,33 +152,24 @@ export function NotesView() {
   };
 
   const filteredNotes = notes.filter((note) => {
-    // Search Filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       const matchesSource = note.sourceName.toLowerCase().includes(searchLower);
       const matchesContent = note.content.toLowerCase().includes(searchLower);
       if (!matchesSource && !matchesContent) return false;
     }
-
-    // Type Filter
-    if (filters.type.size > 0 && !filters.type.has(note.type)) {
-      return false;
-    }
-
-    // Property Filter
-    if (filters.propertyId.size > 0 && !filters.propertyId.has(note.propertyId)) {
-      return false;
-    }
-
+    if (filters.type.size > 0 && !filters.type.has(note.type)) return false;
+    if (filters.propertyId.size > 0 && !filters.propertyId.has(note.propertyId)) return false;
     return true;
   });
 
   if (loading) return <div>Loading notes...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Notes</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Notes</h1>
+        <p className="text-muted-foreground mt-2 text-lg">Quick insights and reminders for your properties and bills.</p>
       </div>
 
       <NotesToolbar 
@@ -195,69 +178,69 @@ export function NotesView() {
         properties={propertiesMap} 
       />
 
-      <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
-        <Table>
-          <TableHeader className="bg-muted/30">
-            <TableRow>
-              <TableHead className="w-[100px]">Type</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead className="max-w-[400px]">Note</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredNotes.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground italic">
-                  No notes found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredNotes.map((note) => (
-                <TableRow key={`${note.type}-${note.id}`} className="group hover:bg-muted/50 transition-colors">
-                  <TableCell className="capitalize font-medium">
-                    <div className="flex items-center gap-2">
-                      {note.type === 'property' ? <Building className="w-4 h-4 text-muted-foreground" /> : <FileText className="w-4 h-4 text-muted-foreground" />}
-                      {note.type}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-semibold">{note.sourceName}</span>
-                      {note.date && (
-                        <span className="text-xs text-muted-foreground">Due: {note.date}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-[400px] truncate" title={note.content}>
+      {filteredNotes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-3xl bg-muted/10">
+          <div className="p-4 bg-muted rounded-full mb-4">
+            <FileText className="w-10 h-10 text-muted-foreground/50" />
+          </div>
+          <h3 className="text-xl font-semibold text-muted-foreground">No notes found</h3>
+          <p className="text-muted-foreground max-w-xs mt-2">Adjust your filters or add notes to properties/bills to see them here.</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredNotes.map((note) => (
+            <div 
+              key={`${note.type}-${note.id}`} 
+              className="group flex flex-col justify-between p-6 border rounded-2xl bg-card shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden"
+            >
+              <div className="space-y-4">
+                <div className="flex justify-between items-start gap-4">
+                  <Badge variant="secondary" className="font-bold text-[10px] uppercase tracking-widest px-2 py-0">
+                    {note.type}
+                  </Badge>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(note)}
+                      className="h-8 w-8 text-muted-foreground hover:text-primary cursor-pointer"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(note)}
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="min-h-[80px]">
+                  <p className="text-lg leading-relaxed font-medium text-foreground whitespace-pre-wrap">
                     {note.content}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(note)}
-                        className="h-8 w-8 text-muted-foreground hover:text-primary cursor-pointer"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(note)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive cursor-pointer"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-dashed space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-semibold uppercase tracking-tight">
+                  {note.type === 'property' ? <Building className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                  <span className="truncate max-w-[200px]">{note.sourceName}</span>
+                </div>
+                {note.date && (
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground/70">
+                    <Calendar className="w-3 h-3" />
+                    <span>Due: {note.date}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
@@ -265,20 +248,21 @@ export function NotesView() {
             <DialogTitle>Edit Note</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="text-sm text-muted-foreground mb-2">
-              Source: <span className="font-semibold text-foreground">{editingNote?.sourceName}</span>
+            <div className="flex items-center gap-2 text-sm font-bold text-primary px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/10">
+              {editingNote?.type === 'property' ? <Building className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+              <span className="truncate">{editingNote?.sourceName}</span>
             </div>
             <Textarea
               value={editContent}
               onChange={(e) => setEditName(e.target.value)}
-              className="min-h-[200px]"
+              className="min-h-[250px] text-lg p-4 rounded-xl border-2 focus-visible:ring-primary shadow-inner"
               placeholder="Write your note here..."
             />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)} className="cursor-pointer">
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setIsModalOpen(false)} className="cursor-pointer font-bold px-6">
                 Cancel
               </Button>
-              <Button onClick={handleSave} className="cursor-pointer">
+              <Button onClick={handleSave} className="cursor-pointer font-bold px-6 shadow-lg shadow-primary/20">
                 Save Changes
               </Button>
             </div>

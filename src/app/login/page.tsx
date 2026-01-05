@@ -4,26 +4,29 @@ import { Building2 } from "lucide-react"
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-muted/30">
-      <div className="w-full max-w-[400px] space-y-8 p-8 border rounded-2xl bg-background shadow-xl">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center p-4 bg-muted/30">
+      <div className="w-full max-w-[380px] space-y-6 p-6 sm:p-8 border rounded-2xl bg-background shadow-xl">
         <div className="flex flex-col items-center text-center space-y-2">
-          <div className="p-3 bg-primary/10 rounded-full mb-2">
+          <div className="p-3 bg-primary/10 rounded-full">
             <Building2 className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Utility Bill Manager</h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in to manage your property utilities
-          </p>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight">Utility Bill Manager</h1>
+            <p className="text-sm text-muted-foreground">
+              Sign in to manage your property utilities
+            </p>
+          </div>
         </div>
 
         <form
+          className="pt-2"
           action={async () => {
             "use server"
             await signIn("google", { redirectTo: "/" })
           }}
         >
           <Button 
-            className="w-full h-12 text-base font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer" 
+            className="w-full h-11 text-base font-semibold transition-all hover:bg-primary/90 active:scale-[0.98] cursor-pointer" 
             type="submit"
           >
             <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
