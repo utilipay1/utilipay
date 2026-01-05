@@ -7,6 +7,7 @@ import { DashboardAlerts } from "@/components/dashboard/DashboardAlerts";
 import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
 import { SummaryTiles } from "@/components/dashboard/SummaryTiles";
 import { useView } from "@/context/ViewContext";
+import { NotesView } from "@/components/notes/NotesView";
 
 export default function Home() {
   const [bills, setBills] = useState([]);
@@ -69,6 +70,10 @@ export default function Home() {
 
       {currentView === 'bills' && (
         <BillsView />
+      )}
+
+      {currentView === 'notes' && (
+        <NotesView />
       )}
     </div>
   );

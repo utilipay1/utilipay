@@ -24,6 +24,7 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
     { label: 'Dashboard', value: 'dashboard' },
     { label: 'Properties', value: 'properties' },
     { label: 'Bills', value: 'bills' },
+    { label: 'Notes', value: 'notes' },
   ];
 
   const handleNavClick = (view: View) => {
