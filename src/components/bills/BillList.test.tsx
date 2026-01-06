@@ -58,9 +58,9 @@ describe('BillList', () => {
     // Pass props directly since BillList is a presentational component
     const propsMap = { prop1: '123 Main St', prop2: '456 Oak Ave' };
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     render(<BillList 
-      bills={mockBills as any} 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      bills={mockBills as any[]} 
       properties={propsMap} 
       fullProperties={{}} 
       companies={{}} 
@@ -86,9 +86,9 @@ describe('BillList', () => {
     const propsMap = { prop1: '123 Main St', prop2: '456 Oak Ave' };
     const refreshMock = jest.fn();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     render(<BillList 
-      bills={mockBills as any} 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      bills={mockBills as any[]} 
       properties={propsMap} 
       fullProperties={{}} 
       companies={{}} 

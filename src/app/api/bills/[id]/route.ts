@@ -91,7 +91,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     
-    const result = await db.collection('bills').deleteOne({ _id: billId });
+    await db.collection('bills').deleteOne({ _id: billId });
 
     return NextResponse.json({ success: true });
   } catch (error) {

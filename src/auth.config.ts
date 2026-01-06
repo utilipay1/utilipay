@@ -15,7 +15,6 @@ export default {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
-      const isApiRoute = nextUrl.pathname.startsWith('/api')
       const isLogin = nextUrl.pathname === '/login'
       const isAuthApi = nextUrl.pathname.startsWith('/api/auth')
 

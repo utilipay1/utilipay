@@ -29,7 +29,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const result = await db.collection('properties').updateOne(
+    await db.collection('properties').updateOne(
       { _id: propertyId },
       { $set: body }
     );
@@ -42,7 +42,7 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("PATCH /api/properties/[id] error:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -74,7 +74,7 @@ export async function DELETE(
     }
 
     // 1. Delete the property
-    const result = await db.collection('properties').deleteOne({ _id: propertyId });
+    await db.collection('properties').deleteOne({ _id: propertyId });
 
     // 2. Cascade delete all associated bills
     await db.collection('bills').deleteMany({ property_id: id, userId: session.user.id });

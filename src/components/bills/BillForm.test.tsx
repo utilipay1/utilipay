@@ -1,13 +1,8 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BillForm } from './BillForm';
 
 // Mock fetch
 global.fetch = jest.fn();
-
-const mockProperties = [
-  { _id: 'prop1', address: '123 Main St', utilities_managed: ['Water', 'Electric'] },
-  { _id: 'prop2', address: '456 Oak Ave', utilities_managed: ['Gas'] },
-];
 
 describe('BillForm', () => {
   beforeEach(() => {
