@@ -79,10 +79,10 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch("/api/companies");
+      const response = await fetch("/api/companies?limit=1000");
       if (response.ok) {
-        const data = await response.json();
-        setCompanies(data);
+        const json = await response.json();
+        setCompanies(json.data || []); 
       }
     } catch (error) {
       console.error("Failed to fetch companies:", error);

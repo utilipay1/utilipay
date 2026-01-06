@@ -36,7 +36,7 @@ describe('DashboardAlerts', () => {
   beforeEach(() => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: async () => mockBills,
+      json: async () => ({ data: mockBills }),
     });
   });
 

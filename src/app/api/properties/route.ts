@@ -45,6 +45,9 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const archivedParam = searchParams.get('archived');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const skip = (page - 1) * limit;
 
     const client = await clientPromise;
     const db = client.db('utilipay');
@@ -61,13 +64,25 @@ export async function GET(req: NextRequest) {
       query.is_archived = { $ne: true };
     }
 
-    const properties = await db
-      .collection('properties')
-      .find(query)
-      .sort({ createdAt: -1 })
-      .toArray();
+    const [properties, total] = await Promise.all([
+      db.collection('properties')
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
+      db.collection('properties').countDocuments(query)
+    ]);
 
-    return NextResponse.json(properties);
+    return NextResponse.json({
+      data: properties,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error("GET /api/properties error details:", {
       message: error instanceof Error ? error.message : 'Unknown error',

@@ -83,10 +83,10 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
   useEffect(() => {
     async function fetchProperties() {
       try {
-        const response = await fetch("/api/properties");
+        const response = await fetch("/api/properties?limit=1000");
         if (response.ok) {
-          const data = await response.json();
-          setProperties(data);
+          const json = await response.json();
+          setProperties(json.data || []);
         }
       } catch (error) {
         console.error("Failed to fetch properties:", error);

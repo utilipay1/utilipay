@@ -19,10 +19,10 @@ export function DashboardAlerts() {
 
   const fetchBills = async () => {
     try {
-      const response = await fetch('/api/bills');
+      const response = await fetch('/api/bills?status=Unpaid&limit=1000');
       if (response.ok) {
-        const data = await response.json();
-        const parsedData = z.array(BillSchema).parse(data);
+        const json = await response.json();
+        const parsedData = z.array(BillSchema).parse(json.data || []);
         setBills(parsedData);
       }
     } catch (error) {

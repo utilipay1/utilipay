@@ -55,35 +55,25 @@ describe('BillList', () => {
   });
 
   it('renders all bills by default', async () => {
-    // Mock implementation is already set in beforeEach
-
-    render(<BillList />);
-    await waitFor(() => {
-      expect(screen.getByText('Water')).toBeInTheDocument();
-      expect(screen.getByText('Electric')).toBeInTheDocument();
-      expect(screen.getByText('123 Main St')).toBeInTheDocument(); // Verify property address too
-    });
+    // Pass props directly since BillList is a presentational component
+    const propsMap = { prop1: '123 Main St', prop2: '456 Oak Ave' };
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render(<BillList 
+      bills={mockBills as any} 
+      properties={propsMap} 
+      fullProperties={{}} 
+      companies={{}} 
+      onRefresh={jest.fn()} 
+    />);
+    
+    expect(screen.getByText('Water')).toBeInTheDocument();
+    expect(screen.getByText('Electric')).toBeInTheDocument();
+    expect(screen.getByText('123 Main St')).toBeInTheDocument();
   });
 
   it('toggles charged status for paid bills', async () => {
-    // The initial load mocks are handled by beforeEach.
-    // We need to override or append the mock for the PATCH request.
-    // Since fetch is called internally, we can spy or ensure the next call returns what we want if we were using sequential mocks.
-    // With mockImplementation, we can add a condition for the specific PATCH url.
-    
     (global.fetch as jest.Mock).mockImplementation((url, options) => {
-       if (url === '/api/bills') {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockBills,
-        });
-      }
-      if (url === '/api/properties') {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockProperties,
-        });
-      }
       if (url === '/api/bills/2' && options?.method === 'PATCH') {
          return Promise.resolve({
           ok: true,
@@ -93,14 +83,22 @@ describe('BillList', () => {
       return Promise.resolve({ ok: false });
     });
 
-    render(<BillList />);
+    const propsMap = { prop1: '123 Main St', prop2: '456 Oak Ave' };
+    const refreshMock = jest.fn();
 
-    await waitFor(() => screen.getByText('Electric'));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render(<BillList 
+      bills={mockBills as any} 
+      properties={propsMap} 
+      fullProperties={{}} 
+      companies={{}} 
+      onRefresh={refreshMock} 
+    />);
 
     const switches = screen.getAllByRole('switch');
-    // Water is Unpaid, switch should be disabled
+    // Water is Unpaid (index 0), switch should be disabled
     expect(switches[0]).toBeDisabled();
-    // Electric is Paid, switch should be enabled
+    // Electric is Paid (index 1), switch should be enabled
     expect(switches[1]).not.toBeDisabled();
 
     fireEvent.click(switches[1]);
@@ -110,6 +108,7 @@ describe('BillList', () => {
         method: 'PATCH',
         body: expect.stringContaining('"status":"Paid-Charged"'),
       }));
+      expect(refreshMock).toHaveBeenCalled();
     });
   });
 });

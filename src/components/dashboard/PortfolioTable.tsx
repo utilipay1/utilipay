@@ -35,15 +35,15 @@ export function PortfolioTable() {
     async function fetchData() {
       try {
         const [propsRes, billsRes] = await Promise.all([
-          fetch('/api/properties'),
-          fetch('/api/bills'),
+          fetch('/api/properties?limit=1000'),
+          fetch('/api/bills?limit=1000'),
         ]);
 
         if (propsRes.ok && billsRes.ok) {
-          const propsData = await propsRes.json();
-          const billsData = await billsRes.json();
-          setProperties(propsData);
-          setBills(billsData);
+          const propsJson = await propsRes.json();
+          const billsJson = await billsRes.json();
+          setProperties(propsJson.data || []);
+          setBills(billsJson.data || []);
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);

@@ -18,17 +18,17 @@ export default function Home() {
     async function fetchData() {
       try {
         const [billsRes, propsRes] = await Promise.all([
-          fetch('/api/bills'),
-          fetch('/api/properties')
+          fetch('/api/bills?limit=1000'),
+          fetch('/api/properties?limit=1000')
         ]);
         
         if (billsRes.ok) {
           const data = await billsRes.json();
-          setBills(data);
+          setBills(data.data || []);
         }
         if (propsRes.ok) {
           const data = await propsRes.json();
-          setProperties(data);
+          setProperties(data.data || []);
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);

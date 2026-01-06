@@ -45,6 +45,9 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const serviceType = searchParams.get('type');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const skip = (page - 1) * limit;
 
     const client = await clientPromise;
     const db = client.db('utilipay');
@@ -56,13 +59,25 @@ export async function GET(req: NextRequest) {
       query.service_type = serviceType;
     }
 
-    const companies = await db
-      .collection('companies')
-      .find(query)
-      .sort({ name: 1 })
-      .toArray();
+    const [companies, total] = await Promise.all([
+      db.collection('companies')
+        .find(query)
+        .sort({ name: 1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
+      db.collection('companies').countDocuments(query)
+    ]);
 
-    return NextResponse.json(companies);
+    return NextResponse.json({
+      data: companies,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error("GET /api/companies error:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

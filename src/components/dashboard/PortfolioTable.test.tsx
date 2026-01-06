@@ -78,13 +78,13 @@ describe('PortfolioTable', () => {
       if (url.includes('/api/properties')) {
         return Promise.resolve({
           ok: true,
-          json: async () => mockProperties,
+          json: async () => ({ data: mockProperties }),
         });
       }
       if (url.includes('/api/bills')) {
         return Promise.resolve({
           ok: true,
-          json: async () => mockBills,
+          json: async () => ({ data: mockBills }),
         });
       }
       return Promise.reject(new Error('Unknown URL'));
