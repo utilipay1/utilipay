@@ -43,8 +43,7 @@ describe('PropertyList', () => {
 
     render(<PropertyList />, { wrapper: Wrapper });
 
-    // SWR might not show "Loading..." text the same way depending on version/config, 
-    // but let's wait for content.
+    // Wait for the data to be loaded and rendered
     await waitFor(() => {
       expect(screen.getByText('123 Main St')).toBeInTheDocument();
       expect(screen.getByText('456 Oak Ave')).toBeInTheDocument();

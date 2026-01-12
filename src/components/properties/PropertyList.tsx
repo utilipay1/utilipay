@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useSWR, { mutate } from "swr";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Property = z.infer<typeof PropertySchema>;
 type Company = z.infer<typeof CompanySchema>;
@@ -138,7 +139,37 @@ export function PropertyList({ search = "", showArchived = false }: { search?: s
   };
 
   if (propsLoading) {
-    return <div className="h-64 flex items-center justify-center text-muted-foreground">Loading properties...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
+          <Table>
+            <TableHeader className="bg-muted/30">
+              <TableRow>
+                <TableHead className="py-4 px-6">Property Address</TableHead>
+                <TableHead className="py-4 px-6">Tenant Status</TableHead>
+                <TableHead className="py-4 px-6">Managed Utilities</TableHead>
+                <TableHead className="text-right py-4 px-6">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell className="py-5 px-6"><Skeleton className="h-6 w-48" /></TableCell>
+                  <TableCell className="py-5 px-6"><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                  <TableCell className="py-5 px-6">
+                    <div className="flex gap-2">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-5 px-6"><div className="flex justify-end"><Skeleton className="h-8 w-8 rounded-md" /></div></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
   }
 
   return (
