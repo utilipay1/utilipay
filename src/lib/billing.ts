@@ -4,7 +4,7 @@ export interface BillInput {
   property_id: string;
   utility_type: 'Water' | 'Sewer' | 'Gas' | 'Electric';
   amount: number;
-  account_number?: string;
+  account_number?: string | null;
   billing_period_start: Date;
   billing_period_end: Date;
   bill_date: Date;

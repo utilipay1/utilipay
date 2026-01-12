@@ -207,7 +207,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
             <FormItem>
               <FormLabel>Account Number</FormLabel>
               <FormControl>
-                <Input placeholder="Utility account number" {...field} />
+                <Input placeholder="Utility account number" {...field} value={field.value ?? ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -291,7 +291,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea placeholder="Additional notes about the bill" {...field} />
+                <Textarea placeholder="Additional notes about the bill" {...field} value={field.value ?? ""} />
               </FormControl>
               <FormMessage />
             </FormItem>

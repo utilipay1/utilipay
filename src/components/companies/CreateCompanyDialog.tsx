@@ -106,7 +106,7 @@ export function CreateCompanyDialog({ isOpen, onClose, onSuccess, defaultService
                 <FormItem>
                   <FormLabel>Phone (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Support number" {...field} />
+                    <Input placeholder="Support number" {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -120,7 +120,7 @@ export function CreateCompanyDialog({ isOpen, onClose, onSuccess, defaultService
                 <FormItem>
                   <FormLabel>Website (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://..." {...field} />
+                    <Input placeholder="https://..." {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

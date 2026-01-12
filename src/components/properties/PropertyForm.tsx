@@ -167,10 +167,9 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Owner Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter owner name (optional)" {...field} />
-                  </FormControl>
-                  <FormMessage />
+                                <FormControl>
+                                  <Input placeholder="Enter owner name (optional)" {...field} value={field.value ?? ""} />
+                                </FormControl>                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -180,9 +179,9 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Owner Contact</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Email or phone (optional)" {...field} />
-                  </FormControl>
+                                <FormControl>
+                                  <Input placeholder="Email or phone (optional)" {...field} value={field.value ?? ""} />
+                                </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -221,9 +220,9 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tenant Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter tenant name (if occupied)" {...field} />
-                    </FormControl>
+                                  <FormControl>
+                                    <Input placeholder="Enter tenant name (if occupied)" {...field} value={field.value ?? ""} />
+                                  </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -234,9 +233,9 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tenant Contact</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Tenant email or phone" {...field} />
-                    </FormControl>
+                                  <FormControl>
+                                    <Input placeholder="Tenant email or phone" {...field} value={field.value ?? ""} />
+                                  </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -344,9 +343,9 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Notes</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Additional notes about the property" {...field} />
-                </FormControl>
+                              <FormControl>
+                                <Textarea placeholder="Additional notes about the property" {...field} value={field.value ?? ""} />
+                              </FormControl>
                 <FormMessage />
               </FormItem>
             )}

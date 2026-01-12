@@ -19,7 +19,7 @@ export function DashboardAlerts() {
 
   const fetchBills = async () => {
     try {
-      const response = await fetch('/api/bills?status=Unpaid&limit=1000');
+      const response = await fetch('/api/bills?status=Unpaid,Overdue&limit=1000');
       if (response.ok) {
         const json = await response.json();
         const parsedData = z.array(BillSchema).parse(json.data || []);
@@ -43,7 +43,7 @@ export function DashboardAlerts() {
     setIsModalOpen(true);
   };
 
-  const unpaidBills = bills.filter(b => b.status === 'Unpaid');
+  const unpaidBills = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue');
   
   const overdueAlerts = unpaidBills
     .filter(b => isBefore(startOfDay(new Date(b.due_date)), today))
