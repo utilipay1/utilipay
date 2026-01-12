@@ -12,6 +12,7 @@ import { NotesView } from "@/components/notes/NotesView";
 export default function Home() {
   const [bills, setBills] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { currentView } = useView();
 
   useEffect(() => {
@@ -32,6 +33,8 @@ export default function Home() {
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
       }
     }
     fetchData();
@@ -47,7 +50,7 @@ export default function Home() {
           </div>
           
           <section>
-            <SummaryTiles bills={bills} properties={properties} />
+            <SummaryTiles bills={bills} properties={properties} loading={loading} />
           </section>
 
           <section className="space-y-6">

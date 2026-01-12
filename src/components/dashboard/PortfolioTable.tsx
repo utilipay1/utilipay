@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Property {
   _id: string;
@@ -54,7 +55,37 @@ export function PortfolioTable() {
     fetchData();
   }, []);
 
-  if (loading) return <div>Loading portfolio...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
+          <Table>
+            <TableHeader className="bg-muted/30">
+              <TableRow>
+                <TableHead className="py-4">Property Address</TableHead>
+                <TableHead className="py-4">Utility Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell className="py-4">
+                    <Skeleton className="h-6 w-48" />
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex gap-2">
+                      <Skeleton className="h-6 w-24" />
+                      <Skeleton className="h-6 w-24" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
