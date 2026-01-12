@@ -25,6 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Bill = z.infer<typeof BillSchema>;
 type Property = z.infer<typeof PropertySchema>;
@@ -36,9 +37,10 @@ interface BillListProps {
   fullProperties: Record<string, Property>;
   companies: Record<string, Company>;
   onRefresh: () => void;
+  loading?: boolean;
 }
 
-export function BillList({ bills, properties, fullProperties, companies, onRefresh }: BillListProps) {
+export function BillList({ bills, properties, fullProperties, companies, onRefresh, loading = false }: BillListProps) {
   // Modal state
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -131,7 +133,30 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
             </TableRow>
           </TableHeader>
           <TableBody>
-            {bills.length === 0 ? (
+            {loading ? (
+              [...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell className="p-0"><Skeleton className="h-full w-1" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  </TableCell>
+                  <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-10 rounded-full" /></TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Skeleton className="h-8 w-20 rounded-md" />
+                      <Skeleton className="h-8 w-8 rounded-md" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : bills.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground italic">
                   No bills found.

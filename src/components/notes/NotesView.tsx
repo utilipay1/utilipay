@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type UserNote = z.infer<typeof UserNoteSchema>;
 
@@ -98,7 +99,40 @@ export function NotesView() {
     note.content.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <div>Loading notes...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <Skeleton className="h-12 w-48 mb-2" />
+            <Skeleton className="h-6 w-64" />
+          </div>
+          <Skeleton className="h-12 w-32 rounded-2xl" />
+        </div>
+
+        <Skeleton className="h-10 max-w-md rounded-2xl" />
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex flex-col p-8 border rounded-[2.5rem] bg-card shadow-sm h-[280px]">
+              <div className="flex-1 space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+              </div>
+              <div className="mt-8 pt-6 border-t border-dashed border-muted flex justify-between items-center">
+                <Skeleton className="h-4 w-24" />
+                <div className="flex gap-1">
+                  <Skeleton className="h-9 w-9 rounded-xl" />
+                  <Skeleton className="h-9 w-9 rounded-xl" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

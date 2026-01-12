@@ -136,9 +136,7 @@ export function BillsView() {
           properties={properties} 
         />
         
-        {billsLoading && !billsResponse ? (
-           <div className="h-64 flex items-center justify-center text-muted-foreground">Loading bills...</div>
-        ) : (
+        {/* Removed redundant loading check wrapper to allow BillList to handle loading skeleton */}
           <>
             <BillList 
               bills={bills} 
@@ -146,6 +144,7 @@ export function BillsView() {
               fullProperties={fullProperties}
               companies={companies.companies}
               onRefresh={handleRefresh} 
+              loading={billsLoading}
             />
             
             {/* Pagination Controls */}
@@ -173,7 +172,6 @@ export function BillsView() {
               </Button>
             </div>
           </>
-        )}
       </div>
     </div>
   );
