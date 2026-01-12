@@ -9,6 +9,8 @@ import { Edit } from 'lucide-react';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
 
+import { Skeleton } from '@/components/ui/skeleton';
+
 type Bill = z.infer<typeof BillSchema>;
 
 export function DashboardAlerts() {
@@ -57,7 +59,34 @@ export function DashboardAlerts() {
     })
     .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
 
-  if (loading) return <div>Loading alerts...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="grid gap-8 md:grid-cols-2">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Skeleton className="w-2 h-2 rounded-full" />
+              <Skeleton className="h-6 w-24" />
+            </h3>
+            <div className="space-y-3">
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Skeleton className="w-2 h-2 rounded-full" />
+              <Skeleton className="h-6 w-24" />
+            </h3>
+            <div className="space-y-3">
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (overdueAlerts.length === 0 && upcomingAlerts.length === 0) {
     return (
