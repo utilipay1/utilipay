@@ -79,10 +79,6 @@ export function NotesView() {
     }
   };
 
-  const filteredNotes = (notes || []).filter((note) =>
-    note.content.toLowerCase().includes(search.toLowerCase())
-  );
-
   if (isLoading && !notes) {
     return (
       <div className="space-y-8">
@@ -121,6 +117,7 @@ export function NotesView() {
   const filteredNotes = (notes || []).filter((note) =>
     note.content.toLowerCase().includes(search.toLowerCase())
   );
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

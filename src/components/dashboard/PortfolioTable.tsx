@@ -8,10 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-<<<<<<< HEAD
-=======
 import useSWR from 'swr';
->>>>>>> a23c893 (chore: archived performance improvement)
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Property {

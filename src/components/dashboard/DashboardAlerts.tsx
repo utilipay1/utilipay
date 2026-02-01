@@ -11,8 +11,6 @@ import { z } from 'zod';
 import useSWR, { mutate } from 'swr';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { Skeleton } from '@/components/ui/skeleton';
-
 type Bill = z.infer<typeof BillSchema>;
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
