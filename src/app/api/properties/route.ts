@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { DB_NAME } from '@/lib/mongodb';
 import { PropertySchema } from '@/lib/schemas';
 import { ZodError } from 'zod';
 import { auth } from '@/auth';
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const validatedData = PropertySchema.parse(body);
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _id, ...propertyData } = validatedData;
@@ -45,12 +45,13 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const archivedParam = searchParams.get('archived');
+    const isLookup = searchParams.get('lookup') === 'true'; // New param
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = (page - 1) * limit;
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
 
     const query: Record<string, unknown> = {
       userId: session.user.id // Filter by user ownership
@@ -64,9 +65,13 @@ export async function GET(req: NextRequest) {
       query.is_archived = { $ne: true };
     }
 
+    // Optimization: If lookup mode, only fetch minimal fields
+    const projection = isLookup ? { _id: 1, address: 1 } : {};
+
     const [properties, total] = await Promise.all([
       db.collection('properties')
         .find(query)
+        .project(projection) // Apply projection
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)

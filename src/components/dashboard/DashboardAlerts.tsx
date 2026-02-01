@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { format, differenceInCalendarDays, isBefore, startOfDay } from 'date-fns';
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
 import { BillModal } from '@/components/bills/BillModal';
@@ -8,36 +8,19 @@ import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
-
+import useSWR, { mutate } from 'swr';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Bill = z.infer<typeof BillSchema>;
 
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 export function DashboardAlerts() {
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: billsData, isLoading } = useSWR('/api/bills?status=Unpaid&limit=1000', fetcher);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchBills = async () => {
-    try {
-      const response = await fetch('/api/bills?status=Unpaid,Overdue&limit=1000');
-      if (response.ok) {
-        const json = await response.json();
-        const parsedData = z.array(BillSchema).parse(json.data || []);
-        setBills(parsedData);
-      }
-    } catch (error) {
-      console.error('Failed to fetch bills:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBills();
-  }, []);
-
+  const bills: Bill[] = billsData?.data || [];
   const today = startOfDay(new Date());
 
   const handleEditClick = (bill: Bill) => {
@@ -45,7 +28,11 @@ export function DashboardAlerts() {
     setIsModalOpen(true);
   };
 
-  const unpaidBills = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue');
+  const onRefresh = () => {
+    mutate('/api/bills?status=Unpaid&limit=1000');
+  };
+
+  const unpaidBills = bills.filter(b => b.status === 'Unpaid');
   
   const overdueAlerts = unpaidBills
     .filter(b => isBefore(startOfDay(new Date(b.due_date)), today))
@@ -59,29 +46,19 @@ export function DashboardAlerts() {
     })
     .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
 
-  if (loading) {
+  if (isLoading && bills.length === 0) {
     return (
-      <div className="space-y-8">
-        <div className="grid gap-8 md:grid-cols-2">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Skeleton className="w-2 h-2 rounded-full" />
-              <Skeleton className="h-6 w-24" />
-            </h3>
-            <div className="space-y-3">
-              <Skeleton className="h-24 w-full rounded-xl" />
-              <Skeleton className="h-24 w-full rounded-xl" />
-            </div>
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-24" />
+          <div className="space-y-3">
+            {[1, 2].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
           </div>
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Skeleton className="w-2 h-2 rounded-full" />
-              <Skeleton className="h-6 w-24" />
-            </h3>
-            <div className="space-y-3">
-              <Skeleton className="h-24 w-full rounded-xl" />
-              <Skeleton className="h-24 w-full rounded-xl" />
-            </div>
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-24" />
+          <div className="space-y-3">
+            {[1, 2].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
           </div>
         </div>
       </div>
@@ -143,7 +120,7 @@ export function DashboardAlerts() {
             >
               <Edit className="h-4 w-4" />
             </Button>
-            <RecordPaymentModal bill={bill} onPaymentRecorded={fetchBills} />
+            <RecordPaymentModal bill={bill} onPaymentRecorded={onRefresh} />
           </div>
         </div>
       </div>
@@ -186,7 +163,7 @@ export function DashboardAlerts() {
         bill={selectedBill}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchBills}
+        onSuccess={onRefresh}
         defaultMode="edit"
       />
     </div>

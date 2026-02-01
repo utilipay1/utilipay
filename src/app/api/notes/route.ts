@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { DB_NAME } from '@/lib/mongodb';
 import { UserNoteSchema } from '@/lib/schemas';
 import { ZodError } from 'zod';
 import { auth } from '@/auth';
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const validatedData = UserNoteSchema.parse(body);
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _id, ...noteData } = validatedData;
@@ -44,7 +44,7 @@ export async function GET() {
     }
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
 
     const notes = await db
       .collection('user_notes')

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Plus, FileText, X } from "lucide-react";
 import { UserNoteSchema } from "@/lib/schemas";
@@ -14,36 +14,20 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import useSWR, { mutate } from "swr";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type UserNote = z.infer<typeof UserNoteSchema>;
 
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 export function NotesView() {
-  const [notes, setNotes] = useState<UserNote[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: notes, isLoading } = useSWR<UserNote[]>("/api/notes", fetcher);
+  
   const [editingNote, setEditingNote] = useState<UserNote | null>(null);
   const [editContent, setEditContent] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
-
-  const fetchNotes = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/notes");
-      if (response.ok) {
-        const data = await response.json();
-        setNotes(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch notes:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchNotes();
-  }, [fetchNotes]);
 
   const handleCreate = () => {
     setEditingNote(null);
@@ -72,7 +56,7 @@ export function NotesView() {
 
       if (response.ok) {
         setIsModalOpen(false);
-        fetchNotes();
+        mutate("/api/notes");
       }
     } catch (error) {
       console.error("Failed to save note:", error);
@@ -88,18 +72,14 @@ export function NotesView() {
       });
 
       if (response.ok) {
-        fetchNotes();
+        mutate("/api/notes");
       }
     } catch (error) {
       console.error("Failed to delete note:", error);
     }
   };
 
-  const filteredNotes = notes.filter((note) =>
-    note.content.toLowerCase().includes(search.toLowerCase())
-  );
-
-  if (loading) {
+  if (isLoading && !notes) {
     return (
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -134,6 +114,10 @@ export function NotesView() {
     );
   }
 
+  const filteredNotes = (notes || []).filter((note) =>
+    note.content.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -161,7 +145,13 @@ export function NotesView() {
         )}
       </div>
 
-      {filteredNotes.length === 0 ? (
+      {isLoading && !notes ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} className="h-[250px] rounded-[2.5rem]" />
+          ))}
+        </div>
+      ) : filteredNotes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-32 text-center border-2 border-dashed rounded-[3rem] bg-muted/5">
           <div className="p-6 bg-muted/50 rounded-full mb-6">
             <FileText className="w-12 h-12 text-muted-foreground/30" />

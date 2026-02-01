@@ -6,13 +6,12 @@ import { AddBillModal } from './AddBillModal';
 import { ExportBillsButton } from './ExportBillsButton';
 import { Button } from '@/components/ui/button';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { BillSchema, PropertySchema, CompanySchema } from '@/lib/schemas';
+import { BillSchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { BillsToolbar, BillFiltersState } from './BillsToolbar';
 import useSWR, { mutate } from 'swr';
 
 type Bill = z.infer<typeof BillSchema>;
-type Property = z.infer<typeof PropertySchema>;
 type Company = z.infer<typeof CompanySchema>;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -62,16 +61,14 @@ export function BillsView() {
     { keepPreviousData: true }
   );
 
-  // Fetch Lookups (limited to 1000 for now to support UI mapping)
-  const { data: propsResponse } = useSWR('/api/properties?archived=all&limit=1000', fetcher);
+  // Optimized fetch for dropdowns (IDs and Addresses only)
+  const { data: propsResponse } = useSWR('/api/properties?archived=all&limit=1000&lookup=true', fetcher);
   const { data: companiesResponse } = useSWR('/api/companies?limit=1000', fetcher);
 
   // Transform Data
   const bills: Bill[] = useMemo(() => {
     if (!billsResponse?.data) return [];
     try {
-      // We parse loosely to avoid crashing on slight schema mismatches during dev
-      // In production, we should probably handle errors gracefully
       return billsResponse.data;
     } catch (e) {
       console.error("Failed to parse bills", e);
@@ -79,19 +76,20 @@ export function BillsView() {
     }
   }, [billsResponse]);
 
-  const { properties, fullProperties } = useMemo(() => {
+  const properties = useMemo(() => {
     const propsMap: Record<string, string> = {};
-    const propsFullMap: Record<string, Property> = {};
     if (propsResponse?.data) {
-      propsResponse.data.forEach((p: Property) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      propsResponse.data.forEach((p: any) => {
         if (p._id) {
           propsMap[p._id] = p.address;
-          propsFullMap[p._id] = p;
         }
       });
     }
-    return { properties: propsMap, fullProperties: propsFullMap };
+    return propsMap;
   }, [propsResponse]);
+  
+  const fullProperties = useMemo(() => ({}), []);
 
   const companies = useMemo(() => {
     const companiesMap: Record<string, Company> = {};
