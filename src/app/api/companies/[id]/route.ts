@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { DB_NAME } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { validateObjectId } from '@/lib/api-utils';
 import { CompanySchema } from '@/lib/schemas';
 import { auth } from '@/auth';
 
@@ -15,6 +16,10 @@ export async function PATCH(
     }
 
     const { id } = await params;
+
+    const validationError = validateObjectId(id);
+    if (validationError) return validationError;
+
     const body = await req.json();
     
     // Partial validation for updates
@@ -24,7 +29,7 @@ export async function PATCH(
     const { _id, ...updateData } = validatedData;
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
     const companyId = new ObjectId(id);
 
     // Verify ownership
@@ -59,8 +64,12 @@ export async function DELETE(
     }
 
     const { id } = await params;
+
+    const validationError = validateObjectId(id);
+    if (validationError) return validationError;
+
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
     const companyId = new ObjectId(id);
 
     // Verify ownership

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { DB_NAME } from '@/lib/mongodb';
 import { CompanySchema } from '@/lib/schemas';
 import { ZodError } from 'zod';
 import { auth } from '@/auth';
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const validatedData = CompanySchema.parse(body);
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _id, ...companyData } = validatedData;
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
 
     const query: Record<string, unknown> = {
       userId: session.user.id // Filter by user ownership

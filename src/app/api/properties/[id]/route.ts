@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { DB_NAME } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { validateObjectId } from '@/lib/api-utils';
 import { auth } from '@/auth';
 
 export async function PATCH(
@@ -14,10 +15,14 @@ export async function PATCH(
     }
 
     const { id } = await params;
+
+    const validationError = validateObjectId(id);
+    if (validationError) return validationError;
+
     const body = await req.json();
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
 
     // Verify ownership
     const propertyId = new ObjectId(id);
@@ -60,8 +65,12 @@ export async function DELETE(
     }
 
     const id = (await params).id;
+
+    const validationError = validateObjectId(id);
+    if (validationError) return validationError;
+
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
     const propertyId = new ObjectId(id);
 
     // Verify ownership

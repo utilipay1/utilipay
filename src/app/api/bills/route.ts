@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { DB_NAME } from '@/lib/mongodb';
 import { BillSchema } from '@/lib/schemas';
 import { calculateNextBill } from '@/lib/billing';
 import { ZodError } from 'zod';
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const validatedData = BillSchema.parse(body);
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _id, ...billData } = validatedData;
@@ -68,72 +68,83 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
 
     const client = await clientPromise;
-    const db = client.db('utilipay');
+    const db = client.db(DB_NAME);
     
-    // Build query
-    const query: Record<string, unknown> = {
-      userId: session.user.id // Filter by user ownership
+    // Initial Match Stage (Filters on Bill fields)
+    const matchStage: Record<string, unknown> = {
+      userId: session.user.id
     };
 
-    // 1. Handle Search (Address lookup)
-    if (search) {
-      const matchingProps = await db.collection('properties')
-        .find({ 
-          userId: session.user.id,
-          address: { $regex: search, $options: 'i' } 
-        })
-        .project({ _id: 1 })
-        .toArray();
-      
-      const propIds = matchingProps.map(p => p._id.toString());
-      
-      // If propertyId filter is also set, intersection is needed
-      if (propertyId) {
-        if (propIds.includes(propertyId)) {
-          query.property_id = propertyId;
-        } else {
-          // Search found properties, but none match the specific propertyId filter
-          // So result should be empty
-          query.property_id = { $in: [] }; 
-        }
-      } else {
-        query.property_id = { $in: propIds };
-      }
-    } else if (propertyId) {
-      query.property_id = propertyId;
-    }
-
-    // 2. Other Filters
     if (status) {
-      // Allow comma-separated statuses
       const statuses = status.split(',');
-      if (statuses.length > 0) {
-        query.status = { $in: statuses };
-      }
+      if (statuses.length > 0) matchStage.status = { $in: statuses };
     }
 
     if (utilityType) {
       const types = utilityType.split(',');
-      if (types.length > 0) {
-        query.utility_type = { $in: types };
-      }
+      if (types.length > 0) matchStage.utility_type = { $in: types };
+    }
+
+    if (propertyId) {
+       matchStage.property_id = propertyId;
     }
 
     if (showArchived) {
-      query.is_archived = true;
+      matchStage.is_archived = true;
     } else {
-      query.is_archived = { $ne: true };
+      matchStage.is_archived = { $ne: true };
     }
 
-    const [bills, total] = await Promise.all([
-      db.collection('bills')
-        .find(query)
-        .sort({ due_date: 1 })
-        .skip(skip)
-        .limit(limit)
-        .toArray(),
-      db.collection('bills').countDocuments(query)
-    ]);
+    // Pipeline Construction
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pipeline: any[] = [
+      { $match: matchStage },
+      // Join Property
+      {
+        $lookup: {
+          from: 'properties',
+          let: { pid: '$property_id' },
+          pipeline: [
+            { 
+              $match: { 
+                $expr: { $eq: ['$_id', { $toObjectId: '$$pid' }] } 
+              } 
+            },
+            { $project: { address: 1, utility_companies: 1 } }
+          ],
+          as: 'property'
+        }
+      },
+      { $unwind: { path: '$property', preserveNullAndEmptyArrays: true } }
+    ];
+
+    // Search Stage (Filter on Joined Property Address)
+    if (search) {
+      pipeline.push({
+        $match: {
+          'property.address': { $regex: search, $options: 'i' }
+        }
+      });
+    }
+
+    // Facet for Data + Count
+    pipeline.push({
+      $facet: {
+        data: [
+          { $sort: { due_date: 1 } },
+          { $skip: skip },
+          { $limit: limit }
+        ],
+        metadata: [
+          { $count: 'total' }
+        ]
+      }
+    });
+
+    const result = await db.collection('bills').aggregate(pipeline).toArray();
+    
+    const bills = result[0].data;
+    const total = result[0].metadata[0]?.total || 0;
 
     return NextResponse.json({
       data: bills,

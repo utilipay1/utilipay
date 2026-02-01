@@ -27,14 +27,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type Bill = z.infer<typeof BillSchema>;
+type Bill = z.infer<typeof BillSchema> & {
+  property?: {
+    address: string;
+    utility_companies?: Record<string, string>;
+  };
+};
 type Property = z.infer<typeof PropertySchema>;
 type Company = z.infer<typeof CompanySchema>;
 
 interface BillListProps {
   bills: Bill[];
-  properties: Record<string, string>;
-  fullProperties: Record<string, Property>;
+  properties: Record<string, string>; // Kept for interface compatibility but unused for main display
+  fullProperties: Record<string, Property>; // Kept for interface compatibility but unused
   companies: Record<string, Company>;
   onRefresh: () => void;
   loading?: boolean;
@@ -46,8 +51,7 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
-  const handleToggleCharged = async (e: React.MouseEvent, billId: string, currentStatus: string) => {
-    e.stopPropagation(); // Prevent row click
+  const handleToggleCharged = async (billId: string, currentStatus: string) => {
     const isCharged = currentStatus === 'Paid-Charged';
     const newStatus = isCharged ? 'Paid-Uncharged' : 'Paid-Charged';
     
@@ -168,7 +172,7 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
                 const isUnpaid = bill.status === 'Unpaid' || bill.status === 'Overdue';
                 const isPaid = bill.status.startsWith('Paid');
                 const isUrgent = isUnpaid && daysRemaining <= 7 && !bill.is_archived;
-                const propertyAddress = properties[bill.property_id] || "Unknown Property";
+                const propertyAddress = bill.property?.address || properties[bill.property_id] || "Unknown Property";
                 
                 return (
                   <TableRow 
@@ -213,7 +217,7 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
                       <Switch 
                         disabled={!isPaid || bill.is_archived}
                         checked={bill.status === 'Paid-Charged'}
-                        onCheckedChange={() => handleToggleCharged({ stopPropagation: () => {} } as React.MouseEvent, bill._id!, bill.status)}
+                        onCheckedChange={() => handleToggleCharged(bill._id!, bill.status)}
                       />
                     </TableCell>
                     <TableCell className="text-right">
@@ -276,10 +280,17 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
 
       <BillModal
         bill={selectedBill}
-        propertyName={selectedBill ? properties[selectedBill.property_id] : undefined}
-        companyName={selectedBill && fullProperties[selectedBill.property_id]?.utility_companies?.[selectedBill.utility_type] 
-          ? companies[fullProperties[selectedBill.property_id]!.utility_companies![selectedBill.utility_type]!]?.name 
-          : undefined}
+        propertyName={selectedBill?.property?.address || (selectedBill ? properties[selectedBill.property_id] : undefined)}
+        companyName={(() => {
+          if (!selectedBill) return undefined;
+          // Try to get company ID from the joined property data first
+          const companyId = selectedBill.property?.utility_companies?.[selectedBill.utility_type];
+          // Fallback to the old method if needed (though fullProperties is empty now)
+          const fallbackCompanyId = fullProperties[selectedBill.property_id]?.utility_companies?.[selectedBill.utility_type];
+          
+          const finalId = companyId || fallbackCompanyId;
+          return finalId ? companies[finalId]?.name : undefined;
+        })()}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => {

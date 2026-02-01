@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import * as xlsx from 'xlsx';
 import { format } from 'date-fns';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
@@ -21,6 +20,9 @@ export function ExportBillsButton({ bills, properties }: ExportBillsButtonProps)
   const handleExport = async () => {
     setExporting(true);
     try {
+      // Dynamic import to reduce bundle size
+      const xlsx = await import('xlsx');
+
       // Flatten and format data for Excel
       const data = bills.map((bill: Bill) => {
         const serviceFee = bill.payment?.service_fee || 0;

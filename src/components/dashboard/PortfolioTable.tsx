@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -9,6 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+<<<<<<< HEAD
+=======
+import useSWR from 'swr';
+>>>>>>> a23c893 (chore: archived performance improvement)
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Property {
@@ -27,62 +30,35 @@ interface Bill {
   amount: number;
 }
 
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 export function PortfolioTable() {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: propsData, isLoading: propsLoading } = useSWR('/api/properties?limit=1000', fetcher);
+  const { data: billsData, isLoading: billsLoading } = useSWR('/api/bills?limit=1000', fetcher);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [propsRes, billsRes] = await Promise.all([
-          fetch('/api/properties?limit=1000'),
-          fetch('/api/bills?limit=1000'),
-        ]);
+  const properties: Property[] = propsData?.data || [];
+  const bills: Bill[] = billsData?.data || [];
+  const isLoading = propsLoading || billsLoading;
 
-        if (propsRes.ok && billsRes.ok) {
-          const propsJson = await propsRes.json();
-          const billsJson = await billsRes.json();
-          setProperties(propsJson.data || []);
-          setBills(billsJson.data || []);
-        }
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  if (loading) {
+  if (isLoading && properties.length === 0) {
     return (
-      <div className="space-y-4">
-        <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
-          <Table>
-            <TableHeader className="bg-muted/30">
-              <TableRow>
-                <TableHead className="py-4">Property Address</TableHead>
-                <TableHead className="py-4">Utility Status</TableHead>
+      <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
+        <Table>
+          <TableHeader className="bg-muted/30">
+            <TableRow>
+              <TableHead className="py-4">Property Address</TableHead>
+              <TableHead className="py-4">Utility Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[1, 2, 3].map((i) => (
+              <TableRow key={i}>
+                <TableCell className="py-4"><Skeleton className="h-6 w-[200px]" /></TableCell>
+                <TableCell className="py-4"><Skeleton className="h-6 w-[300px]" /></TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(5)].map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell className="py-4">
-                    <Skeleton className="h-6 w-48" />
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <div className="flex gap-2">
-                      <Skeleton className="h-6 w-24" />
-                      <Skeleton className="h-6 w-24" />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     );
   }

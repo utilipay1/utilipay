@@ -1,5 +1,5 @@
 import { isSameMonth, parseISO } from 'date-fns';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Bill {
   _id: string;
@@ -20,10 +20,10 @@ interface Property {
 interface SummaryTilesProps {
   bills: Bill[];
   properties: Property[];
-  loading?: boolean;
+  isLoading?: boolean;
 }
 
-export function SummaryTiles({ bills, properties, loading = false }: SummaryTilesProps) {
+export function SummaryTiles({ bills, properties, isLoading }: SummaryTilesProps) {
   const currentDate = new Date();
   
   const unpaidBills = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue');
@@ -43,7 +43,7 @@ export function SummaryTiles({ bills, properties, loading = false }: SummaryTile
     <div className="grid gap-4 md:grid-cols-3">
       <div className="border rounded-xl p-6 bg-card shadow-sm">
         <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Due</p>
-        {loading ? (
+        {isLoading ? (
           <Skeleton className="h-9 w-32 mt-2" />
         ) : (
           <h2 className="text-3xl font-bold mt-2 text-destructive">₹{totalDue.toLocaleString()}</h2>
@@ -52,7 +52,7 @@ export function SummaryTiles({ bills, properties, loading = false }: SummaryTile
       
       <div className="border rounded-xl p-6 bg-card shadow-sm">
         <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Paid This Month</p>
-        {loading ? (
+        {isLoading ? (
           <Skeleton className="h-9 w-32 mt-2" />
         ) : (
           <h2 className="text-3xl font-bold mt-2 text-primary">₹{totalPaidThisMonth.toLocaleString()}</h2>
@@ -61,8 +61,8 @@ export function SummaryTiles({ bills, properties, loading = false }: SummaryTile
 
       <div className="border rounded-xl p-6 bg-card shadow-sm">
         <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Properties Managed</p>
-        {loading ? (
-          <Skeleton className="h-9 w-16 mt-2" />
+        {isLoading ? (
+          <Skeleton className="h-9 w-12 mt-2" />
         ) : (
           <h2 className="text-3xl font-bold mt-2">{properties.length}</h2>
         )}
