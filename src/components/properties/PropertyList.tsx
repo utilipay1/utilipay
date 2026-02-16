@@ -32,50 +32,25 @@ type Company = z.infer<typeof CompanySchema>;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export function PropertyList({ filters }: { filters: PropertyFiltersState }) {
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-  
+interface PropertyListProps {
+  properties: Property[];
+  isLoading: boolean;
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  page: number;
+  setPage: (page: number) => void;
+}
+
+export function PropertyList({ properties, isLoading, pagination, page, setPage }: PropertyListProps) {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
-  // Debounce search
-  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(filters.search);
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(handler);
-  }, [filters.search]);
-
-  // Reset page when other filters change
-  useEffect(() => {
-    setPage(1);
-  }, [filters.utilityType, filters.companyId, filters.showArchived]);
-
-  const queryParams = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-    archived: filters.showArchived ? 'true' : 'false',
-  });
-
-  if (filters.utilityType.size > 0) queryParams.set('utility_type', Array.from(filters.utilityType).join(','));
-  if (filters.companyId.size > 0) queryParams.set('companyId', Array.from(filters.companyId).join(','));
-  if (debouncedSearch) queryParams.set('search', debouncedSearch);
-
-  const { data: propsResponse, isLoading: propsLoading } = useSWR(
-    `/api/properties?${queryParams.toString()}`,
-    fetcher,
-    { keepPreviousData: true }
-  );
-
   const { data: companiesResponse } = useSWR('/api/companies?limit=1000', fetcher);
-
-  const properties: Property[] = useMemo(() => {
-    return propsResponse?.data || [];
-  }, [propsResponse]);
 
   const companies = useMemo(() => {
     const companiesMap: Record<string, Company> = {};
@@ -89,7 +64,7 @@ export function PropertyList({ filters }: { filters: PropertyFiltersState }) {
     return companiesMap;
   }, [companiesResponse]);
 
-  const totalPages = propsResponse?.pagination?.totalPages || 1;
+  const totalPages = pagination?.totalPages || 1;
 
   async function handleArchive(e: React.MouseEvent, property: Property) {
     e.stopPropagation(); // Prevent row click
@@ -141,7 +116,7 @@ export function PropertyList({ filters }: { filters: PropertyFiltersState }) {
     setIsModalOpen(true);
   };
 
-  if (propsLoading) {
+  if (isLoading && properties.length === 0) {
     return (
       <div className="space-y-6">
         <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
@@ -281,8 +256,8 @@ export function PropertyList({ filters }: { filters: PropertyFiltersState }) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page <= 1 || propsLoading}
+          onClick={() => setPage(Math.max(1, page - 1))}
+          disabled={page <= 1 || isLoading}
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
@@ -290,8 +265,8 @@ export function PropertyList({ filters }: { filters: PropertyFiltersState }) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page >= totalPages || propsLoading}
+          onClick={() => setPage(Math.min(totalPages, page + 1))}
+          disabled={page >= totalPages || isLoading}
         >
           Next
           <ChevronRight className="h-4 w-4" />

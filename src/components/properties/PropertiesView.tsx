@@ -1,16 +1,19 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { PropertyList } from './PropertyList';
 import { AddPropertyModal } from './AddPropertyModal';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { PropertiesToolbar, PropertyFiltersState } from './PropertiesToolbar';
+import { ExportPropertiesButton } from './ExportPropertiesButton';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export function PropertiesView() {
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
   const [filters, setFilters] = useState<PropertyFiltersState>({
     utilityType: new Set(),
     companyId: new Set(),
@@ -21,15 +24,48 @@ export function PropertiesView() {
   const { data: companiesResponse } = useSWR('/api/companies?limit=1000', fetcher);
   
   const companiesMap = useMemo(() => {
-    const map: Record<string, string> = {};
+    const map: Record<string, any> = {};
     if (companiesResponse?.data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       companiesResponse.data.forEach((c: any) => {
-        map[c._id] = c.name;
+        map[c._id] = c;
       });
     }
     return map;
   }, [companiesResponse]);
+
+  // Debounce search
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(filters.search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [filters.search]);
+
+  // Reset page when other filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filters.utilityType, filters.companyId, filters.showArchived]);
+
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    archived: filters.showArchived ? 'true' : 'false',
+  });
+
+  if (filters.utilityType.size > 0) queryParams.set('utility_type', Array.from(filters.utilityType).join(','));
+  if (filters.companyId.size > 0) queryParams.set('companyId', Array.from(filters.companyId).join(','));
+  if (debouncedSearch) queryParams.set('search', debouncedSearch);
+
+  const { data: propsResponse, isLoading: propsLoading } = useSWR(
+    `/api/properties?${queryParams.toString()}`,
+    fetcher,
+    { keepPreviousData: true }
+  );
+
+  const properties = propsResponse?.data || [];
+  const pagination = propsResponse?.pagination;
 
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -37,28 +73,49 @@ export function PropertiesView() {
     setRefreshKey(prev => prev + 1);
   }, []);
 
+  const companiesSimpleMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    Object.values(companiesMap).forEach(c => {
+      map[c._id] = c.name;
+    });
+    return map;
+  }, [companiesMap]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Properties</h1>
-        <AddPropertyModal 
-          onSuccess={handleRefresh}
-          trigger={
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Property
-            </Button>
-          }
-        />
+        <div className="flex items-center gap-2">
+          <ExportPropertiesButton 
+            properties={properties} 
+            companies={companiesMap} 
+          />
+          <AddPropertyModal 
+            onSuccess={handleRefresh}
+            trigger={
+              <Button className="gap-2">
+                <Plus className="w-4 h-4" />
+                Add Property
+              </Button>
+            }
+          />
+        </div>
       </div>
 
       <PropertiesToolbar 
         filters={filters}
         setFilters={setFilters}
-        companies={companiesMap}
+        companies={companiesSimpleMap}
       />
 
-      <PropertyList filters={filters} key={refreshKey} />
+      <PropertyList 
+        properties={properties} 
+        isLoading={propsLoading} 
+        pagination={pagination}
+        page={page}
+        setPage={setPage}
+        key={refreshKey} 
+      />
     </div>
   );
 }

@@ -26,12 +26,6 @@ describe('PropertyList', () => {
 
   it('renders a list of properties', async () => {
     (global.fetch as jest.Mock).mockImplementation((url) => {
-      if (url.includes('/api/properties')) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => ({ data: mockProperties, pagination: { total: 2, page: 1, limit: 20, totalPages: 1 } }),
-        });
-      }
       if (url.includes('/api/companies')) {
         return Promise.resolve({
           ok: true,
@@ -41,37 +35,21 @@ describe('PropertyList', () => {
       return Promise.reject(new Error('Unknown URL'));
     });
 
-    render(<PropertyList />, { wrapper: Wrapper });
+    render(
+      <PropertyList 
+        properties={mockProperties as any} 
+        isLoading={false} 
+        page={1} 
+        setPage={jest.fn()} 
+        pagination={{ total: 2, page: 1, limit: 20, totalPages: 1 }}
+      />, 
+      { wrapper: Wrapper }
+    );
 
     // Wait for the data to be loaded and rendered
     await waitFor(() => {
       expect(screen.getByText('123 Main St')).toBeInTheDocument();
       expect(screen.getByText('456 Oak Ave')).toBeInTheDocument();
-    });
-  });
-
-  it('filters properties based on search prop', async () => {
-    (global.fetch as jest.Mock).mockImplementation((url) => {
-        if (url.includes('/api/properties')) {
-          return Promise.resolve({
-            ok: true,
-            json: async () => ({ data: mockProperties, pagination: { total: 2, page: 1, limit: 20, totalPages: 1 } }),
-          });
-        }
-        if (url.includes('/api/companies')) {
-            return Promise.resolve({
-              ok: true,
-              json: async () => ({ data: [] }),
-            });
-          }
-        return Promise.reject(new Error('Unknown URL'));
-    });
-
-    render(<PropertyList search="Main" />, { wrapper: Wrapper });
-
-    await waitFor(() => {
-      expect(screen.getByText('123 Main St')).toBeInTheDocument();
-      expect(screen.queryByText('456 Oak Ave')).not.toBeInTheDocument();
     });
   });
 
@@ -83,12 +61,6 @@ describe('PropertyList', () => {
                 json: async () => ({ modifiedCount: 1 }),
               });
         }
-        if (url.includes('/api/properties')) {
-          return Promise.resolve({
-            ok: true,
-            json: async () => ({ data: mockProperties, pagination: { total: 2, page: 1, limit: 20, totalPages: 1 } }),
-          });
-        }
         if (url.includes('/api/companies')) {
             return Promise.resolve({
               ok: true,
@@ -98,7 +70,16 @@ describe('PropertyList', () => {
         return Promise.reject(new Error('Unknown URL'));
     });
 
-    render(<PropertyList />, { wrapper: Wrapper });
+    render(
+      <PropertyList 
+        properties={mockProperties as any} 
+        isLoading={false} 
+        page={1} 
+        setPage={jest.fn()} 
+        pagination={{ total: 2, page: 1, limit: 20, totalPages: 1 }}
+      />, 
+      { wrapper: Wrapper }
+    );
 
     await waitFor(() => screen.getByText('123 Main St'));
 
