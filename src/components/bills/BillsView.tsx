@@ -6,13 +6,14 @@ import { AddBillModal } from './AddBillModal';
 import { ExportBillsButton } from './ExportBillsButton';
 import { Button } from '@/components/ui/button';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { BillSchema, CompanySchema } from '@/lib/schemas';
+import { BillSchema, CompanySchema, PropertySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { BillsToolbar, BillFiltersState } from './BillsToolbar';
 import useSWR, { mutate } from 'swr';
 
 type Bill = z.infer<typeof BillSchema>;
 type Company = z.infer<typeof CompanySchema>;
+type Property = z.infer<typeof PropertySchema>;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -81,8 +82,7 @@ export function BillsView() {
   const properties = useMemo(() => {
     const propsMap: Record<string, string> = {};
     if (propsResponse?.data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      propsResponse.data.forEach((p: any) => {
+      propsResponse.data.forEach((p: Property) => {
         if (p._id) {
           propsMap[p._id] = p.address;
         }

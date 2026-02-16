@@ -11,7 +11,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Property {
-  _id: string;
+  _id?: string;
   address: string;
   utilities_managed: string[];
   is_archived: boolean;
@@ -21,8 +21,8 @@ interface Bill {
   property_id: string;
   utility_type: string;
   status: string;
-  due_date: string;
-  bill_date: string;
+  due_date: string | Date;
+  bill_date: string | Date;
   amount: number;
 }
 

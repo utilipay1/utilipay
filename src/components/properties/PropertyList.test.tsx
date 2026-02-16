@@ -2,20 +2,23 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PropertyList } from './PropertyList';
 import '@testing-library/jest-dom';
 import { SWRConfig } from 'swr';
+import { PropertySchema } from '@/lib/schemas';
+import { z } from 'zod';
+
+type Property = z.infer<typeof PropertySchema>;
 
 // Mock fetch
 global.fetch = jest.fn();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Wrapper = ({ children }: any) => (
+const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
     {children}
   </SWRConfig>
 );
 
 const mockProperties = [
-  { _id: '1', address: '123 Main St', tenant_status: 'Occupied', utilities_managed: ['Water'], is_archived: false },
-  { _id: '2', address: '456 Oak Ave', tenant_status: 'Vacant', utilities_managed: ['Electric'], is_archived: false },
+  { _id: '1', address: '123 Main St', tenant_status: 'Occupied', utilities_managed: ['Water'], is_archived: false, is_managed: true },
+  { _id: '2', address: '456 Oak Ave', tenant_status: 'Vacant', utilities_managed: ['Electric'], is_archived: false, is_managed: true },
 ];
 
 describe('PropertyList', () => {
@@ -37,7 +40,7 @@ describe('PropertyList', () => {
 
     render(
       <PropertyList 
-        properties={mockProperties as any} 
+        properties={mockProperties as Property[]} 
         isLoading={false} 
         page={1} 
         setPage={jest.fn()} 
@@ -72,7 +75,7 @@ describe('PropertyList', () => {
 
     render(
       <PropertyList 
-        properties={mockProperties as any} 
+        properties={mockProperties as Property[]} 
         isLoading={false} 
         page={1} 
         setPage={jest.fn()} 

@@ -25,12 +25,15 @@ export const PropertySchema = z.object({
   tenant_info: z.object({
     name: z.string().nullish(),
     contact: z.string().nullish(),
+    move_in_date: z.coerce.date().nullish(),
+    move_out_date: z.coerce.date().nullish(),
   }).optional(),
   utilities_managed: z.array(z.enum(['Water', 'Sewer', 'Gas', 'Electric'])),
   // Map of Utility Type -> Company ID
-  utility_companies: z.record(z.string(), z.string()).optional(), 
+  utility_companies: z.record(z.string(), z.string().nullish()).optional(), 
   notes: z.string().nullish(),
   is_archived: z.boolean().default(false),
+  is_managed: z.boolean().default(true),
 });
 
 export const BillSchema = z.object({

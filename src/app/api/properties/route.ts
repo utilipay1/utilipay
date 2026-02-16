@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
     const utilityType = searchParams.get('utility_type');
     const companyId = searchParams.get('companyId');
+    const managedStatus = searchParams.get('managed_status');
     
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
@@ -69,6 +70,21 @@ export async function GET(req: NextRequest) {
       query.is_archived = { $ne: true };
     }
 
+    if (managedStatus) {
+      const statuses = managedStatus.split(',');
+      const wantsManaged = statuses.includes('Managed');
+      const wantsPaused = statuses.includes('Paused');
+
+      if (wantsManaged && !wantsPaused) {
+        // Show Managed (true or missing)
+        query.is_managed = { $ne: false };
+      } else if (wantsPaused && !wantsManaged) {
+        // Show only explicitly Paused
+        query.is_managed = false;
+      }
+      // If both or neither (though if managedStatus exists, at least one is there), show all
+    }
+
     if (search) {
       query.address = { $regex: search, $options: 'i' };
     }
@@ -82,38 +98,12 @@ export async function GET(req: NextRequest) {
       const companyIds = companyId.split(',');
       if (companyIds.length > 0) {
         // Find properties where any of their utility_companies match the selected IDs
-        query.$or = companyIds.map(id => ({
-          $jsonSchema: {
-            properties: {
-              utility_companies: {
-                patternProperties: {
-                  ".*": { enum: [id] }
-                }
-              }
-            }
-          }
-        }));
-        // Actually, MongoDB doesn't easily query values within a Record<string, string> using simple find.
-        // Let's use a better approach for the company ID check.
-        const orConditions = companyIds.map(id => {
-            return {
-                $expr: {
-                    $gt: [
-                        {
-                            $size: {
-                                $filter: {
-                                    input: { $objectToArray: "$utility_companies" },
-                                    as: "item",
-                                    cond: { $eq: ["$$item.v", id] }
-                                }
-                            }
-                        },
-                        0
-                    ]
-                }
-            };
-        });
-        query.$or = orConditions;
+        query.$or = [
+          { "utility_companies.Water": { $in: companyIds } },
+          { "utility_companies.Sewer": { $in: companyIds } },
+          { "utility_companies.Gas": { $in: companyIds } },
+          { "utility_companies.Electric": { $in: companyIds } }
+        ];
       }
     }
 

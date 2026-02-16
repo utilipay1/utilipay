@@ -8,6 +8,10 @@ import { Plus } from 'lucide-react';
 import { PropertiesToolbar, PropertyFiltersState } from './PropertiesToolbar';
 import { ExportPropertiesButton } from './ExportPropertiesButton';
 import useSWR from 'swr';
+import { CompanySchema } from '@/lib/schemas';
+import { z } from 'zod';
+
+type Company = z.infer<typeof CompanySchema>;
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -17,6 +21,7 @@ export function PropertiesView() {
   const [filters, setFilters] = useState<PropertyFiltersState>({
     utilityType: new Set(),
     companyId: new Set(),
+    managedStatus: new Set(),
     search: "",
     showArchived: false,
   });
@@ -24,10 +29,12 @@ export function PropertiesView() {
   const { data: companiesResponse } = useSWR('/api/companies?limit=1000', fetcher);
   
   const companiesMap = useMemo(() => {
-    const map: Record<string, any> = {};
+    const map: Record<string, Company> = {};
     if (companiesResponse?.data) {
-      companiesResponse.data.forEach((c: any) => {
-        map[c._id] = c;
+      companiesResponse.data.forEach((c: Company) => {
+        if (c._id) {
+          map[c._id] = c;
+        }
       });
     }
     return map;
@@ -46,7 +53,7 @@ export function PropertiesView() {
   // Reset page when other filters change
   useEffect(() => {
     setPage(1);
-  }, [filters.utilityType, filters.companyId, filters.showArchived]);
+  }, [filters.utilityType, filters.companyId, filters.managedStatus, filters.showArchived]);
 
   const queryParams = new URLSearchParams({
     page: page.toString(),
@@ -56,6 +63,7 @@ export function PropertiesView() {
 
   if (filters.utilityType.size > 0) queryParams.set('utility_type', Array.from(filters.utilityType).join(','));
   if (filters.companyId.size > 0) queryParams.set('companyId', Array.from(filters.companyId).join(','));
+  if (filters.managedStatus.size > 0) queryParams.set('managed_status', Array.from(filters.managedStatus).join(','));
   if (debouncedSearch) queryParams.set('search', debouncedSearch);
 
   const { data: propsResponse, isLoading: propsLoading } = useSWR(
@@ -76,7 +84,9 @@ export function PropertiesView() {
   const companiesSimpleMap = useMemo(() => {
     const map: Record<string, string> = {};
     Object.values(companiesMap).forEach(c => {
-      map[c._id] = c.name;
+      if (c._id) {
+        map[c._id] = c.name;
+      }
     });
     return map;
   }, [companiesMap]);

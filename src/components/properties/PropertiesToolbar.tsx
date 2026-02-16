@@ -11,12 +11,15 @@ import {
   Droplets, 
   Flame, 
   Waves,
-  Building2
+  Building2,
+  PlayCircle,
+  PauseCircle
 } from "lucide-react"
 
 export interface PropertyFiltersState {
   utilityType: Set<string>
   companyId: Set<string>
+  managedStatus: Set<string>
   search: string
   showArchived: boolean
 }
@@ -35,6 +38,7 @@ export function PropertiesToolbar({
   const isFiltered = 
     filters.utilityType.size > 0 || 
     filters.companyId.size > 0 ||
+    filters.managedStatus.size > 0 ||
     filters.search.length > 0 ||
     filters.showArchived
 
@@ -42,6 +46,7 @@ export function PropertiesToolbar({
     setFilters({
       utilityType: new Set(),
       companyId: new Set(),
+      managedStatus: new Set(),
       search: "",
       showArchived: false,
     })
@@ -52,6 +57,11 @@ export function PropertiesToolbar({
     { label: "Sewer", value: "Sewer", icon: Waves },
     { label: "Electric", value: "Electric", icon: Zap },
     { label: "Gas", value: "Gas", icon: Flame },
+  ]
+
+  const managementOptions = [
+    { label: "Managed", value: "Managed", icon: PlayCircle },
+    { label: "Paused", value: "Paused", icon: PauseCircle },
   ]
 
   const companyOptions = Object.entries(companies).map(([id, name]) => ({
@@ -85,6 +95,13 @@ export function PropertiesToolbar({
             options={companyOptions}
             selectedValues={filters.companyId}
             onSelect={(values) => setFilters({ ...filters, companyId: values })}
+          />
+
+          <DataTableFacetedFilter
+            title="Management"
+            options={managementOptions}
+            selectedValues={filters.managedStatus}
+            onSelect={(values) => setFilters({ ...filters, managedStatus: values })}
           />
 
           {isFiltered && (

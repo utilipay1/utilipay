@@ -39,12 +39,15 @@ export function ExportPropertiesButton({ properties, companies }: ExportProperti
           'Tenant Status': prop.tenant_status,
           'Tenant Name': prop.tenant_info?.name || '---',
           'Tenant Contact': prop.tenant_info?.contact || '---',
+          'Move-in Date': prop.tenant_info?.move_in_date ? format(new Date(prop.tenant_info.move_in_date), 'MM-dd-yyyy') : '---',
+          'Move-out Date': prop.tenant_info?.move_out_date ? format(new Date(prop.tenant_info.move_out_date), 'MM-dd-yyyy') : '---',
           'Water Provider': getCompanyName('Water'),
           'Sewer Provider': getCompanyName('Sewer'),
           'Gas Provider': getCompanyName('Gas'),
           'Electric Provider': getCompanyName('Electric'),
           'Utilities Managed': prop.utilities_managed.join(', '),
           'Notes': prop.notes || '',
+          'Management Active': prop.is_managed ? 'Yes' : 'No',
           'Archived': prop.is_archived ? 'Yes' : 'No'
         };
       });

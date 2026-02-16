@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PropertySchema, CompanySchema } from "@/lib/schemas";
@@ -28,6 +28,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { CreateCompanyDialog } from "@/components/companies/CreateCompanyDialog";
 import { ManageCompaniesDialog } from "@/components/companies/ManageCompaniesDialog";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = PropertySchema;
 type FormValues = z.infer<typeof formSchema>;
@@ -51,7 +53,7 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
   const [activeUtilityForCreation, setActiveUtilityForCreation] = useState<"Water" | "Sewer" | "Gas" | "Electric" | null>(null);
   const [activeUtilityForManage, setActiveUtilityForManage] = useState<string | null>(null);
 
-  const defaultValues: FormValues = initialData || {
+  const defaultValues: FormValues = useMemo(() => initialData || {
     address: "",
     owner_info: {
       name: "",
@@ -61,19 +63,34 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
     tenant_info: {
       name: "",
       contact: "",
+      move_in_date: null,
+      move_out_date: null,
     },
     utilities_managed: [],
     utility_companies: {},
     notes: "",
     is_archived: false,
-  };
+    is_managed: true,
+  }, [initialData]);
 
   const form = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(formSchema) as any,
     defaultValues,
-    shouldUnregister: true,
   });
+
+  // Sync form with initialData when it changes (e.g. when opening edit modal)
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        ...initialData,
+        utilities_managed: initialData.utilities_managed || [],
+        utility_companies: initialData.utility_companies || {},
+      });
+    } else {
+      form.reset(defaultValues);
+    }
+  }, [initialData, form, defaultValues]);
 
   const tenantStatus = form.watch("tenant_status");
   const utilitiesManaged = form.watch("utilities_managed") || [];
@@ -97,17 +114,34 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
   async function onSubmit(values: FormValues) {
     setStatus("submitting");
     try {
-      const url = mode === "create" ? "/api/properties" : `/api/properties/${values._id}`;
+      const url = mode === "create" ? "/api/properties" : `/api/properties/${initialData?._id}`;
       const method = mode === "create" ? "POST" : "PATCH";
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, ...body } = values;
 
+      // Ensure dates are correctly formatted or null
+      if (body.tenant_info) {
+        if (!body.tenant_info.move_in_date) delete body.tenant_info.move_in_date;
+        if (!body.tenant_info.move_out_date) delete body.tenant_info.move_out_date;
+      }
+
+      // Ensure utility_companies only contains entries for utilities currently managed
+      const companies = body.utility_companies;
+      if (companies) {
+        const managedSet = new Set(body.utilities_managed || []);
+        Object.keys(companies).forEach(key => {
+          if (!managedSet.has(key as 'Water' | 'Sewer' | 'Gas' | 'Electric')) {
+            delete companies[key];
+          }
+        });
+      }
+
       // Clean up utility_companies to remove any undefined or null values
-      if (body.utility_companies) {
-        Object.keys(body.utility_companies).forEach(key => {
-          if (body.utility_companies[key] === undefined || body.utility_companies[key] === null) {
-            delete body.utility_companies[key];
+      if (companies) {
+        Object.keys(companies).forEach(key => {
+          if (companies[key] === undefined || companies[key] === null) {
+            delete companies[key];
           }
         });
       }
@@ -156,6 +190,30 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Ensure _id is tracked for edit mode */}
+          <input type="hidden" {...form.register("_id")} />
+          
+          <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl border border-dashed border-muted-foreground/20">
+            <div className="space-y-0.5">
+              <Label className="text-base font-bold">Active Management</Label>
+              <p className="text-xs text-muted-foreground">Toggle off if you are no longer managing this property.</p>
+            </div>
+            <FormField
+              control={form.control}
+              name="is_managed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
           <FormField
             control={form.control}
             name="address"
@@ -223,33 +281,69 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
           />
 
           {tenantStatus === "Occupied" && (
-            <div className="grid gap-4 md:grid-cols-2 p-4 border rounded-lg bg-muted/30 animate-in fade-in slide-in-from-top-2">
-              <FormField
-                control={form.control}
-                name="tenant_info.name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tenant Name</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="Enter tenant name (if occupied)" {...field} value={field.value ?? ""} />
-                                  </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="tenant_info.contact"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tenant Contact</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="Tenant email or phone" {...field} value={field.value ?? ""} />
-                                  </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/30 animate-in fade-in slide-in-from-top-2">
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="tenant_info.name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tenant Name</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="Enter tenant name" {...field} value={field.value ?? ""} />
+                                    </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tenant_info.contact"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tenant Contact</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="Email or phone" {...field} value={field.value ?? ""} />
+                                    </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 pt-2 border-t border-muted">
+                <FormField
+                  control={form.control}
+                  name="tenant_info.move_in_date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Move-in Date</FormLabel>
+                      <FormControl>
+                        <DatePicker 
+                          date={field.value ? new Date(field.value) : undefined} 
+                          setDate={field.onChange} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tenant_info.move_out_date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Move-out Date</FormLabel>
+                      <FormControl>
+                        <DatePicker 
+                          date={field.value ? new Date(field.value) : undefined} 
+                          setDate={field.onChange} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           )}
 
@@ -277,6 +371,8 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
                               "utilities_managed",
                               current.filter((v) => v !== utility)
                             );
+                            // Clear selection when unticking
+                            form.setValue(`utility_companies.${utility}`, null);
                           }
                         }}
                       />

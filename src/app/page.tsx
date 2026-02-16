@@ -21,6 +21,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { BillSchema, PropertySchema } from '@/lib/schemas';
+import { z } from 'zod';
+
+type Bill = z.infer<typeof BillSchema>;
+type Property = z.infer<typeof PropertySchema>;
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -36,24 +41,24 @@ export default function Home() {
   const [selectedUtility, setSelectedUtility] = useState<string | null>(null);
   const [openPropertySelect, setOpenPropertySelect] = useState(false);
 
-  const bills = billsData?.data || [];
-  const properties = propsData?.data || [];
+  const bills = useMemo<Bill[]>(() => billsData?.data || [], [billsData]);
+  const properties = useMemo<Property[]>(() => propsData?.data || [], [propsData]);
   const isLoading = billsLoading || propsLoading;
 
   const filteredBills = useMemo(() => {
     let filtered = bills;
     if (selectedPropertyId) {
-      filtered = filtered.filter((b: any) => b.property_id === selectedPropertyId);
+      filtered = filtered.filter((b) => b.property_id === selectedPropertyId);
     }
     if (selectedUtility) {
-      filtered = filtered.filter((b: any) => b.utility_type === selectedUtility);
+      filtered = filtered.filter((b) => b.utility_type === selectedUtility);
     }
     return filtered;
   }, [bills, selectedPropertyId, selectedUtility]);
 
   const filteredProperties = useMemo(() => {
     if (selectedPropertyId) {
-      return properties.filter((p: any) => p._id === selectedPropertyId);
+      return properties.filter((p) => p._id === selectedPropertyId);
     }
     return properties;
   }, [properties, selectedPropertyId]);
@@ -86,7 +91,7 @@ export default function Home() {
                   className="pl-2 pr-2 text-3xl font-bold tracking-tight hover:bg-transparent hover:text-primary transition-colors h-auto py-0 -ml-2"
                 >
                   {selectedPropertyId
-                    ? properties.find((p: any) => p._id === selectedPropertyId)?.address
+                    ? properties.find((p) => p._id === selectedPropertyId)?.address
                     : "All Properties"}
                   <ChevronsUpDown className="ml-2 h-5 w-5 shrink-0 opacity-50" />
                 </Button>
@@ -113,12 +118,12 @@ export default function Home() {
                         />
                         All Properties
                       </CommandItem>
-                      {properties.map((property: any) => (
+                      {properties.map((property) => (
                         <CommandItem
                           key={property._id}
                           value={property.address}
                           onSelect={() => {
-                            setSelectedPropertyId(property._id === selectedPropertyId ? null : property._id);
+                            setSelectedPropertyId(property._id === selectedPropertyId ? null : property._id!)
                             setOpenPropertySelect(false);
                           }}
                           className="cursor-pointer"

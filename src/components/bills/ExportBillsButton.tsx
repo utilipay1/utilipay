@@ -7,7 +7,7 @@ import { BillSchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Download } from 'lucide-react';
 
-type Bill = z.infer<typeof BillSchema> & {
+type BillWithProperty = z.infer<typeof BillSchema> & {
   property?: {
     utility_companies?: Record<string, string>;
   };
@@ -15,7 +15,7 @@ type Bill = z.infer<typeof BillSchema> & {
 type Company = z.infer<typeof CompanySchema>;
 
 interface ExportBillsButtonProps {
-  bills: Bill[];
+  bills: BillWithProperty[];
   properties: Record<string, string>; // id -> address
   companies: Record<string, Company>;
 }
@@ -30,7 +30,7 @@ export function ExportBillsButton({ bills, properties, companies }: ExportBillsB
       const xlsx = await import('xlsx');
 
       // Flatten and format data for Excel
-      const data = bills.map((bill: any) => {
+      const data = bills.map((bill: BillWithProperty) => {
         const serviceFee = bill.payment?.service_fee || 0;
         
         // Find company name
@@ -38,7 +38,7 @@ export function ExportBillsButton({ bills, properties, companies }: ExportBillsB
         const companyName = companyId ? companies[companyId]?.name : 'Unknown';
 
         // Robust mapping for old/new schema
-        const isChargedToOwner = bill.billed_to === 'Owner' || bill.status === 'Paid-Charged';
+        const isChargedToOwner = bill.billed_to === 'Owner' || (bill.status as string) === 'Paid-Charged';
         const isReimbursedFromTenant = bill.billed_to === 'Tenant';
 
         return {
@@ -46,7 +46,7 @@ export function ExportBillsButton({ bills, properties, companies }: ExportBillsB
           'Utility Type': bill.utility_type,
           'Utility Company': companyName,
           'Account Number': bill.account_number || '',
-          'Status': bill.status === 'Paid-Charged' || bill.status === 'Paid-Uncharged' ? 'Paid' : bill.status,
+          'Status': (bill.status as string) === 'Paid-Charged' || (bill.status as string) === 'Paid-Uncharged' ? 'Paid' : bill.status,
           'Amount': bill.amount,
           'Service Fee': serviceFee,
           'Total': bill.amount + serviceFee,
