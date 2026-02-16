@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PropertyList } from './PropertyList';
 import { AddPropertyModal } from './AddPropertyModal';
 import { Button } from '@/components/ui/button';
@@ -66,8 +66,10 @@ export function PropertiesView() {
   if (filters.managedStatus.size > 0) queryParams.set('managed_status', Array.from(filters.managedStatus).join(','));
   if (debouncedSearch) queryParams.set('search', debouncedSearch);
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const { data: propsResponse, isLoading: propsLoading } = useSWR(
-    `/api/properties?${queryParams.toString()}`,
+    `/api/properties?${queryParams.toString()}&rk=${refreshKey}`,
     fetcher,
     { keepPreviousData: true }
   );
@@ -75,11 +77,9 @@ export function PropertiesView() {
   const properties = propsResponse?.data || [];
   const pagination = propsResponse?.pagination;
 
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
-  }, []);
+  };
 
   const companiesSimpleMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -124,7 +124,7 @@ export function PropertiesView() {
         pagination={pagination}
         page={page}
         setPage={setPage}
-        key={refreshKey} 
+        onRefresh={handleRefresh}
       />
     </div>
   );
