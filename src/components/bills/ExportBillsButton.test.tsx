@@ -16,7 +16,7 @@ jest.mock('xlsx', () => ({
 }));
 
 const mockBills = [
-  { _id: '1', utility_type: 'Water', amount: 50, status: 'Paid-Uncharged', due_date: new Date('2026-01-01').toISOString() },
+  { _id: '1', utility_type: 'Water', amount: 50, status: 'Paid', billed_to: 'Owner', due_date: new Date('2026-01-01').toISOString() },
 ];
 
 describe('ExportBillsButton', () => {
@@ -29,7 +29,7 @@ describe('ExportBillsButton', () => {
 
   it('triggers excel export when clicked', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<ExportBillsButton bills={mockBills as any} properties={{}} />);
+    render(<ExportBillsButton bills={mockBills as any} properties={{}} companies={{}} />);
     
     fireEvent.click(screen.getByText(/Export to Excel/i));
 

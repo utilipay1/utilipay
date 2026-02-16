@@ -6,13 +6,14 @@ import { AddBillModal } from './AddBillModal';
 import { ExportBillsButton } from './ExportBillsButton';
 import { Button } from '@/components/ui/button';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { BillSchema, CompanySchema } from '@/lib/schemas';
+import { BillSchema, CompanySchema, PropertySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { BillsToolbar, BillFiltersState } from './BillsToolbar';
 import useSWR, { mutate } from 'swr';
 
 type Bill = z.infer<typeof BillSchema>;
 type Company = z.infer<typeof CompanySchema>;
+type Property = z.infer<typeof PropertySchema>;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -24,6 +25,7 @@ export function BillsView() {
     status: new Set(),
     utilityType: new Set(),
     propertyId: new Set(),
+    billedTo: new Set(),
     search: "",
     showArchived: false,
   });
@@ -41,7 +43,7 @@ export function BillsView() {
   // Reset page when other filters change
   useEffect(() => {
     setPage(1);
-  }, [filters.status, filters.utilityType, filters.propertyId, filters.showArchived]);
+  }, [filters.status, filters.utilityType, filters.propertyId, filters.billedTo, filters.showArchived]);
 
   // Construct Query
   const queryParams = new URLSearchParams({
@@ -53,6 +55,7 @@ export function BillsView() {
   if (filters.status.size > 0) queryParams.set('status', Array.from(filters.status).join(','));
   if (filters.utilityType.size > 0) queryParams.set('utility_type', Array.from(filters.utilityType).join(','));
   if (filters.propertyId.size > 0) queryParams.set('propertyId', Array.from(filters.propertyId).join(','));
+  if (filters.billedTo.size > 0) queryParams.set('billed_to', Array.from(filters.billedTo).join(','));
   if (debouncedSearch) queryParams.set('search', debouncedSearch);
 
   const { data: billsResponse, isLoading: billsLoading } = useSWR(
@@ -79,8 +82,7 @@ export function BillsView() {
   const properties = useMemo(() => {
     const propsMap: Record<string, string> = {};
     if (propsResponse?.data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      propsResponse.data.forEach((p: any) => {
+      propsResponse.data.forEach((p: Property) => {
         if (p._id) {
           propsMap[p._id] = p.address;
         }
@@ -114,7 +116,11 @@ export function BillsView() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Bills</h1>
         <div className="flex items-center gap-2">
-          <ExportBillsButton bills={bills} properties={properties} />
+          <ExportBillsButton 
+            bills={bills} 
+            properties={properties} 
+            companies={companies.companies} 
+          />
           <AddBillModal 
             onSuccess={handleRefresh}
             trigger={

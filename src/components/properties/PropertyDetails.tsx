@@ -3,6 +3,8 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Edit, User, Home, Lightbulb, FileText, Phone } from "lucide-react";
 
+import { format } from "date-fns";
+
 type Property = z.infer<typeof PropertySchema>;
 type Company = z.infer<typeof CompanySchema>;
 
@@ -26,6 +28,11 @@ export function PropertyDetails({ property, companies, onEdit }: PropertyDetails
             }`}>
               {property.tenant_status}
             </span>
+            {!property.is_managed && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium border bg-muted text-muted-foreground border-muted-foreground/20">
+                Management Paused
+              </span>
+            )}
             {property.is_archived && (
               <span className="px-2 py-0.5 rounded-full text-xs font-medium border bg-gray-100 text-gray-600 border-gray-200">
                 Archived
@@ -62,11 +69,32 @@ export function PropertyDetails({ property, companies, onEdit }: PropertyDetails
             Tenant Information
           </div>
           {property.tenant_status === "Occupied" ? (
-            <div className="space-y-1">
-              <p className="font-medium">{property.tenant_info?.name || "No tenant name"}</p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="w-3 h-3" />
-                {property.tenant_info?.contact || "No contact info"}
+            <div className="space-y-2">
+              <div>
+                <p className="font-medium">{property.tenant_info?.name || "No tenant name"}</p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Phone className="w-3 h-3" />
+                  {property.tenant_info?.contact || "No contact info"}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-muted/50 mt-2 text-xs">
+                <div>
+                  <span className="block text-muted-foreground font-bold uppercase tracking-tighter">Move-in</span>
+                  <span className="font-medium">
+                    {property.tenant_info?.move_in_date 
+                      ? format(new Date(property.tenant_info.move_in_date), 'PPP') 
+                      : 'Not set'}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-muted-foreground font-bold uppercase tracking-tighter">Move-out</span>
+                  <span className="font-medium">
+                    {property.tenant_info?.move_out_date 
+                      ? format(new Date(property.tenant_info.move_out_date), 'PPP') 
+                      : 'Not set'}
+                  </span>
+                </div>
               </div>
             </div>
           ) : (

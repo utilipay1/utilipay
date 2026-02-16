@@ -3,80 +3,71 @@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
-import { DataTableFacetedFilter } from "./data-table-faceted-filter"
+import { DataTableFacetedFilter } from "../bills/data-table-faceted-filter"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { 
-  AlertCircle, 
-  CheckCircle2, 
-  Circle, 
   Zap, 
   Droplets, 
   Flame, 
-  Waves 
+  Waves,
+  Building2,
+  PlayCircle,
+  PauseCircle
 } from "lucide-react"
 
-export interface BillFiltersState {
-  status: Set<string>
+export interface PropertyFiltersState {
   utilityType: Set<string>
-  propertyId: Set<string>
-  billedTo: Set<string>
+  companyId: Set<string>
+  managedStatus: Set<string>
   search: string
   showArchived: boolean
 }
 
-interface BillsToolbarProps {
-  filters: BillFiltersState
-  setFilters: (filters: BillFiltersState) => void
-  properties: Record<string, string> // id -> address
+interface PropertiesToolbarProps {
+  filters: PropertyFiltersState
+  setFilters: (filters: PropertyFiltersState) => void
+  companies: Record<string, string> // id -> name
 }
 
-export function BillsToolbar({
+export function PropertiesToolbar({
   filters,
   setFilters,
-  properties,
-}: BillsToolbarProps) {
+  companies,
+}: PropertiesToolbarProps) {
   const isFiltered = 
-    filters.status.size > 0 || 
     filters.utilityType.size > 0 || 
-    filters.propertyId.size > 0 ||
-    filters.billedTo.size > 0 ||
+    filters.companyId.size > 0 ||
+    filters.managedStatus.size > 0 ||
     filters.search.length > 0 ||
     filters.showArchived
 
   const handleReset = () => {
     setFilters({
-      status: new Set(),
       utilityType: new Set(),
-      propertyId: new Set(),
-      billedTo: new Set(),
+      companyId: new Set(),
+      managedStatus: new Set(),
       search: "",
       showArchived: false,
     })
   }
 
-  const statusOptions = [
-    { label: "Unpaid", value: "Unpaid", icon: Circle },
-    { label: "Overdue", value: "Overdue", icon: AlertCircle },
-    { label: "Paid", value: "Paid", icon: CheckCircle2 },
-  ]
-
-  const billedToOptions = [
-    { label: "None", value: "None" },
-    { label: "Owner", value: "Owner" },
-    { label: "Tenant", value: "Tenant" },
-  ]
-
   const utilityOptions = [
     { label: "Water", value: "Water", icon: Droplets },
-    { label: "Sewer", value: "Sewer", icon: Waves }, // Waves might not exist, fallback to text if needed
+    { label: "Sewer", value: "Sewer", icon: Waves },
     { label: "Electric", value: "Electric", icon: Zap },
     { label: "Gas", value: "Gas", icon: Flame },
   ]
 
-  const propertyOptions = Object.entries(properties).map(([id, address]) => ({
-    label: address,
+  const managementOptions = [
+    { label: "Managed", value: "Managed", icon: PlayCircle },
+    { label: "Paused", value: "Paused", icon: PauseCircle },
+  ]
+
+  const companyOptions = Object.entries(companies).map(([id, name]) => ({
+    label: name,
     value: id,
+    icon: Building2
   }))
 
   return (
@@ -84,21 +75,14 @@ export function BillsToolbar({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-1 flex-wrap items-center gap-2">
           <Input
-            placeholder="Filter by address..."
+            placeholder="Search by address..."
             value={filters.search}
             onChange={(event) =>
               setFilters({ ...filters, search: event.target.value })
             }
-            className="h-8 w-full lg:w-[250px]"
+            className="h-8 w-full lg:w-[250px] bg-muted/20"
           />
           
-          <DataTableFacetedFilter
-            title="Status"
-            options={statusOptions}
-            selectedValues={filters.status}
-            onSelect={(values) => setFilters({ ...filters, status: values })}
-          />
-
           <DataTableFacetedFilter
             title="Utility"
             options={utilityOptions}
@@ -107,17 +91,17 @@ export function BillsToolbar({
           />
 
           <DataTableFacetedFilter
-            title="Property"
-            options={propertyOptions}
-            selectedValues={filters.propertyId}
-            onSelect={(values) => setFilters({ ...filters, propertyId: values })}
+            title="Company"
+            options={companyOptions}
+            selectedValues={filters.companyId}
+            onSelect={(values) => setFilters({ ...filters, companyId: values })}
           />
 
           <DataTableFacetedFilter
-            title="Billed To"
-            options={billedToOptions}
-            selectedValues={filters.billedTo}
-            onSelect={(values) => setFilters({ ...filters, billedTo: values })}
+            title="Management"
+            options={managementOptions}
+            selectedValues={filters.managedStatus}
+            onSelect={(values) => setFilters({ ...filters, managedStatus: values })}
           />
 
           {isFiltered && (
@@ -133,11 +117,11 @@ export function BillsToolbar({
         </div>
         <div className="flex items-center space-x-2">
           <Switch
-            id="show-archived"
+            id="show-archived-props"
             checked={filters.showArchived}
             onCheckedChange={(checked) => setFilters({ ...filters, showArchived: checked })}
           />
-          <Label htmlFor="show-archived" className="text-sm font-medium">
+          <Label htmlFor="show-archived-props" className="text-sm font-medium">
             Archived
           </Label>
         </div>

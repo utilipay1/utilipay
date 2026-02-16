@@ -14,8 +14,9 @@ import { BillModal } from './BillModal';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { BillSchema, PropertySchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
-import { Switch } from '@/components/ui/switch';
-import { Edit, Archive, RotateCcw, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Edit, Archive, RotateCcw, MoreHorizontal, Trash2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -51,22 +52,19 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
-  const handleToggleCharged = async (billId: string, currentStatus: string) => {
-    const isCharged = currentStatus === 'Paid-Charged';
-    const newStatus = isCharged ? 'Paid-Uncharged' : 'Paid-Charged';
-    
+  const handleUpdateBilledTo = async (billId: string, billedTo: 'None' | 'Owner' | 'Tenant') => {
     try {
       const response = await fetch(`/api/bills/${billId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ billed_to: billedTo }),
       });
 
       if (response.ok) {
         onRefresh();
       }
     } catch (error) {
-      console.error('Failed to update charged status:', error);
+      console.error('Failed to update billed_to status:', error);
     }
   };
 
@@ -132,7 +130,7 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
               <TableHead>Amount</TableHead>
               <TableHead>Due Date</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Charged in Books</TableHead>
+              <TableHead>Billed To</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -210,15 +208,49 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
                       <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
                         isPaid ? 'bg-green-50 text-green-700 border-green-100' : 'bg-muted text-muted-foreground border-muted-foreground/20'
                       }`}>
-                        {bill.status === 'Paid-Charged' ? 'Paid' : bill.status === 'Paid-Uncharged' ? 'Paid' : bill.status}
+                        {bill.status}
                       </span>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Switch 
-                        disabled={!isPaid || bill.is_archived}
-                        checked={bill.status === 'Paid-Charged'}
-                        onCheckedChange={() => handleToggleCharged(bill._id!, bill.status)}
-                      />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild disabled={!isPaid || bill.is_archived}>
+                          <Badge 
+                            variant="outline"
+                            className={cn(
+                              "transition-all px-2.5 py-0.5 font-bold text-[10px] uppercase tracking-wider",
+                              isPaid && !bill.is_archived ? "cursor-pointer" : "opacity-50 cursor-not-allowed",
+                              bill.billed_to === 'Owner' && "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100",
+                              bill.billed_to === 'Tenant' && "bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100",
+                              (bill.billed_to === 'None' || !bill.billed_to) && "text-muted-foreground border-muted-foreground/20 hover:bg-muted/30"
+                            )}
+                          >
+                            {bill.billed_to || 'None'}
+                          </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center" className="min-w-[120px]">
+                          <DropdownMenuItem 
+                            onClick={() => handleUpdateBilledTo(bill._id!, 'None')}
+                            className="flex items-center justify-between"
+                          >
+                            None
+                            {(bill.billed_to === 'None' || !bill.billed_to) && <Check className="h-4 w-4" />}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleUpdateBilledTo(bill._id!, 'Owner')}
+                            className="flex items-center justify-between"
+                          >
+                            Owner
+                            {bill.billed_to === 'Owner' && <Check className="h-4 w-4" />}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleUpdateBilledTo(bill._id!, 'Tenant')}
+                            className="flex items-center justify-between"
+                          >
+                            Tenant
+                            {bill.billed_to === 'Tenant' && <Check className="h-4 w-4" />}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end items-center gap-2" onClick={(e) => e.stopPropagation()}>

@@ -45,7 +45,12 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const archivedParam = searchParams.get('archived');
-    const isLookup = searchParams.get('lookup') === 'true'; // New param
+    const isLookup = searchParams.get('lookup') === 'true';
+    const search = searchParams.get('search');
+    const utilityType = searchParams.get('utility_type');
+    const companyId = searchParams.get('companyId');
+    const managedStatus = searchParams.get('managed_status');
+    
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = (page - 1) * limit;
@@ -54,7 +59,7 @@ export async function GET(req: NextRequest) {
     const db = client.db(DB_NAME);
 
     const query: Record<string, unknown> = {
-      userId: session.user.id // Filter by user ownership
+      userId: session.user.id
     };
 
     if (archivedParam === 'all') {
@@ -63,6 +68,43 @@ export async function GET(req: NextRequest) {
       query.is_archived = true;
     } else {
       query.is_archived = { $ne: true };
+    }
+
+    if (managedStatus) {
+      const statuses = managedStatus.split(',');
+      const wantsManaged = statuses.includes('Managed');
+      const wantsPaused = statuses.includes('Paused');
+
+      if (wantsManaged && !wantsPaused) {
+        // Show Managed (true or missing)
+        query.is_managed = { $ne: false };
+      } else if (wantsPaused && !wantsManaged) {
+        // Show only explicitly Paused
+        query.is_managed = false;
+      }
+      // If both or neither (though if managedStatus exists, at least one is there), show all
+    }
+
+    if (search) {
+      query.address = { $regex: search, $options: 'i' };
+    }
+
+    if (utilityType) {
+      const types = utilityType.split(',');
+      if (types.length > 0) query.utilities_managed = { $in: types };
+    }
+
+    if (companyId) {
+      const companyIds = companyId.split(',');
+      if (companyIds.length > 0) {
+        // Find properties where any of their utility_companies match the selected IDs
+        query.$or = [
+          { "utility_companies.Water": { $in: companyIds } },
+          { "utility_companies.Sewer": { $in: companyIds } },
+          { "utility_companies.Gas": { $in: companyIds } },
+          { "utility_companies.Electric": { $in: companyIds } }
+        ];
+      }
     }
 
     // Optimization: If lookup mode, only fetch minimal fields

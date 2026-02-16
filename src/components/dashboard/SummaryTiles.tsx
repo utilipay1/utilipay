@@ -2,10 +2,10 @@ import { isSameMonth, parseISO } from 'date-fns';
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Bill {
-  _id: string;
+  _id?: string;
   utility_type: string;
   amount: number;
-  due_date: string;
+  due_date: string | Date;
   status: string;
   payment?: {
     payment_date: string | Date;
@@ -13,7 +13,7 @@ interface Bill {
 }
 
 interface Property {
-  _id: string;
+  _id?: string;
   address: string;
 }
 

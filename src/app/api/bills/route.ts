@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status');
     const utilityType = searchParams.get('utility_type');
     const propertyId = searchParams.get('propertyId');
+    const billedTo = searchParams.get('billed_to');
     const search = searchParams.get('search');
 
     const client = await clientPromise;
@@ -78,6 +79,11 @@ export async function GET(req: NextRequest) {
     if (status) {
       const statuses = status.split(',');
       if (statuses.length > 0) matchStage.status = { $in: statuses };
+    }
+
+    if (billedTo) {
+      const types = billedTo.split(',');
+      if (types.length > 0) matchStage.billed_to = { $in: types };
     }
 
     if (utilityType) {

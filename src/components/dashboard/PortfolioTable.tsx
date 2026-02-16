@@ -8,11 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import useSWR from 'swr';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Property {
-  _id: string;
+  _id?: string;
   address: string;
   utilities_managed: string[];
   is_archived: boolean;
@@ -22,27 +21,26 @@ interface Bill {
   property_id: string;
   utility_type: string;
   status: string;
-  due_date: string;
-  bill_date: string;
+  due_date: string | Date;
+  bill_date: string | Date;
   amount: number;
 }
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+interface PortfolioTableProps {
+  properties: Property[];
+  bills: Bill[];
+  isLoading: boolean;
+  selectedUtility: string | null;
+}
 
-export function PortfolioTable() {
-  const { data: propsData, isLoading: propsLoading } = useSWR('/api/properties?limit=1000', fetcher);
-  const { data: billsData, isLoading: billsLoading } = useSWR('/api/bills?limit=1000', fetcher);
-
-  const properties: Property[] = propsData?.data || [];
-  const bills: Bill[] = billsData?.data || [];
-  const isLoading = propsLoading || billsLoading;
-
+export function PortfolioTable({ properties, bills, isLoading, selectedUtility }: PortfolioTableProps) {
   if (isLoading && properties.length === 0) {
     return (
       <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
+              <TableHead className="w-[12px] p-0"></TableHead>
               <TableHead className="py-4">Property Address</TableHead>
               <TableHead className="py-4">Utility Status</TableHead>
             </TableRow>
@@ -50,6 +48,7 @@ export function PortfolioTable() {
           <TableBody>
             {[1, 2, 3].map((i) => (
               <TableRow key={i}>
+                <TableCell className="p-0"></TableCell>
                 <TableCell className="py-4"><Skeleton className="h-6 w-[200px]" /></TableCell>
                 <TableCell className="py-4"><Skeleton className="h-6 w-[300px]" /></TableCell>
               </TableRow>
@@ -66,6 +65,7 @@ export function PortfolioTable() {
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
+              <TableHead className="w-[12px] p-0"></TableHead>
               <TableHead className="py-4">Property Address</TableHead>
               <TableHead className="py-4">Utility Status</TableHead>
             </TableRow>
@@ -73,10 +73,13 @@ export function PortfolioTable() {
           <TableBody>
             {properties.map((property) => (
               <TableRow key={property._id} className="group hover:bg-muted/50 transition-colors">
+                <TableCell className="p-0"></TableCell>
                 <TableCell className="font-semibold text-base py-4">{property.address}</TableCell>
                 <TableCell className="py-4">
                   <div className="flex flex-wrap gap-2">
-                    {property.utilities_managed.map((utility) => {
+                    {property.utilities_managed
+                      .filter(u => !selectedUtility || u === selectedUtility)
+                      .map((utility) => {
                       const relevantBills = bills.filter(
                         (b) =>
                           b.property_id === property._id &&

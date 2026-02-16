@@ -14,7 +14,7 @@ const mockBills = [
     utility_type: 'Gas', 
     amount: 50, 
     due_date: '2026-01-12', 
-    status: 'Paid-Charged',
+    status: 'Paid',
     payment: { payment_date: currentMonthDate }
   },
   // Paid last month (should be ignored)
@@ -24,7 +24,7 @@ const mockBills = [
     utility_type: 'Gas', 
     amount: 75, 
     due_date: '2025-12-12', 
-    status: 'Paid-Charged',
+    status: 'Paid',
     payment: { payment_date: lastMonthDate }
   },
   { _id: '3', property_id: 'p3', utility_type: 'Electricity', amount: 200, due_date: '2026-01-15', status: 'Unpaid' },
