@@ -43,6 +43,7 @@ export function PortfolioTable() {
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
+              <TableHead className="w-[12px] p-0"></TableHead>
               <TableHead className="py-4">Property Address</TableHead>
               <TableHead className="py-4">Utility Status</TableHead>
             </TableRow>
@@ -50,6 +51,7 @@ export function PortfolioTable() {
           <TableBody>
             {[1, 2, 3].map((i) => (
               <TableRow key={i}>
+                <TableCell className="p-0"></TableCell>
                 <TableCell className="py-4"><Skeleton className="h-6 w-[200px]" /></TableCell>
                 <TableCell className="py-4"><Skeleton className="h-6 w-[300px]" /></TableCell>
               </TableRow>
@@ -66,6 +68,7 @@ export function PortfolioTable() {
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
+              <TableHead className="w-[12px] p-0"></TableHead>
               <TableHead className="py-4">Property Address</TableHead>
               <TableHead className="py-4">Utility Status</TableHead>
             </TableRow>
@@ -73,6 +76,7 @@ export function PortfolioTable() {
           <TableBody>
             {properties.map((property) => (
               <TableRow key={property._id} className="group hover:bg-muted/50 transition-colors">
+                <TableCell className="p-0"></TableCell>
                 <TableCell className="font-semibold text-base py-4">{property.address}</TableCell>
                 <TableCell className="py-4">
                   <div className="flex flex-wrap gap-2">

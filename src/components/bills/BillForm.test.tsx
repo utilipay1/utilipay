@@ -21,6 +21,7 @@ describe('BillForm', () => {
     expect(screen.getByLabelText(/Utility Type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Amount/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Account Number/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Billed To/i)).toBeInTheDocument();
     // Use querySelector for dates if label association is broken by DatePicker component structure
     // or just assume they are there if no error thrown by render
   });

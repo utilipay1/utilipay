@@ -20,28 +20,22 @@ export default function Home() {
   const isLoading = billsLoading || propsLoading;
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-12">
-        <div>
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Manage your property utilities and upcoming bills.</p>
-        </div>
-        
-        <section>
-          <SummaryTiles bills={bills} properties={properties} isLoading={isLoading} />
-        </section>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-1 text-sm">Manage your property utilities and upcoming bills.</p>
+      </div>
+      
+      <SummaryTiles bills={bills} properties={properties} isLoading={isLoading} />
 
-        <section className="space-y-6">
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            Action Items
-          </h2>
-          <DashboardAlerts />
-        </section>
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold tracking-tight">Action Items</h2>
+        <DashboardAlerts />
+      </div>
 
-        <section className="space-y-6">
-          <h2 className="text-2xl font-bold tracking-tight">Portfolio Status</h2>
-          <PortfolioTable />
-        </section>
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold tracking-tight">Portfolio Status</h2>
+        <PortfolioTable />
       </div>
     </div>
   );

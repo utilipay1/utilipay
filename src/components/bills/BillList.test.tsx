@@ -21,7 +21,8 @@ const mockBills = [
     property_id: 'prop2',
     utility_type: 'Electric', 
     amount: 100, 
-    status: 'Paid-Uncharged', 
+    status: 'Paid', 
+    billed_to: 'None',
     due_date: new Date().toISOString(),
     billing_period_start: new Date().toISOString(),
     billing_period_end: new Date().toISOString(),
@@ -72,7 +73,7 @@ describe('BillList', () => {
     expect(screen.getByText('123 Main St')).toBeInTheDocument();
   });
 
-  it('toggles charged status for paid bills', async () => {
+  it('updates billed_to status', async () => {
     (global.fetch as jest.Mock).mockImplementation((url, options) => {
       if (url === '/api/bills/2' && options?.method === 'PATCH') {
          return Promise.resolve({
@@ -95,18 +96,18 @@ describe('BillList', () => {
       onRefresh={refreshMock} 
     />);
 
-    const switches = screen.getAllByRole('switch');
-    // Water is Unpaid (index 0), switch should be disabled
-    expect(switches[0]).toBeDisabled();
-    // Electric is Paid (index 1), switch should be enabled
-    expect(switches[1]).not.toBeDisabled();
+    // Find the 'None' badge for the second bill and click it
+    const billedToBadges = screen.getAllByText('None');
+    fireEvent.click(billedToBadges[1]);
 
-    fireEvent.click(switches[1]);
+    // Should show dropdown items
+    expect(screen.getByText('Owner')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Owner'));
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/bills/2', expect.objectContaining({
         method: 'PATCH',
-        body: expect.stringContaining('"status":"Paid-Charged"'),
+        body: expect.stringContaining('"billed_to":"Owner"'),
       }));
       expect(refreshMock).toHaveBeenCalled();
     });

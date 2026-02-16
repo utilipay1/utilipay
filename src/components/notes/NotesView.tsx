@@ -119,27 +119,27 @@ export function NotesView() {
   );
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground">My Notes</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Keep track of your thoughts and reminders.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Notes</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Keep track of your thoughts and reminders.</p>
         </div>
-        <Button onClick={handleCreate} className="gap-2 h-12 px-6 rounded-2xl shadow-lg shadow-primary/20 font-bold cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]">
-          <Plus className="w-5 h-5" />
+        <Button onClick={handleCreate} className="gap-2 font-bold cursor-pointer">
+          <Plus className="w-4 h-4" />
           New Note
         </Button>
       </div>
 
-      <div className="flex items-center gap-2 max-w-md bg-muted/30 p-1.5 rounded-2xl border shadow-sm">
+      <div className="flex items-center gap-2 max-w-md">
         <Input 
           placeholder="Search your notes..." 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border-none bg-transparent focus-visible:ring-0 text-base"
+          className="bg-muted/20"
         />
         {search && (
-          <Button variant="ghost" size="icon" onClick={() => setSearch("")} className="h-8 w-8 cursor-pointer rounded-xl">
+          <Button variant="ghost" size="icon" onClick={() => setSearch("")} className="h-8 w-8 cursor-pointer">
             <X className="h-4 w-4" />
           </Button>
         )}
@@ -148,16 +148,16 @@ export function NotesView() {
       {isLoading && !notes ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="h-[250px] rounded-[2.5rem]" />
+            <Skeleton key={i} className="h-[250px] rounded-xl" />
           ))}
         </div>
       ) : filteredNotes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 text-center border-2 border-dashed rounded-[3rem] bg-muted/5">
+        <div className="flex flex-col items-center justify-center py-32 text-center border-2 border-dashed rounded-xl bg-muted/5">
           <div className="p-6 bg-muted/50 rounded-full mb-6">
             <FileText className="w-12 h-12 text-muted-foreground/30" />
           </div>
-          <h3 className="text-2xl font-bold text-muted-foreground">No notes found</h3>
-          <p className="text-muted-foreground max-w-sm mt-2 text-lg leading-relaxed">
+          <h3 className="text-xl font-bold text-muted-foreground">No notes found</h3>
+          <p className="text-muted-foreground max-w-sm mt-2 text-sm">
             {search ? "No notes match your search." : "Capture your thoughts. Start by creating your first note."}
           </p>
         </div>
@@ -166,32 +166,32 @@ export function NotesView() {
           {filteredNotes.map((note) => (
             <div 
               key={note._id} 
-              className="group flex flex-col p-8 border-2 border-transparent rounded-[2.5rem] bg-card shadow-sm hover:shadow-xl hover:border-primary/5 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
+              className="group flex flex-col p-6 border rounded-xl bg-card shadow-sm hover:shadow-md transition-all relative overflow-hidden"
             >
-              <div className="flex-1 min-h-[140px]">
-                <p className="text-xl leading-relaxed text-foreground font-medium whitespace-pre-wrap">
+              <div className="flex-1 min-h-[120px]">
+                <p className="text-lg leading-relaxed text-foreground font-medium whitespace-pre-wrap">
                   {note.content}
                 </p>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-dashed border-muted flex justify-between items-center text-sm text-muted-foreground/60 font-semibold">
+              <div className="mt-6 pt-4 border-t border-dashed border-muted flex justify-between items-center text-xs text-muted-foreground/60 font-semibold">
                 <span>{format(new Date(note.createdAt!), "PPP")}</span>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                <div className="flex gap-1">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleEdit(note)}
-                    className="h-9 w-9 hover:text-primary hover:bg-primary/5 cursor-pointer rounded-xl"
+                    className="h-8 w-8 hover:text-primary hover:bg-primary/5 cursor-pointer"
                   >
-                    <Edit className="h-4.5 w-4.5" />
+                    <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(note._id!)}
-                    className="h-9 w-9 hover:text-destructive hover:bg-destructive/5 cursor-pointer rounded-xl"
+                    className="h-8 w-8 hover:text-destructive hover:bg-destructive/5 cursor-pointer"
                   >
-                    <Trash2 className="h-4.5 w-4.5" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -201,25 +201,25 @@ export function NotesView() {
       )}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[640px] rounded-[3rem] p-0 overflow-hidden border-none shadow-2xl">
-          <DialogHeader className="p-10 bg-muted/20 border-b">
-            <DialogTitle className="text-3xl font-black tracking-tight text-foreground">
+        <DialogContent className="sm:max-w-[600px] rounded-xl p-0 overflow-hidden border shadow-2xl">
+          <DialogHeader className="p-6 bg-muted/20 border-b">
+            <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">
               {editingNote ? "Edit Note" : "Create Note"}
             </DialogTitle>
           </DialogHeader>
-          <div className="p-10 space-y-8">
+          <div className="p-6 space-y-6">
             <Textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              className="min-h-[350px] text-2xl p-0 border-none focus-visible:ring-0 shadow-none resize-none bg-transparent font-medium leading-relaxed placeholder:text-muted-foreground/30"
+              className="min-h-[250px] text-lg p-0 border-none focus-visible:ring-0 shadow-none resize-none bg-transparent font-medium leading-relaxed placeholder:text-muted-foreground/30"
               placeholder="What's on your mind?..."
               autoFocus
             />
-            <div className="flex justify-end gap-4 pt-6 border-t border-muted/50">
-              <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="cursor-pointer font-bold px-10 rounded-2xl h-14 text-lg">
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="cursor-pointer font-bold px-6">
                 Cancel
               </Button>
-              <Button onClick={handleSave} className="cursor-pointer font-bold px-12 rounded-2xl h-14 text-lg shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+              <Button onClick={handleSave} className="cursor-pointer font-bold px-8">
                 {editingNote ? "Save Changes" : "Create Note"}
               </Button>
             </div>

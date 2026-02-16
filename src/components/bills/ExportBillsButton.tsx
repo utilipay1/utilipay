@@ -44,7 +44,8 @@ export function ExportBillsButton({ bills, properties }: ExportBillsButtonProps)
             : '',
           'Payment Method': bill.payment?.method || '',
           'Confirmation Code': bill.payment?.confirmation_code || '',
-          'Charged in Books': bill.status === 'Paid-Charged' ? 'Yes' : 'No',
+          'Charged to Owner': bill.billed_to === 'Owner' ? 'Yes' : 'No',
+          'Reimbursed from Tenant': bill.billed_to === 'Tenant' ? 'Yes' : 'No',
         };
       });
 

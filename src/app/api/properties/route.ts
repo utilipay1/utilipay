@@ -45,7 +45,11 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const archivedParam = searchParams.get('archived');
-    const isLookup = searchParams.get('lookup') === 'true'; // New param
+    const isLookup = searchParams.get('lookup') === 'true';
+    const search = searchParams.get('search');
+    const utilityType = searchParams.get('utility_type');
+    const companyId = searchParams.get('companyId');
+    
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = (page - 1) * limit;
@@ -54,7 +58,7 @@ export async function GET(req: NextRequest) {
     const db = client.db(DB_NAME);
 
     const query: Record<string, unknown> = {
-      userId: session.user.id // Filter by user ownership
+      userId: session.user.id
     };
 
     if (archivedParam === 'all') {
@@ -63,6 +67,54 @@ export async function GET(req: NextRequest) {
       query.is_archived = true;
     } else {
       query.is_archived = { $ne: true };
+    }
+
+    if (search) {
+      query.address = { $regex: search, $options: 'i' };
+    }
+
+    if (utilityType) {
+      const types = utilityType.split(',');
+      if (types.length > 0) query.utilities_managed = { $in: types };
+    }
+
+    if (companyId) {
+      const companyIds = companyId.split(',');
+      if (companyIds.length > 0) {
+        // Find properties where any of their utility_companies match the selected IDs
+        query.$or = companyIds.map(id => ({
+          $jsonSchema: {
+            properties: {
+              utility_companies: {
+                patternProperties: {
+                  ".*": { enum: [id] }
+                }
+              }
+            }
+          }
+        }));
+        // Actually, MongoDB doesn't easily query values within a Record<string, string> using simple find.
+        // Let's use a better approach for the company ID check.
+        const orConditions = companyIds.map(id => {
+            return {
+                $expr: {
+                    $gt: [
+                        {
+                            $size: {
+                                $filter: {
+                                    input: { $objectToArray: "$utility_companies" },
+                                    as: "item",
+                                    cond: { $eq: ["$$item.v", id] }
+                                }
+                            }
+                        },
+                        0
+                    ]
+                }
+            };
+        });
+        query.$or = orConditions;
+      }
     }
 
     // Optimization: If lookup mode, only fetch minimal fields

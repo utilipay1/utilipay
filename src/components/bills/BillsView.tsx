@@ -24,6 +24,7 @@ export function BillsView() {
     status: new Set(),
     utilityType: new Set(),
     propertyId: new Set(),
+    billedTo: new Set(),
     search: "",
     showArchived: false,
   });
@@ -41,7 +42,7 @@ export function BillsView() {
   // Reset page when other filters change
   useEffect(() => {
     setPage(1);
-  }, [filters.status, filters.utilityType, filters.propertyId, filters.showArchived]);
+  }, [filters.status, filters.utilityType, filters.propertyId, filters.billedTo, filters.showArchived]);
 
   // Construct Query
   const queryParams = new URLSearchParams({
@@ -53,6 +54,7 @@ export function BillsView() {
   if (filters.status.size > 0) queryParams.set('status', Array.from(filters.status).join(','));
   if (filters.utilityType.size > 0) queryParams.set('utility_type', Array.from(filters.utilityType).join(','));
   if (filters.propertyId.size > 0) queryParams.set('propertyId', Array.from(filters.propertyId).join(','));
+  if (filters.billedTo.size > 0) queryParams.set('billed_to', Array.from(filters.billedTo).join(','));
   if (debouncedSearch) queryParams.set('search', debouncedSearch);
 
   const { data: billsResponse, isLoading: billsLoading } = useSWR(

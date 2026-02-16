@@ -31,7 +31,7 @@ const mockBills = [
   {
     property_id: 'prop1',
     utility_type: 'Electric',
-    status: 'Paid-Charged',
+    status: 'Paid',
     amount: 50,
     due_date: new Date().toISOString(),
     bill_date: new Date().toISOString(),
@@ -40,7 +40,7 @@ const mockBills = [
   {
     property_id: 'prop2',
     utility_type: 'Water',
-    status: 'Paid-Charged',
+    status: 'Paid',
     amount: 80,
     due_date: '2026-01-01',
     bill_date: '2025-12-01',
@@ -57,7 +57,7 @@ const mockBills = [
   {
     property_id: 'prop2',
     utility_type: 'Gas',
-    status: 'Paid-Charged',
+    status: 'Paid',
     amount: 40,
     due_date: '2025-12-01',
     bill_date: '2025-11-01',

@@ -58,6 +58,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     bill_date: new Date(initialData.bill_date),
     due_date: new Date(initialData.due_date),
     status: initialData.status,
+    billed_to: initialData.billed_to || "None",
     notes: initialData.notes || "",
     is_archived: initialData.is_archived,
   } : {
@@ -70,6 +71,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     bill_date: new Date(),
     due_date: new Date(),
     status: "Unpaid",
+    billed_to: "None",
     notes: "",
     is_archived: false,
   };
@@ -281,6 +283,49 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
                     date={field.value} 
                     setDate={field.onChange} 
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                  >
+                    <option value="Unpaid">Unpaid</option>
+                    <option value="Overdue">Overdue</option>
+                    <option value="Paid">Paid</option>
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="billed_to"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Billed To</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                  >
+                    <option value="None">None</option>
+                    <option value="Owner">Owner</option>
+                    <option value="Tenant">Tenant</option>
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>

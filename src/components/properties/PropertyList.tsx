@@ -24,13 +24,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import useSWR, { mutate } from "swr";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PropertyFiltersState } from "./PropertiesToolbar";
+import { useEffect } from "react";
 
 type Property = z.infer<typeof PropertySchema>;
 type Company = z.infer<typeof CompanySchema>;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export function PropertyList({ search = "", showArchived = false }: { search?: string; showArchived?: boolean }) {
+export function PropertyList({ filters }: { filters: PropertyFiltersState }) {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   
@@ -38,41 +40,42 @@ export function PropertyList({ search = "", showArchived = false }: { search?: s
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
+  // Debounce search
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(filters.search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [filters.search]);
+
+  // Reset page when other filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filters.utilityType, filters.companyId, filters.showArchived]);
+
   const queryParams = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
-    archived: showArchived ? 'true' : 'false',
+    archived: filters.showArchived ? 'true' : 'false',
   });
-  // Note: Backend doesn't support search on /api/properties yet except via client filtering or separate implementation
-  // But for now, we'll fetch paginated list and filter on client if search is small? 
-  // No, if paginated, client filter only filters the current page. 
-  // We need to implement search on backend for properties too or live with current page filtering.
-  // The user asked to fix performance. Client-side filtering on paginated data is bad UX (can't find items on other pages).
-  // I should accept that search is currently broken for off-page items unless I update backend property search.
-  // Given time, I'll update backend property search later if needed. 
-  // For now, I'll pass the search param if I had implemented it, but I didn't. 
-  // Wait, I did implement search in `bills` API, but not `properties` API.
-  // The `bills` API does property lookup.
-  // `properties` API: I checked `src/app/api/properties/route.ts` - I did NOT add search there.
-  // So search will only filter current page. I'll stick to that for this iteration or add search param support to `properties` API.
-  // Let's add search param to properties API too? It's easy. 
-  // But let's finish frontend first.
+
+  if (filters.utilityType.size > 0) queryParams.set('utility_type', Array.from(filters.utilityType).join(','));
+  if (filters.companyId.size > 0) queryParams.set('companyId', Array.from(filters.companyId).join(','));
+  if (debouncedSearch) queryParams.set('search', debouncedSearch);
 
   const { data: propsResponse, isLoading: propsLoading } = useSWR(
     `/api/properties?${queryParams.toString()}`,
-    fetcher
+    fetcher,
+    { keepPreviousData: true }
   );
 
   const { data: companiesResponse } = useSWR('/api/companies?limit=1000', fetcher);
 
-  const properties = useMemo(() => {
-    if (!propsResponse?.data) return [];
-    const allProps: Property[] = propsResponse.data;
-    if (search) {
-       return allProps.filter(p => p.address.toLowerCase().includes(search.toLowerCase()));
-    }
-    return allProps;
-  }, [propsResponse, search]);
+  const properties: Property[] = useMemo(() => {
+    return propsResponse?.data || [];
+  }, [propsResponse]);
 
   const companies = useMemo(() => {
     const companiesMap: Record<string, Company> = {};

@@ -87,7 +87,7 @@ export function DashboardAlerts() {
           }`}
         />
         
-        <div className="pl-2">
+        <div className="pl-4">
           <div className="font-bold">{bill.utility_type}</div>
           <div 
             className={`text-sm font-medium ${

@@ -1,17 +1,36 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { PropertyList } from './PropertyList';
 import { AddPropertyModal } from './AddPropertyModal';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { PropertiesToolbar, PropertyFiltersState } from './PropertiesToolbar';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export function PropertiesView() {
-  const [search, setSearch] = useState('');
-  const [showArchived, setShowArchived] = useState(false);
+  const [filters, setFilters] = useState<PropertyFiltersState>({
+    utilityType: new Set(),
+    companyId: new Set(),
+    search: "",
+    showArchived: false,
+  });
+
+  const { data: companiesResponse } = useSWR('/api/companies?limit=1000', fetcher);
+  
+  const companiesMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (companiesResponse?.data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      companiesResponse.data.forEach((c: any) => {
+        map[c._id] = c.name;
+      });
+    }
+    return map;
+  }, [companiesResponse]);
+
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleRefresh = useCallback(() => {
@@ -33,26 +52,13 @@ export function PropertiesView() {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <Input
-          placeholder="Search by address..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-md bg-muted/20"
-        />
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="show-archived-props"
-            checked={showArchived}
-            onCheckedChange={setShowArchived}
-          />
-          <Label htmlFor="show-archived-props" className="text-sm font-medium">
-            Archived
-          </Label>
-        </div>
-      </div>
+      <PropertiesToolbar 
+        filters={filters}
+        setFilters={setFilters}
+        companies={companiesMap}
+      />
 
-      <PropertyList search={search} showArchived={showArchived} key={refreshKey} />
+      <PropertyList filters={filters} key={refreshKey} />
     </div>
   );
 }
