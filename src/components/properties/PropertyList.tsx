@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -43,9 +43,10 @@ interface PropertyListProps {
   };
   page: number;
   setPage: (page: number) => void;
+  onRefresh: () => void;
 }
 
-export function PropertyList({ properties, isLoading, pagination, page, setPage }: PropertyListProps) {
+export function PropertyList({ properties, isLoading, pagination, page, setPage, onRefresh }: PropertyListProps) {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
@@ -82,7 +83,7 @@ export function PropertyList({ properties, isLoading, pagination, page, setPage 
       });
 
       if (response.ok) {
-        mutate((key) => typeof key === 'string' && key.startsWith('/api/properties'));
+        onRefresh();
       }
     } catch (error) {
       console.error(`Failed to toggle managed status:`, error);
@@ -102,7 +103,7 @@ export function PropertyList({ properties, isLoading, pagination, page, setPage 
       });
 
       if (response.ok) {
-        mutate((key) => typeof key === 'string' && key.startsWith('/api/properties'));
+        onRefresh();
       }
     } catch (error) {
       console.error(`Failed to ${action} property:`, error);
@@ -119,7 +120,7 @@ export function PropertyList({ properties, isLoading, pagination, page, setPage 
       });
 
       if (response.ok) {
-         mutate((key) => typeof key === 'string' && key.startsWith('/api/properties'));
+         onRefresh();
       }
     } catch (error) {
       console.error("Failed to delete property:", error);
@@ -364,7 +365,7 @@ export function PropertyList({ properties, isLoading, pagination, page, setPage 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => {
-          mutate((key) => typeof key === 'string' && key.startsWith('/api/properties'));
+          onRefresh();
           setIsModalOpen(false);
         }}
         defaultMode={modalMode}
