@@ -123,11 +123,14 @@
   html {
     scrollbar-gutter: stable;
   }
-  * {
-    @apply border-border outline-ring/50;
-  }
   body {
     @apply bg-background text-foreground;
+    /* Prevent Radix from adding extra padding when scroll-locked since we use scrollbar-gutter */
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+  * {
+    @apply border-border outline-ring/50;
   }
   h1 {
     @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl;

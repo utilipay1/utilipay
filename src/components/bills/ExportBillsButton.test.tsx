@@ -29,7 +29,7 @@ describe('ExportBillsButton', () => {
 
   it('triggers excel export when clicked', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<ExportBillsButton bills={mockBills as any} properties={{}} />);
+    render(<ExportBillsButton bills={mockBills as any} properties={{}} companies={{}} />);
     
     fireEvent.click(screen.getByText(/Export to Excel/i));
 

@@ -166,15 +166,16 @@ export function NotesView() {
           {filteredNotes.map((note) => (
             <div 
               key={note._id} 
-              className="group flex flex-col p-6 border rounded-xl bg-card shadow-sm hover:shadow-md transition-all relative overflow-hidden"
+              onClick={() => handleEdit(note)}
+              className="group flex flex-col p-6 border rounded-xl bg-card shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden h-[280px]"
             >
-              <div className="flex-1 min-h-[120px]">
-                <p className="text-lg leading-relaxed text-foreground font-medium whitespace-pre-wrap">
+              <div className="flex-1 overflow-hidden">
+                <p className="text-lg leading-relaxed text-foreground font-medium whitespace-pre-wrap line-clamp-6">
                   {note.content}
                 </p>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-dashed border-muted flex justify-between items-center text-xs text-muted-foreground/60 font-semibold">
+              <div className="mt-6 pt-4 border-t border-dashed border-muted flex justify-between items-center text-xs text-muted-foreground/60 font-semibold" onClick={(e) => e.stopPropagation()}>
                 <span>{format(new Date(note.createdAt!), "PPP")}</span>
                 <div className="flex gap-1">
                   <Button

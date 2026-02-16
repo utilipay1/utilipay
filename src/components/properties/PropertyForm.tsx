@@ -72,10 +72,11 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(formSchema) as any,
     defaultValues,
+    shouldUnregister: true,
   });
 
   const tenantStatus = form.watch("tenant_status");
-  const utilitiesManaged = form.watch("utilities_managed");
+  const utilitiesManaged = form.watch("utilities_managed") || [];
 
   const fetchCompanies = async () => {
     try {
@@ -101,6 +102,15 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, ...body } = values;
+
+      // Clean up utility_companies to remove any undefined or null values
+      if (body.utility_companies) {
+        Object.keys(body.utility_companies).forEach(key => {
+          if (body.utility_companies[key] === undefined || body.utility_companies[key] === null) {
+            delete body.utility_companies[key];
+          }
+        });
+      }
 
       const response = await fetch(url, {
         method,
@@ -259,7 +269,7 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
                         id={`util-${utility}`}
                         checked={isChecked}
                         onCheckedChange={(checked) => {
-                          const current = form.getValues("utilities_managed");
+                          const current = form.getValues("utilities_managed") || [];
                           if (checked) {
                             form.setValue("utilities_managed", [...current, utility]);
                           } else {
@@ -267,13 +277,6 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
                               "utilities_managed",
                               current.filter((v) => v !== utility)
                             );
-                            // Also clear the company selection if unchecked
-                            const currentCompanies = form.getValues("utility_companies") || {};
-                            if (currentCompanies[utility]) {
-                              const newCompanies = { ...currentCompanies };
-                              delete newCompanies[utility];
-                              form.setValue("utility_companies", newCompanies);
-                            }
                           }
                         }}
                       />

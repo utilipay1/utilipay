@@ -8,28 +8,25 @@ import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 import { BillSchema } from '@/lib/schemas';
 import { z } from 'zod';
-import useSWR, { mutate } from 'swr';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Bill = z.infer<typeof BillSchema>;
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+interface DashboardAlertsProps {
+  bills: Bill[];
+  isLoading: boolean;
+  onRefresh: () => void;
+}
 
-export function DashboardAlerts() {
-  const { data: billsData, isLoading } = useSWR('/api/bills?status=Unpaid&limit=1000', fetcher);
+export function DashboardAlerts({ bills, isLoading, onRefresh }: DashboardAlertsProps) {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const bills: Bill[] = billsData?.data || [];
   const today = startOfDay(new Date());
 
   const handleEditClick = (bill: Bill) => {
     setSelectedBill(bill);
     setIsModalOpen(true);
-  };
-
-  const onRefresh = () => {
-    mutate('/api/bills?status=Unpaid&limit=1000');
   };
 
   const unpaidBills = bills.filter(b => b.status === 'Unpaid');

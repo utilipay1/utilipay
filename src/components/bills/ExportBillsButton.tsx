@@ -3,18 +3,24 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { BillSchema } from '@/lib/schemas';
+import { BillSchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Download } from 'lucide-react';
 
-type Bill = z.infer<typeof BillSchema>;
+type Bill = z.infer<typeof BillSchema> & {
+  property?: {
+    utility_companies?: Record<string, string>;
+  };
+};
+type Company = z.infer<typeof CompanySchema>;
 
 interface ExportBillsButtonProps {
   bills: Bill[];
   properties: Record<string, string>; // id -> address
+  companies: Record<string, Company>;
 }
 
-export function ExportBillsButton({ bills, properties }: ExportBillsButtonProps) {
+export function ExportBillsButton({ bills, properties, companies }: ExportBillsButtonProps) {
   const [exporting, setExporting] = useState(false);
 
   const handleExport = async () => {
@@ -24,13 +30,23 @@ export function ExportBillsButton({ bills, properties }: ExportBillsButtonProps)
       const xlsx = await import('xlsx');
 
       // Flatten and format data for Excel
-      const data = bills.map((bill: Bill) => {
+      const data = bills.map((bill: any) => {
         const serviceFee = bill.payment?.service_fee || 0;
+        
+        // Find company name
+        const companyId = bill.property?.utility_companies?.[bill.utility_type];
+        const companyName = companyId ? companies[companyId]?.name : 'Unknown';
+
+        // Robust mapping for old/new schema
+        const isChargedToOwner = bill.billed_to === 'Owner' || bill.status === 'Paid-Charged';
+        const isReimbursedFromTenant = bill.billed_to === 'Tenant';
+
         return {
           'Property': properties[bill.property_id] || 'Unknown',
           'Utility Type': bill.utility_type,
+          'Utility Company': companyName,
           'Account Number': bill.account_number || '',
-          'Status': bill.status,
+          'Status': bill.status === 'Paid-Charged' || bill.status === 'Paid-Uncharged' ? 'Paid' : bill.status,
           'Amount': bill.amount,
           'Service Fee': serviceFee,
           'Total': bill.amount + serviceFee,
@@ -44,8 +60,8 @@ export function ExportBillsButton({ bills, properties }: ExportBillsButtonProps)
             : '',
           'Payment Method': bill.payment?.method || '',
           'Confirmation Code': bill.payment?.confirmation_code || '',
-          'Charged to Owner': bill.billed_to === 'Owner' ? 'Yes' : 'No',
-          'Reimbursed from Tenant': bill.billed_to === 'Tenant' ? 'Yes' : 'No',
+          'Charged to Owner': isChargedToOwner ? 'Yes' : 'No',
+          'Reimbursed from Tenant': isReimbursedFromTenant ? 'Yes' : 'No',
         };
       });
 

@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import useSWR from 'swr';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Property {
@@ -27,16 +26,14 @@ interface Bill {
   amount: number;
 }
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+interface PortfolioTableProps {
+  properties: Property[];
+  bills: Bill[];
+  isLoading: boolean;
+  selectedUtility: string | null;
+}
 
-export function PortfolioTable() {
-  const { data: propsData, isLoading: propsLoading } = useSWR('/api/properties?limit=1000', fetcher);
-  const { data: billsData, isLoading: billsLoading } = useSWR('/api/bills?limit=1000', fetcher);
-
-  const properties: Property[] = propsData?.data || [];
-  const bills: Bill[] = billsData?.data || [];
-  const isLoading = propsLoading || billsLoading;
-
+export function PortfolioTable({ properties, bills, isLoading, selectedUtility }: PortfolioTableProps) {
   if (isLoading && properties.length === 0) {
     return (
       <div className="rounded-xl border shadow-sm overflow-hidden bg-card">
@@ -80,7 +77,9 @@ export function PortfolioTable() {
                 <TableCell className="font-semibold text-base py-4">{property.address}</TableCell>
                 <TableCell className="py-4">
                   <div className="flex flex-wrap gap-2">
-                    {property.utilities_managed.map((utility) => {
+                    {property.utilities_managed
+                      .filter(u => !selectedUtility || u === selectedUtility)
+                      .map((utility) => {
                       const relevantBills = bills.filter(
                         (b) =>
                           b.property_id === property._id &&

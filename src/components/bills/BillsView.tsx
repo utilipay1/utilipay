@@ -116,7 +116,11 @@ export function BillsView() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Bills</h1>
         <div className="flex items-center gap-2">
-          <ExportBillsButton bills={bills} properties={properties} />
+          <ExportBillsButton 
+            bills={bills} 
+            properties={properties} 
+            companies={companies.companies} 
+          />
           <AddBillModal 
             onSuccess={handleRefresh}
             trigger={
