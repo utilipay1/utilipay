@@ -9,7 +9,11 @@ import { Download } from 'lucide-react';
 
 type BillWithProperty = z.infer<typeof BillSchema> & {
   property?: {
+    address: string;
     utility_companies?: Record<string, string>;
+    tenant_info?: {
+      name?: string | null;
+    };
   };
 };
 type Company = z.infer<typeof CompanySchema>;
@@ -38,11 +42,12 @@ export function ExportBillsButton({ bills, properties, companies }: ExportBillsB
         const companyName = companyId ? companies[companyId]?.name : 'Unknown';
 
         // Robust mapping for old/new schema
-        const isChargedToOwner = bill.billed_to === 'Owner' || (bill.status as string) === 'Paid-Charged';
+        const isChargedToOwner = (bill.billed_to === 'Owner' || !bill.billed_to) || (bill.status as string) === 'Paid-Charged';
         const isReimbursedFromTenant = bill.billed_to === 'Tenant';
 
         return {
           'Property': properties[bill.property_id] || 'Unknown',
+          'Tenant Name': bill.property?.tenant_info?.name || '---',
           'Utility Type': bill.utility_type,
           'Utility Company': companyName,
           'Account Number': bill.account_number || '',

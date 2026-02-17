@@ -83,7 +83,17 @@ export async function GET(req: NextRequest) {
 
     if (billedTo) {
       const types = billedTo.split(',');
-      if (types.length > 0) matchStage.billed_to = { $in: types };
+      const wantsOwner = types.includes('Owner');
+      const wantsTenant = types.includes('Tenant');
+
+      if (wantsOwner && !wantsTenant) {
+        // Show Owner (explicit or missing/legacy)
+        matchStage.billed_to = { $ne: 'Tenant' };
+      } else if (wantsTenant && !wantsOwner) {
+        // Show only explicitly Tenant
+        matchStage.billed_to = 'Tenant';
+      }
+      // If both selected, no extra filter needed as it shows all
     }
 
     if (utilityType) {

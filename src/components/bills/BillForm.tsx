@@ -67,7 +67,9 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     status: (initialData.status as string) === "Paid-Charged" || (initialData.status as string) === "Paid-Uncharged" 
       ? "Paid" 
       : initialData.status,
-    billed_to: initialData.billed_to || "None",
+    billed_to: (initialData.billed_to as string) === "None" || !initialData.billed_to 
+      ? "Owner" 
+      : initialData.billed_to,
     notes: initialData.notes || "",
     is_archived: initialData.is_archived,
     payment: initialData.payment ? {
@@ -87,7 +89,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     bill_date: new Date(),
     due_date: new Date(),
     status: "Unpaid",
-    billed_to: "None",
+    billed_to: "Owner",
     notes: "",
     is_archived: false,
     payment: {
@@ -376,7 +378,6 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
                     {...field}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   >
-                    <option value="None">None</option>
                     <option value="Owner">Owner</option>
                     <option value="Tenant">Tenant</option>
                   </select>

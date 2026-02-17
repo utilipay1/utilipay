@@ -208,7 +208,7 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
                       <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
                         isPaid ? 'bg-green-50 text-green-700 border-green-100' : 'bg-muted text-muted-foreground border-muted-foreground/20'
                       }`}>
-                        {bill.status}
+                        {bill.status.startsWith('Paid') ? 'Paid' : bill.status}
                       </span>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
@@ -219,28 +219,20 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
                             className={cn(
                               "transition-all px-2.5 py-0.5 font-bold text-[10px] uppercase tracking-wider",
                               isPaid && !bill.is_archived ? "cursor-pointer" : "opacity-50 cursor-not-allowed",
-                              bill.billed_to === 'Owner' && "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100",
-                              bill.billed_to === 'Tenant' && "bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100",
-                              (bill.billed_to === 'None' || !bill.billed_to) && "text-muted-foreground border-muted-foreground/20 hover:bg-muted/30"
+                              (bill.billed_to === 'Owner' || bill.billed_to === 'None' || !bill.billed_to) && "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100",
+                              bill.billed_to === 'Tenant' && "bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100"
                             )}
                           >
-                            {bill.billed_to || 'None'}
+                            {bill.billed_to === 'None' || !bill.billed_to ? 'Owner' : bill.billed_to}
                           </Badge>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="min-w-[120px]">
-                          <DropdownMenuItem 
-                            onClick={() => handleUpdateBilledTo(bill._id!, 'None')}
-                            className="flex items-center justify-between"
-                          >
-                            None
-                            {(bill.billed_to === 'None' || !bill.billed_to) && <Check className="h-4 w-4" />}
-                          </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleUpdateBilledTo(bill._id!, 'Owner')}
                             className="flex items-center justify-between"
                           >
                             Owner
-                            {bill.billed_to === 'Owner' && <Check className="h-4 w-4" />}
+                            {(bill.billed_to === 'Owner' || bill.billed_to === 'None' || !bill.billed_to) && <Check className="h-4 w-4" />}
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleUpdateBilledTo(bill._id!, 'Tenant')}

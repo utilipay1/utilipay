@@ -66,6 +66,7 @@ export function RecordPaymentModal({ bill, onPaymentRecorded }: RecordPaymentMod
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: 'Paid',
+          billed_to: (bill.billed_to as string) === 'None' || !bill.billed_to ? 'Owner' : bill.billed_to,
           payment: {
             payment_date: values.payment_date,
             method: values.method === 'Other' ? `Other: ${values.method_other}` : values.method,
