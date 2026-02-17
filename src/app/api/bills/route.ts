@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
                 $expr: { $eq: ['$_id', { $toObjectId: '$$pid' }] } 
               } 
             },
-            { $project: { address: 1, utility_companies: 1 } }
+            { $project: { address: 1, utility_companies: 1, tenant_info: 1 } }
           ],
           as: 'property'
         }

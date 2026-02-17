@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BillSchema } from "@/lib/schemas";
@@ -18,13 +18,20 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 
-const formSchema = BillSchema.omit({ _id: true, payment: true }).extend({
+const formSchema = BillSchema.omit({ _id: true }).extend({
   amount: z.coerce.number().min(0),
   billing_period_start: z.date(),
   billing_period_end: z.date(),
   bill_date: z.date(),
   due_date: z.date(),
   is_archived: z.boolean().default(false),
+  payment: z.object({
+    payment_date: z.date(),
+    method: z.string(),
+    method_other: z.string().optional(),
+    confirmation_code: z.string().nullish(),
+    service_fee: z.coerce.number().min(0).default(0),
+  }).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -48,7 +55,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const defaultValues: FormValues = initialData ? {
+  const defaultValues: FormValues = useMemo(() => initialData ? {
     property_id: initialData.property_id,
     utility_type: initialData.utility_type,
     amount: initialData.amount,
@@ -57,10 +64,19 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     billing_period_end: new Date(initialData.billing_period_end),
     bill_date: new Date(initialData.bill_date),
     due_date: new Date(initialData.due_date),
-    status: initialData.status,
+    status: (initialData.status as string) === "Paid-Charged" || (initialData.status as string) === "Paid-Uncharged" 
+      ? "Paid" 
+      : initialData.status,
     billed_to: initialData.billed_to || "None",
     notes: initialData.notes || "",
     is_archived: initialData.is_archived,
+    payment: initialData.payment ? {
+      payment_date: new Date(initialData.payment.payment_date),
+      method: initialData.payment.method.startsWith("Other: ") ? "Other" : initialData.payment.method,
+      method_other: initialData.payment.method.startsWith("Other: ") ? initialData.payment.method.replace("Other: ", "") : "",
+      confirmation_code: initialData.payment.confirmation_code || "",
+      service_fee: initialData.payment.service_fee,
+    } : undefined,
   } : {
     property_id: "",
     utility_type: "Water",
@@ -74,13 +90,29 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     billed_to: "None",
     notes: "",
     is_archived: false,
-  };
+    payment: {
+      payment_date: new Date(),
+      method: "Operating A/C",
+      method_other: "",
+      confirmation_code: "",
+      service_fee: 0,
+    },
+  }, [initialData]);
 
   const form = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(formSchema) as any,
     defaultValues,
   });
+
+  // Sync form with initialData when it changes
+  useEffect(() => {
+    if (initialData) {
+      form.reset(defaultValues);
+    } else {
+      form.reset(defaultValues);
+    }
+  }, [initialData, form, defaultValues]);
 
   useEffect(() => {
     async function fetchProperties() {
@@ -98,6 +130,8 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
   }, []);
 
   const selectedPropertyId = form.watch("property_id");
+  const billStatus = form.watch("status");
+  const paymentMethod = form.watch("payment.method");
   const selectedProperty = properties.find(p => p._id === selectedPropertyId);
   const utilityOptions = selectedProperty ? selectedProperty.utilities_managed : ["Water", "Sewer", "Gas", "Electric"];
 
@@ -107,10 +141,31 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
       const url = mode === "create" ? "/api/bills" : `/api/bills/${initialData?._id}`;
       const method = mode === "create" ? "POST" : "PATCH";
 
+      // Final data preparation - create a copy to avoid mutating form state
+      const { payment, ...rest } = values;
+      let finalPayment = payment;
+
+      // If status is not Paid, remove payment data
+      if (values.status !== "Paid") {
+        finalPayment = undefined;
+      } else if (finalPayment) {
+        // Handle "Other" method prefix
+        if (finalPayment.method === "Other") {
+          finalPayment.method = `Other: ${finalPayment.method_other || ""}`;
+        }
+        // Remove helper field before sending to API
+        delete finalPayment.method_other;
+      }
+
+      const submissionData = {
+        ...rest,
+        payment: finalPayment,
+      };
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(submissionData),
       });
 
       if (!response.ok) {
@@ -303,7 +358,6 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   >
                     <option value="Unpaid">Unpaid</option>
-                    <option value="Overdue">Overdue</option>
                     <option value="Paid">Paid</option>
                   </select>
                 </FormControl>
@@ -332,6 +386,112 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
             )}
           />
         </div>
+
+        {billStatus === "Paid" && (
+          <div className="space-y-4 p-4 border rounded-xl bg-muted/20 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <h3 className="text-sm font-bold uppercase tracking-widest text-foreground/70">Payment Details</h3>
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="payment.payment_date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Payment Date</FormLabel>
+                    <FormControl>
+                      <DatePicker 
+                        date={field.value} 
+                        setDate={field.onChange} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="payment.method"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payment Method</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                      >
+                        <option value="Operating A/C">Operating A/C</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {paymentMethod === "Other" && (
+              <FormField
+                control={form.control}
+                name="payment.method_other"
+                render={({ field }) => (
+                  <FormItem className="animate-in fade-in slide-in-from-top-1">
+                    <FormLabel>Nature of Payment</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Describe the payment method" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="payment.confirmation_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirmation Code</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Transaction ID / Ref" 
+                        {...field} 
+                        value={field.value ?? ""} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="payment.service_fee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Service Fee (₹)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0.00" 
+                        {...field} 
+                        onChange={e => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? 0 : parseFloat(value));
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        )}
 
         <FormField
           control={form.control}
