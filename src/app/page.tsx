@@ -5,7 +5,7 @@ import { DashboardAlerts } from "@/components/dashboard/DashboardAlerts";
 import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
 import { SummaryTiles } from "@/components/dashboard/SummaryTiles";
 import useSWR, { mutate } from 'swr';
-import { Check, ChevronsUpDown, Droplets, Flame, Zap, Waves, Building, Building2, SlidersHorizontal, RotateCcw } from "lucide-react"
+import { Check, ChevronsUpDown, Droplets, Flame, Zap, Waves, Building, Building2, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {

@@ -97,9 +97,15 @@ export function BillDetails({ bill, propertyName, companyName, onEdit }: BillDet
       {/* Payment Info if paid */}
       {bill.payment && (
         <div className="space-y-3 pt-4 border-t">
-           <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            <DollarSign className="w-4 h-4" />
-            Payment Record
+           <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              <DollarSign className="w-4 h-4" />
+              Payment Record
+            </div>
+            <Button variant="ghost" size="sm" onClick={onEdit} className="h-7 text-[10px] font-bold uppercase tracking-widest hover:text-primary">
+              <Edit className="w-3 h-3 mr-1" />
+              Edit Record
+            </Button>
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
              <div>
@@ -110,10 +116,18 @@ export function BillDetails({ bill, propertyName, companyName, onEdit }: BillDet
                <span className="block text-muted-foreground">Method</span>
                <span className="font-medium">{bill.payment.method}</span>
              </div>
+             <div>
+               <span className="block text-muted-foreground">Service Fee</span>
+               <span className="font-medium">₹{(bill.payment.service_fee || 0).toLocaleString()}</span>
+             </div>
+             <div>
+               <span className="block text-muted-foreground font-bold">Total Paid</span>
+               <span className="font-bold text-primary">₹{(bill.amount + (bill.payment.service_fee || 0)).toLocaleString()}</span>
+             </div>
              {bill.payment.confirmation_code && (
                <div className="col-span-2">
                  <span className="block text-muted-foreground">Confirmation Code</span>
-                 <span className="font-mono bg-muted px-2 py-1 rounded">{bill.payment.confirmation_code}</span>
+                 <span className="font-mono bg-muted px-2 py-1 rounded w-fit">{bill.payment.confirmation_code}</span>
                </div>
              )}
           </div>

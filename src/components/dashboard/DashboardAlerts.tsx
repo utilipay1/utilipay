@@ -5,7 +5,7 @@ import { format, differenceInCalendarDays, isBefore, startOfDay, isPast, addDays
 import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
 import { BillModal } from '@/components/bills/BillModal';
 import { Button } from '@/components/ui/button';
-import { Edit, AlertCircle } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { BillSchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Skeleton } from '@/components/ui/skeleton';
