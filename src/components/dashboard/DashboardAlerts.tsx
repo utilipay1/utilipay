@@ -6,19 +6,26 @@ import { RecordPaymentModal } from '@/components/bills/RecordPaymentModal';
 import { BillModal } from '@/components/bills/BillModal';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
-import { BillSchema } from '@/lib/schemas';
+import { BillSchema, CompanySchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type Bill = z.infer<typeof BillSchema>;
+type Bill = z.infer<typeof BillSchema> & {
+  property?: {
+    address: string;
+    utility_companies?: Record<string, string>;
+  };
+};
+type Company = z.infer<typeof CompanySchema>;
 
 interface DashboardAlertsProps {
   bills: Bill[];
   isLoading: boolean;
   onRefresh: () => void;
+  companies: Record<string, Company>;
 }
 
-export function DashboardAlerts({ bills, isLoading, onRefresh }: DashboardAlertsProps) {
+export function DashboardAlerts({ bills, isLoading, onRefresh, companies }: DashboardAlertsProps) {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -29,7 +36,7 @@ export function DashboardAlerts({ bills, isLoading, onRefresh }: DashboardAlerts
     setIsModalOpen(true);
   };
 
-  const unpaidBills = bills.filter(b => b.status === 'Unpaid');
+  const unpaidBills = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue');
   
   const overdueAlerts = unpaidBills
     .filter(b => isBefore(startOfDay(new Date(b.due_date)), today))
@@ -72,6 +79,8 @@ export function DashboardAlerts({ bills, isLoading, onRefresh }: DashboardAlerts
 
   const renderAlertCard = (bill: Bill, isOverdue: boolean) => {
     const daysRemaining = differenceInCalendarDays(startOfDay(new Date(bill.due_date)), today);
+    const companyId = bill.property?.utility_companies?.[bill.utility_type];
+    const companyName = companyId ? companies[companyId]?.name : null;
     
     return (
       <div
@@ -85,9 +94,17 @@ export function DashboardAlerts({ bills, isLoading, onRefresh }: DashboardAlerts
         />
         
         <div className="pl-4">
-          <div className="font-bold">{bill.utility_type}</div>
+          <div className="flex flex-col">
+            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 mb-0.5">
+              {bill.utility_type} {companyName && `• ${companyName}`}
+            </span>
+            <div className="font-bold text-base leading-tight truncate max-w-[200px]" title={bill.property?.address}>
+              {bill.property?.address || "Unknown Property"}
+            </div>
+          </div>
+          
           <div 
-            className={`text-sm font-medium ${
+            className={`text-sm font-semibold mt-1 ${
               isOverdue ? 'text-destructive' : daysRemaining <= 3 ? 'text-urgency-high' : 'text-urgency-medium'
             }`}
           >
@@ -99,20 +116,20 @@ export function DashboardAlerts({ bills, isLoading, onRefresh }: DashboardAlerts
               ? 'Due Tomorrow' 
               : `Due in ${daysRemaining} days`}
           </div>
-          <div className="text-xs text-muted-foreground mt-0.5">
+          <div className="text-[10px] uppercase font-black tracking-tighter text-muted-foreground/40 mt-0.5">
             Due: {format(new Date(bill.due_date), 'MMM d, yyyy')}
           </div>
         </div>
 
         <div className="text-right flex items-center gap-4">
-          <div className="text-xl font-bold">
+          <div className="text-xl font-black">
             ₹{bill.amount.toLocaleString()}
           </div>
           <div className="flex gap-2">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-8 w-8 text-muted-foreground hover:text-primary"
+              className="h-8 w-8 text-muted-foreground hover:text-primary cursor-pointer"
               onClick={() => handleEditClick(bill)}
             >
               <Edit className="h-4 w-4" />
