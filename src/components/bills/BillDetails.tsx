@@ -28,23 +28,21 @@ export function BillDetails({ bill, propertyName, companyName, onEdit }: BillDet
           )}
           <div className="flex gap-2 mt-2">
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
-              bill.status === 'Paid'
+              bill.status.startsWith('Paid')
                 ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'
                 : bill.status === 'Overdue'
                 ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'
                 : 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800'
             }`}>
-              {bill.status}
+              {bill.status.startsWith('Paid') ? 'Paid' : bill.status}
             </span>
-            {bill.billed_to && bill.billed_to !== 'None' && (
-              <span className={cn(
-                "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
-                bill.billed_to === 'Owner' && "bg-slate-50 text-slate-700 border-slate-200",
-                bill.billed_to === 'Tenant' && "bg-indigo-50 text-indigo-700 border-indigo-100"
-              )}>
-                Billed to {bill.billed_to}
-              </span>
-            )}
+            <span className={cn(
+              "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+              (bill.billed_to === 'Owner' || bill.billed_to === 'None' || !bill.billed_to) && "bg-slate-50 text-slate-700 border-slate-200",
+              bill.billed_to === 'Tenant' && "bg-indigo-50 text-indigo-700 border-indigo-100"
+            )}>
+              Billed to {bill.billed_to === 'None' || !bill.billed_to ? 'Owner' : bill.billed_to}
+            </span>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">

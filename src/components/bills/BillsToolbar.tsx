@@ -62,7 +62,6 @@ export function BillsToolbar({
   ]
 
   const billedToOptions = [
-    { label: "None", value: "None" },
     { label: "Owner", value: "Owner" },
     { label: "Tenant", value: "Tenant" },
   ]
