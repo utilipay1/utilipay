@@ -84,14 +84,14 @@ export async function GET(req: NextRequest) {
     if (billedTo) {
       const types = billedTo.split(',');
       const wantsOwner = types.includes('Owner');
-      const wantsTenant = types.includes('Tenant');
+      const wantsTenant = types.includes('Owner + Tenant');
 
       if (wantsOwner && !wantsTenant) {
         // Show Owner (explicit or missing/legacy)
-        matchStage.billed_to = { $ne: 'Tenant' };
+        matchStage.billed_to = { $nin: ['Owner + Tenant', 'Tenant'] };
       } else if (wantsTenant && !wantsOwner) {
-        // Show only explicitly Tenant
-        matchStage.billed_to = 'Tenant';
+        // Show only explicitly Owner + Tenant or legacy Tenant
+        matchStage.billed_to = { $in: ['Owner + Tenant', 'Tenant'] };
       }
       // If both selected, no extra filter needed as it shows all
     }

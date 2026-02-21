@@ -69,7 +69,9 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
       : initialData.status,
     billed_to: (initialData.billed_to as string) === "None" || !initialData.billed_to 
       ? "Owner" 
-      : initialData.billed_to,
+      : (initialData.billed_to as string) === "Tenant"
+      ? "Owner + Tenant"
+      : initialData.billed_to as "Owner" | "Owner + Tenant",
     notes: initialData.notes || "",
     is_archived: initialData.is_archived,
     payment: initialData.payment ? {
@@ -109,12 +111,8 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
 
   // Sync form with initialData when it changes
   useEffect(() => {
-    if (initialData) {
-      form.reset(defaultValues);
-    } else {
-      form.reset(defaultValues);
-    }
-  }, [initialData, form, defaultValues]);
+    form.reset(defaultValues);
+  }, [defaultValues, form]);
 
   useEffect(() => {
     async function fetchProperties() {
@@ -135,7 +133,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
   const billStatus = form.watch("status");
   const paymentMethod = form.watch("payment.method");
   const selectedProperty = properties.find(p => p._id === selectedPropertyId);
-  const utilityOptions = selectedProperty ? selectedProperty.utilities_managed : ["Water", "Sewer", "Gas", "Electric"];
+  const utilityOptions = selectedProperty ? selectedProperty.utilities_managed : ["Water", "Sewer", "Water + Sewer", "Gas", "Electric"];
 
   async function onSubmit(values: FormValues) {
     setStatus("submitting");
@@ -379,7 +377,7 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   >
                     <option value="Owner">Owner</option>
-                    <option value="Tenant">Tenant</option>
+                    <option value="Owner + Tenant">Owner + Tenant</option>
                   </select>
                 </FormControl>
                 <FormMessage />

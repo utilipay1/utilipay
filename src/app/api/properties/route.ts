@@ -102,7 +102,8 @@ export async function GET(req: NextRequest) {
           { "utility_companies.Water": { $in: companyIds } },
           { "utility_companies.Sewer": { $in: companyIds } },
           { "utility_companies.Gas": { $in: companyIds } },
-          { "utility_companies.Electric": { $in: companyIds } }
+          { "utility_companies.Electric": { $in: companyIds } },
+          { "utility_companies.Water + Sewer": { $in: companyIds } }
         ];
       }
     }

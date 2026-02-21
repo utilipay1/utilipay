@@ -4,7 +4,7 @@ export const CompanySchema = z.object({
   _id: z.string().optional(),
   userId: z.string().optional(),
   name: z.string().min(1, "Company name is required"),
-  service_type: z.enum(['Water', 'Sewer', 'Gas', 'Electric']),
+  service_type: z.enum(['Water', 'Sewer', 'Gas', 'Electric', 'Water + Sewer']),
   contact_info: z.object({
     phone: z.string().nullish(),
     website: z.string().nullish(),
@@ -28,7 +28,7 @@ export const PropertySchema = z.object({
     move_in_date: z.coerce.date().nullish(),
     move_out_date: z.coerce.date().nullish(),
   }).optional(),
-  utilities_managed: z.array(z.enum(['Water', 'Sewer', 'Gas', 'Electric'])),
+  utilities_managed: z.array(z.enum(['Water', 'Sewer', 'Gas', 'Electric', 'Water + Sewer'])),
   // Map of Utility Type -> Company ID
   utility_companies: z.record(z.string(), z.string().nullish()).optional(), 
   notes: z.string().nullish(),
@@ -40,7 +40,7 @@ export const BillSchema = z.object({
   _id: z.string().optional(),
   userId: z.string().optional(),
   property_id: z.string().min(1, "Property ID is required"),
-  utility_type: z.enum(['Water', 'Sewer', 'Gas', 'Electric']),
+  utility_type: z.enum(['Water', 'Sewer', 'Gas', 'Electric', 'Water + Sewer']),
   amount: z.number().min(0),
   account_number: z.string().nullish(), // Allow null or undefined
   billing_period_start: z.coerce.date(),
@@ -48,7 +48,7 @@ export const BillSchema = z.object({
   bill_date: z.coerce.date(),
   due_date: z.coerce.date(),
   status: z.enum(['Unpaid', 'Overdue', 'Paid']),
-  billed_to: z.enum(['Owner', 'Tenant']).default('Owner'),
+  billed_to: z.enum(['Owner', 'Owner + Tenant']).default('Owner'),
   notes: z.string().nullish(), // Allow null or undefined
   is_archived: z.boolean().default(false),
   payment: z.object({

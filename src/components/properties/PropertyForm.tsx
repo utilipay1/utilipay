@@ -30,6 +30,7 @@ import { CreateCompanyDialog } from "@/components/companies/CreateCompanyDialog"
 import { ManageCompaniesDialog } from "@/components/companies/ManageCompaniesDialog";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 const formSchema = PropertySchema;
 type FormValues = z.infer<typeof formSchema>;
@@ -50,7 +51,7 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
   // State for creating/managing companies
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
-  const [activeUtilityForCreation, setActiveUtilityForCreation] = useState<"Water" | "Sewer" | "Gas" | "Electric" | null>(null);
+  const [activeUtilityForCreation, setActiveUtilityForCreation] = useState<"Water" | "Sewer" | "Gas" | "Electric" | "Water + Sewer" | null>(null);
   const [activeUtilityForManage, setActiveUtilityForManage] = useState<string | null>(null);
 
   const defaultValues: FormValues = useMemo(() => initialData || {
@@ -350,14 +351,16 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
           <div className="space-y-3">
             <FormLabel className="text-xs uppercase font-black tracking-widest text-muted-foreground">Utilities & Providers</FormLabel>
             <div className="grid md:grid-cols-2 gap-4">
-              {(["Water", "Sewer", "Gas", "Electric"] as const).map((utility) => {
+              {(["Water", "Sewer", "Water + Sewer", "Gas", "Electric"] as const).map((utility) => {
                 const isChecked = utilitiesManaged.includes(utility);
                 const availableCompanies = companies.filter(c => c.service_type === utility);
                 
                 return (
-                  <div key={utility} className={`border rounded-lg p-4 transition-all ${
-                    isChecked ? 'border-primary bg-primary/5' : 'bg-muted/10 border-input'
-                  }`}>
+                  <div key={utility} className={cn(
+                    "border rounded-lg p-4 transition-all",
+                    isChecked ? 'border-primary bg-primary/5' : 'bg-muted/10 border-input',
+                    utility === "Water + Sewer" && "md:col-span-2"
+                  )}>
                     <div className="flex items-center gap-3 mb-3">
                       <Checkbox
                         id={`util-${utility}`}
@@ -404,7 +407,7 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
                               >
                                 <FormControl>
                                   <SelectTrigger className="h-8 text-xs">
-                                    <SelectValue placeholder={`Select ${utility} Provider`} />
+                                    <SelectValue placeholder="Select Provider" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>

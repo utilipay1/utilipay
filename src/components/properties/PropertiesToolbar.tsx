@@ -55,6 +55,7 @@ export function PropertiesToolbar({
   const utilityOptions = [
     { label: "Water", value: "Water", icon: Droplets },
     { label: "Sewer", value: "Sewer", icon: Waves },
+    { label: "Water + Sewer", value: "Water + Sewer", icon: Waves },
     { label: "Electric", value: "Electric", icon: Zap },
     { label: "Gas", value: "Gas", icon: Flame },
   ]

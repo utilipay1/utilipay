@@ -43,7 +43,7 @@ export function ExportBillsButton({ bills, properties, companies }: ExportBillsB
 
         // Robust mapping for old/new schema
         const isChargedToOwner = (bill.billed_to === 'Owner' || !bill.billed_to) || (bill.status as string) === 'Paid-Charged';
-        const isReimbursedFromTenant = bill.billed_to === 'Tenant';
+        const isReimbursedFromTenant = bill.billed_to === 'Owner + Tenant' || (bill.billed_to as string) === 'Tenant';
 
         return {
           'Property': properties[bill.property_id] || 'Unknown',

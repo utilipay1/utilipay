@@ -63,12 +63,13 @@ export function BillsToolbar({
 
   const billedToOptions = [
     { label: "Owner", value: "Owner" },
-    { label: "Tenant", value: "Tenant" },
+    { label: "Owner + Tenant", value: "Owner + Tenant" },
   ]
 
   const utilityOptions = [
     { label: "Water", value: "Water", icon: Droplets },
-    { label: "Sewer", value: "Sewer", icon: Waves }, // Waves might not exist, fallback to text if needed
+    { label: "Sewer", value: "Sewer", icon: Waves },
+    { label: "Water + Sewer", value: "Water + Sewer", icon: Waves },
     { label: "Electric", value: "Electric", icon: Zap },
     { label: "Gas", value: "Gas", icon: Flame },
   ]

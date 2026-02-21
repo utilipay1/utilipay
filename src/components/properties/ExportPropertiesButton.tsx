@@ -43,6 +43,7 @@ export function ExportPropertiesButton({ properties, companies }: ExportProperti
           'Move-out Date': prop.tenant_info?.move_out_date ? format(new Date(prop.tenant_info.move_out_date), 'MM-dd-yyyy') : '---',
           'Water Provider': getCompanyName('Water'),
           'Sewer Provider': getCompanyName('Sewer'),
+          'Water + Sewer Provider': getCompanyName('Water + Sewer'),
           'Gas Provider': getCompanyName('Gas'),
           'Electric Provider': getCompanyName('Electric'),
           'Utilities Managed': prop.utilities_managed.join(', '),
