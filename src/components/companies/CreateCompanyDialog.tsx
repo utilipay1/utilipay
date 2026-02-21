@@ -29,7 +29,7 @@ interface CreateCompanyDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (companyId: string, companyName: string) => void;
-  defaultServiceType: "Water" | "Sewer" | "Gas" | "Electric";
+  defaultServiceType: "Water" | "Sewer" | "Gas" | "Electric" | "Water + Sewer";
 }
 
 export function CreateCompanyDialog({ isOpen, onClose, onSuccess, defaultServiceType }: CreateCompanyDialogProps) {

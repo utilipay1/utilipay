@@ -2,7 +2,7 @@ import { addDays, differenceInCalendarDays } from 'date-fns';
 
 export interface BillInput {
   property_id: string;
-  utility_type: 'Water' | 'Sewer' | 'Gas' | 'Electric';
+  utility_type: 'Water' | 'Sewer' | 'Gas' | 'Electric' | 'Water + Sewer';
   amount: number;
   account_number?: string | null;
   billing_period_start: Date;

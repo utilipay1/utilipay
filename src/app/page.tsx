@@ -114,6 +114,7 @@ export default function Home() {
     { value: 'Electric', icon: Zap, label: 'Electric' },
     { value: 'Gas', icon: Flame, label: 'Gas' },
     { value: 'Sewer', icon: Waves, label: 'Sewer' },
+    { value: 'Water + Sewer', icon: Waves, label: 'Water + Sewer' },
   ];
 
   return (

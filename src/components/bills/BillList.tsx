@@ -52,7 +52,7 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
-  const handleUpdateBilledTo = async (billId: string, billedTo: 'None' | 'Owner' | 'Tenant') => {
+  const handleUpdateBilledTo = async (billId: string, billedTo: 'Owner' | 'Owner + Tenant') => {
     try {
       const response = await fetch(`/api/bills/${billId}`, {
         method: 'PATCH',
@@ -220,7 +220,7 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
                               "transition-all px-2.5 py-0.5 font-bold text-[10px] uppercase tracking-wider",
                               isPaid && !bill.is_archived ? "cursor-pointer" : "opacity-50 cursor-not-allowed",
                               (bill.billed_to === 'Owner' || (bill.billed_to as string) === 'None' || !bill.billed_to) && "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100",
-                              bill.billed_to === 'Tenant' && "bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100"
+                              (bill.billed_to === 'Owner + Tenant' || (bill.billed_to as string) === 'Tenant') && "bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100"
                             )}
                           >
                             {(bill.billed_to as string) === 'None' || !bill.billed_to ? 'Owner' : bill.billed_to}
@@ -235,11 +235,11 @@ export function BillList({ bills, properties, fullProperties, companies, onRefre
                             {(bill.billed_to === 'Owner' || (bill.billed_to as string) === 'None' || !bill.billed_to) && <Check className="h-4 w-4" />}
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleUpdateBilledTo(bill._id!, 'Tenant')}
+                            onClick={() => handleUpdateBilledTo(bill._id!, 'Owner + Tenant')}
                             className="flex items-center justify-between"
                           >
-                            Tenant
-                            {bill.billed_to === 'Tenant' && <Check className="h-4 w-4" />}
+                            Owner + Tenant
+                            {(bill.billed_to === 'Owner + Tenant' || (bill.billed_to as string) === 'Tenant') && <Check className="h-4 w-4" />}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

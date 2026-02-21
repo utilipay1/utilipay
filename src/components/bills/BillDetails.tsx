@@ -39,9 +39,9 @@ export function BillDetails({ bill, propertyName, companyName, onEdit }: BillDet
             <span className={cn(
               "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
               (bill.billed_to === 'Owner' || (bill.billed_to as string) === 'None' || !bill.billed_to) && "bg-slate-50 text-slate-700 border-slate-200",
-              bill.billed_to === 'Tenant' && "bg-indigo-50 text-indigo-700 border-indigo-100"
+              (bill.billed_to === 'Owner + Tenant' || (bill.billed_to as string) === 'Tenant') && "bg-indigo-50 text-indigo-700 border-indigo-100"
             )}>
-              Billed to {(bill.billed_to as string) === 'None' || !bill.billed_to ? 'Owner' : bill.billed_to}
+              Billed to {(bill.billed_to as string) === 'None' || !bill.billed_to ? 'Owner' : (bill.billed_to as string) === 'Tenant' ? 'Owner + Tenant' : bill.billed_to}
             </span>
           </div>
         </div>
