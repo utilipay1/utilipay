@@ -133,7 +133,18 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
   const billStatus = form.watch("status");
   const paymentMethod = form.watch("payment.method");
   const selectedProperty = properties.find(p => p._id === selectedPropertyId);
-  const utilityOptions = selectedProperty ? selectedProperty.utilities_managed : ["Water", "Sewer", "Water + Sewer", "Gas", "Electric"];
+  
+  const utilityOptions = useMemo(() => {
+    const baseOptions = selectedProperty ? selectedProperty.utilities_managed : ["Water", "Sewer", "Water + Sewer", "Gas", "Electric"];
+    
+    // If we are editing and the current bill's utility isn't in the managed list, 
+    // add it as a fallback so the dropdown doesn't default to a random utility.
+    if (initialData?.utility_type && !baseOptions.includes(initialData.utility_type)) {
+      return [...baseOptions, initialData.utility_type];
+    }
+    
+    return baseOptions;
+  }, [selectedProperty, initialData?.utility_type]);
 
   async function onSubmit(values: FormValues) {
     setStatus("submitting");
