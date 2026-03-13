@@ -132,7 +132,7 @@ export function PropertyForm({ initialData, mode, onSuccess, onCancel }: Propert
       if (companies) {
         const managedSet = new Set(body.utilities_managed || []);
         Object.keys(companies).forEach(key => {
-          if (!managedSet.has(key as 'Water' | 'Sewer' | 'Gas' | 'Electric')) {
+          if (!managedSet.has(key as "Water" | "Sewer" | "Gas" | "Electric" | "Water + Sewer")) {
             delete companies[key];
           }
         });
