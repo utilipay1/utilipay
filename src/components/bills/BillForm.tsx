@@ -146,6 +146,16 @@ export function BillForm({ initialData, mode, onSuccess, onCancel }: BillFormPro
     return baseOptions;
   }, [selectedProperty, initialData?.utility_type]);
 
+  // Sync utility_type when property changes
+  useEffect(() => {
+    if (selectedProperty && utilityOptions.length > 0) {
+      const currentUtility = form.getValues("utility_type");
+      if (!utilityOptions.includes(currentUtility)) {
+        form.setValue("utility_type", utilityOptions[0] as FormValues["utility_type"]);
+      }
+    }
+  }, [selectedProperty, utilityOptions, form]);
+
   async function onSubmit(values: FormValues) {
     setStatus("submitting");
     try {
