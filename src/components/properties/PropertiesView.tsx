@@ -55,16 +55,22 @@ export function PropertiesView() {
     setPage(1);
   }, [filters.utilityType, filters.companyId, filters.managedStatus, filters.showArchived]);
 
-  const queryParams = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-    archived: filters.showArchived ? 'true' : 'false',
-  });
+  const filterParams = useMemo(() => {
+    const params = new URLSearchParams({
+      archived: filters.showArchived ? 'true' : 'false',
+    });
 
-  if (filters.utilityType.size > 0) queryParams.set('utility_type', Array.from(filters.utilityType).join(','));
-  if (filters.companyId.size > 0) queryParams.set('companyId', Array.from(filters.companyId).join(','));
-  if (filters.managedStatus.size > 0) queryParams.set('managed_status', Array.from(filters.managedStatus).join(','));
-  if (debouncedSearch) queryParams.set('search', debouncedSearch);
+    if (filters.utilityType.size > 0) params.set('utility_type', Array.from(filters.utilityType).join(','));
+    if (filters.companyId.size > 0) params.set('companyId', Array.from(filters.companyId).join(','));
+    if (filters.managedStatus.size > 0) params.set('managed_status', Array.from(filters.managedStatus).join(','));
+    if (debouncedSearch) params.set('search', debouncedSearch);
+
+    return params;
+  }, [filters.utilityType, filters.companyId, filters.managedStatus, filters.showArchived, debouncedSearch]);
+
+  const queryParams = new URLSearchParams(filterParams);
+  queryParams.set('page', page.toString());
+  queryParams.set('limit', limit.toString());
 
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -97,7 +103,8 @@ export function PropertiesView() {
         <h1 className="text-3xl font-bold tracking-tight">Properties</h1>
         <div className="flex items-center gap-2">
           <ExportPropertiesButton 
-            properties={properties} 
+            queryString={filterParams.toString()}
+            total={pagination?.total ?? 0}
             companies={companiesMap} 
           />
           <AddPropertyModal 

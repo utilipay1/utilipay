@@ -45,18 +45,23 @@ export function BillsView() {
     setPage(1);
   }, [filters.status, filters.utilityType, filters.propertyId, filters.billedTo, filters.showArchived]);
 
-  // Construct Query
-  const queryParams = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-    archived: filters.showArchived.toString(),
-  });
+  const filterParams = useMemo(() => {
+    const params = new URLSearchParams({
+      archived: filters.showArchived.toString(),
+    });
 
-  if (filters.status.size > 0) queryParams.set('status', Array.from(filters.status).join(','));
-  if (filters.utilityType.size > 0) queryParams.set('utility_type', Array.from(filters.utilityType).join(','));
-  if (filters.propertyId.size > 0) queryParams.set('propertyId', Array.from(filters.propertyId).join(','));
-  if (filters.billedTo.size > 0) queryParams.set('billed_to', Array.from(filters.billedTo).join(','));
-  if (debouncedSearch) queryParams.set('search', debouncedSearch);
+    if (filters.status.size > 0) params.set('status', Array.from(filters.status).join(','));
+    if (filters.utilityType.size > 0) params.set('utility_type', Array.from(filters.utilityType).join(','));
+    if (filters.propertyId.size > 0) params.set('propertyId', Array.from(filters.propertyId).join(','));
+    if (filters.billedTo.size > 0) params.set('billed_to', Array.from(filters.billedTo).join(','));
+    if (debouncedSearch) params.set('search', debouncedSearch);
+
+    return params;
+  }, [filters.status, filters.utilityType, filters.propertyId, filters.billedTo, filters.showArchived, debouncedSearch]);
+
+  const queryParams = new URLSearchParams(filterParams);
+  queryParams.set('page', page.toString());
+  queryParams.set('limit', limit.toString());
 
   const { data: billsResponse, isLoading: billsLoading } = useSWR(
     `/api/bills?${queryParams.toString()}`,
@@ -117,7 +122,8 @@ export function BillsView() {
         <h1 className="text-3xl font-bold tracking-tight">Bills</h1>
         <div className="flex items-center gap-2">
           <ExportBillsButton 
-            bills={bills} 
+            queryString={filterParams.toString()}
+            total={billsResponse?.pagination?.total ?? 0}
             properties={properties} 
             companies={companies.companies} 
           />

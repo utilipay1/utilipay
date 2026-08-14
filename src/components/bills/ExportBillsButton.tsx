@@ -19,12 +19,13 @@ type BillWithProperty = z.infer<typeof BillSchema> & {
 type Company = z.infer<typeof CompanySchema>;
 
 interface ExportBillsButtonProps {
-  bills: BillWithProperty[];
+  queryString: string;
+  total: number;
   properties: Record<string, string>; // id -> address
   companies: Record<string, Company>;
 }
 
-export function ExportBillsButton({ bills, properties, companies }: ExportBillsButtonProps) {
+export function ExportBillsButton({ queryString, total, properties, companies }: ExportBillsButtonProps) {
   const [exporting, setExporting] = useState(false);
 
   const handleExport = async () => {
@@ -32,6 +33,11 @@ export function ExportBillsButton({ bills, properties, companies }: ExportBillsB
     try {
       // Dynamic import to reduce bundle size
       const xlsx = await import('xlsx');
+      const { fetchAllPages } = await import('@/lib/fetch-all-pages');
+
+      const bills = await fetchAllPages<BillWithProperty>(
+        queryString ? `/api/bills?${queryString}` : '/api/bills'
+      );
 
       // Flatten and format data for Excel
       const data = bills.map((bill: BillWithProperty) => {
@@ -46,7 +52,7 @@ export function ExportBillsButton({ bills, properties, companies }: ExportBillsB
         const isReimbursedFromTenant = bill.billed_to === 'Owner + Tenant' || (bill.billed_to as string) === 'Tenant';
 
         return {
-          'Property': properties[bill.property_id] || 'Unknown',
+          'Property': properties[bill.property_id] || bill.property?.address || 'Unknown',
           'Tenant Name': bill.property?.tenant_info?.name || '---',
           'Utility Type': bill.utility_type,
           'Utility Company': companyName,
@@ -88,7 +94,7 @@ export function ExportBillsButton({ bills, properties, companies }: ExportBillsB
     <Button 
       variant="outline" 
       onClick={handleExport} 
-      disabled={exporting || bills.length === 0}
+      disabled={exporting || total === 0}
       className="gap-2"
     >
       <Download className="w-4 h-4" />
