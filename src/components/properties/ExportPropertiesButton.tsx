@@ -11,11 +11,12 @@ type Property = z.infer<typeof PropertySchema>;
 type Company = z.infer<typeof CompanySchema>;
 
 interface ExportPropertiesButtonProps {
-  properties: Property[];
+  queryString: string;
+  total: number;
   companies: Record<string, Company>;
 }
 
-export function ExportPropertiesButton({ properties, companies }: ExportPropertiesButtonProps) {
+export function ExportPropertiesButton({ queryString, total, companies }: ExportPropertiesButtonProps) {
   const [exporting, setExporting] = useState(false);
 
   const handleExport = async () => {
@@ -23,6 +24,11 @@ export function ExportPropertiesButton({ properties, companies }: ExportProperti
     try {
       // Dynamic import to reduce bundle size
       const xlsx = await import('xlsx');
+      const { fetchAllPages } = await import('@/lib/fetch-all-pages');
+
+      const properties = await fetchAllPages<Property>(
+        queryString ? `/api/properties?${queryString}` : '/api/properties'
+      );
 
       // Flatten and format data for Excel
       const data = properties.map((prop: Property) => {
@@ -71,7 +77,7 @@ export function ExportPropertiesButton({ properties, companies }: ExportProperti
     <Button 
       variant="outline" 
       onClick={handleExport} 
-      disabled={exporting || properties.length === 0}
+      disabled={exporting || total === 0}
       className="gap-2"
     >
       <Download className="w-4 h-4" />

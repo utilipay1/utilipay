@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ExportBillsButton } from './ExportBillsButton';
+import { ExportPropertiesButton } from './ExportPropertiesButton';
 import * as xlsx from 'xlsx';
 
 jest.mock('xlsx', () => ({
@@ -11,53 +11,46 @@ jest.mock('xlsx', () => ({
   writeFile: jest.fn(),
 }));
 
-const date = new Date('2026-01-01').toISOString();
-
-const pageOneBill = {
+const pageOneProperty = {
   _id: '1',
-  property_id: 'prop-1',
-  utility_type: 'Water',
-  amount: 50,
-  status: 'Paid',
-  billed_to: 'Owner',
-  due_date: date,
-  bill_date: date,
-  billing_period_start: date,
-  billing_period_end: date,
+  address: '123 Main',
+  tenant_status: 'Occupied',
+  utilities_managed: ['Water'],
+  is_managed: true,
+  is_archived: false,
 };
 
-const pageTwoBill = {
-  ...pageOneBill,
+const pageTwoProperty = {
+  ...pageOneProperty,
   _id: '2',
-  amount: 75,
+  address: '456 Oak',
 };
 
-describe('ExportBillsButton', () => {
+describe('ExportPropertiesButton', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = jest.fn()
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          data: [pageOneBill],
+          data: [pageOneProperty],
           pagination: { totalPages: 2, page: 1, limit: 500, total: 2 },
         }),
       })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          data: [pageTwoBill],
+          data: [pageTwoProperty],
           pagination: { totalPages: 2, page: 2, limit: 500, total: 2 },
         }),
       });
   });
 
-  it('exports every matching bill, not just the current page', async () => {
+  it('exports every matching property, not just the current page', async () => {
     render(
-      <ExportBillsButton
-        queryString="status=Paid&propertyId=prop-1,prop-2"
+      <ExportPropertiesButton
+        queryString="search=Main&archived=false"
         total={2}
-        properties={{ 'prop-1': '123 Main' }}
         companies={{}}
       />
     );
@@ -71,18 +64,17 @@ describe('ExportBillsButton', () => {
     expect(global.fetch).toHaveBeenCalledTimes(2);
     expect(xlsx.utils.json_to_sheet).toHaveBeenCalledWith(
       expect.arrayContaining([
-        expect.objectContaining({ Amount: 50 }),
-        expect.objectContaining({ Amount: 75 }),
+        expect.objectContaining({ Address: '123 Main' }),
+        expect.objectContaining({ Address: '456 Oak' }),
       ])
     );
   });
 
-  it('is disabled when there are no matching bills', () => {
+  it('is disabled when there are no matching properties', () => {
     render(
-      <ExportBillsButton
-        queryString="status=Paid"
+      <ExportPropertiesButton
+        queryString="archived=false"
         total={0}
-        properties={{}}
         companies={{}}
       />
     );

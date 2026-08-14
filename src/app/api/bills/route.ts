@@ -4,6 +4,7 @@ import { BillSchema } from '@/lib/schemas';
 import { calculateNextBill } from '@/lib/billing';
 import { ZodError } from 'zod';
 import { auth } from '@/auth';
+import { toInFilter } from '@/lib/query-filters';
 
 export async function POST(req: NextRequest) {
   try {
@@ -101,8 +102,9 @@ export async function GET(req: NextRequest) {
       if (types.length > 0) matchStage.utility_type = { $in: types };
     }
 
-    if (propertyId) {
-       matchStage.property_id = propertyId;
+    const propertyIdFilter = toInFilter(propertyId);
+    if (propertyIdFilter) {
+      matchStage.property_id = propertyIdFilter;
     }
 
     if (showArchived) {
